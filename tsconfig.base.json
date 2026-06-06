@@ -1,0 +1,26 @@
+{
+  // Contrat de RIGUEUR partagé par tout le monorepo (api, client, packages/*).
+  // Ne contient QUE des options universelles : pas de `module`/`jsx`/`lib` ici,
+  // car chaque package tourne dans un environnement différent (Node vs navigateur)
+  // et garde donc ses propres options d'environnement dans son tsconfig.
+  "compilerOptions": {
+    // Le socle de la rigueur TypeScript (active une douzaine de contrôles d'un coup).
+    "strict": true,
+
+    // tableau[i] est considéré POSSIBLEMENT undefined → force à gérer le cas
+    // "l'élément n'existe pas", source n°1 de crashs en production.
+    "noUncheckedIndexedAccess": true,
+
+    // Refuse les variables et paramètres déclarés mais jamais utilisés (code mort local).
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    // Détecte les bugs de casse dans les imports, qui passent sur Windows/macOS
+    // (systèmes insensibles à la casse) mais cassent en CI sous Linux.
+    "forceConsistentCasingInFileNames": true,
+
+    // N'analyse pas l'intérieur des fichiers de déclaration (.d.ts) des dépendances :
+    // gain de temps, et on ne corrige de toute façon pas le typage des libs externes.
+    "skipLibCheck": true
+  }
+}

@@ -1,0 +1,28 @@
+name: CI
+
+# La VRAIE barrière qualité : rejoue le MÊME `npm run verify` que le local
+# (aucune dérive possible) + les tests, sur chaque pull request et sur main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Installation reproductible à partir du package-lock.json.
+      - run: npm ci
+
+      # Exactement la commande locale : format:check + lint + typecheck + knip + jscpd.
+      - run: npm run verify
+
+      # Tests de chaque package qui en définit (api : Jest).
+      - run: npm test --workspaces --if-present

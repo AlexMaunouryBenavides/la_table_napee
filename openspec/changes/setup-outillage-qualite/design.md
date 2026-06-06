@@ -6,8 +6,8 @@ n'est pas commencé. Le développeur est junior et a pour objectif explicite de
 **progresser** : écrire un code qui impressionnerait en entretien, fondé sur Clean
 Code, DRY, KISS, les conventions REST et les bonnes pratiques NestJS.
 
-Le workflow visé : *écrire le code → lancer une commande de vérification locale
-(sans IA) → demander à l'IA une surcouche de revue fondée sur des règles écrites*.
+Le workflow visé : _écrire le code → lancer une commande de vérification locale
+(sans IA) → demander à l'IA une surcouche de revue fondée sur des règles écrites_.
 Ce document fige les décisions techniques qui rendent ce workflow possible.
 
 ## Goals / Non-Goals
@@ -39,14 +39,14 @@ Ce document fige les décisions techniques qui rendent ce workflow possible.
 
 **Choix :** ESLint (flat config) + Prettier + TypeScript. Biome est retiré.
 
-**Pourquoi :** le linting *type-aware* (qui lit les types pour repérer des bugs,
+**Pourquoi :** le linting _type-aware_ (qui lit les types pour repérer des bugs,
 ex. `no-floating-promises`) est mature et complet côté `typescript-eslint`, alors
 qu'il est plus récent/partiel chez Biome. L'écosystème de plugins (Nest, React,
 react-hooks, jsx-a11y, import) est plus riche. Et c'est le standard que le
 développeur retrouvera en entreprise → valeur d'apprentissage.
 
-**Alternatives écartées :** *Biome seul* (plus simple/rapide mais type-aware moins
-complet, moins formateur) ; *hybride Biome+ESLint* (puissant mais deux outils à
+**Alternatives écartées :** _Biome seul_ (plus simple/rapide mais type-aware moins
+complet, moins formateur) ; _hybride Biome+ESLint_ (puissant mais deux outils à
 coordonner, trop de complexité pour un démarrage).
 
 ### D2 — Modèle à deux couches : déterministe vs jugement
@@ -64,12 +64,12 @@ pensés).
 
 **Choix :** `prettier --check` + `eslint` + `tsc --noEmit` + `knip` + `jscpd`.
 
-**Pourquoi :** `eslint` ne voit le code mort que *dans* un fichier ; `knip` le
+**Pourquoi :** `eslint` ne voit le code mort que _dans_ un fichier ; `knip` le
 détecte à l'échelle du repo (exports/fichiers/dépendances orphelins) — c'est lui qui
-tient la promesse « zéro code mort ». `jscpd` couvre le DRY *mécanique*
-(copier-coller). La duplication *de concept* reste du jugement (couche 2).
+tient la promesse « zéro code mort ». `jscpd` couvre le DRY _mécanique_
+(copier-coller). La duplication _de concept_ reste du jugement (couche 2).
 
-**Alternatives écartées :** *cœur seul (sans knip)* — la promesse « pas de code mort »
+**Alternatives écartées :** _cœur seul (sans knip)_ — la promesse « pas de code mort »
 resterait partielle.
 
 ### D4 — Niveau de strictesse : palier 2 + flags pro
@@ -101,7 +101,7 @@ même commande évite le « ça passe en local mais casse en CI ».
 **Pourquoi :** husky/lint-staged est le standard reconnu (et lint-staged ne vérifie
 que les fichiers modifiés → rapide). Les Conventional Commits disciplinent
 l'historique (signal de sérieux) et débloqueront plus tard le versioning/changelog
-auto en CI/CD. *lefthook* écarté (plus rapide mais moins connu).
+auto en CI/CD. _lefthook_ écarté (plus rapide mais moins connu).
 
 ### D7 — `CLAUDE.md` mince + `docs/conventions/` à la demande
 
@@ -114,8 +114,8 @@ checklists détaillées (`clean-code.md`, `rest.md`, `nest.md`) vivent dans
 empiler des règles toujours-chargées **dilue l'attention** : chaque règle est moins
 bien suivie. « Moins, mais mieux suivi. »
 
-**Alternatives écartées :** *tout dans CLAUDE.md* (dilution quand ça grossit) ;
-*skills auto-chargés* (plus puissant et natif, mais trop de machinerie pour démarrer —
+**Alternatives écartées :** _tout dans CLAUDE.md_ (dilution quand ça grossit) ;
+_skills auto-chargés_ (plus puissant et natif, mais trop de machinerie pour démarrer —
 upgrade possible plus tard).
 
 ### D8 — Posture mentor comme comportement par défaut
@@ -151,7 +151,7 @@ le « comment » avant d'agir est la condition de la progression visée.
 
 - **jscpd bruyant au début** (DTOs/tests qui se ressemblent comptés comme
   duplication) → calibrer un seuil de taille de bloc + ignorer certains dossiers.
-  Principe : quand l'outil parle, ce doit *toujours* être un vrai problème.
+  Principe : quand l'outil parle, ce doit _toujours_ être un vrai problème.
 - **`no-magic-numbers` bruyant** → autoriser `0`, `1`, `-1`.
 - **ESLint type-aware plus lent** (lit les `tsconfig`) → utiliser `projectService` ;
   en local, lint-staged limite au périmètre des fichiers modifiés.

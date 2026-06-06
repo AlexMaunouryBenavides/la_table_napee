@@ -35,8 +35,8 @@ Une base MySQL dédiée aux tests, configurée par l'environnement, migrée avan
 e2e, remise à zéro entre les runs (truncate/recreate). Raison : fidélité au vrai
 moteur (MySQL, contraintes, cascades) sans jamais risquer les données réelles.
 
-**Alternatives considérées :** *SQLite en mémoire* (rapide mais infidèle : pas les
-mêmes contraintes/cascades que MySQL) ; *testcontainers* (très propre, isolément
+**Alternatives considérées :** _SQLite en mémoire_ (rapide mais infidèle : pas les
+mêmes contraintes/cascades que MySQL) ; _testcontainers_ (très propre, isolément
 total, mais plus lourd → upgrade futur possible).
 
 ### D3 — Données déterministes via factories/fixtures

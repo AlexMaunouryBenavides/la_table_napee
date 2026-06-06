@@ -18,7 +18,7 @@ migration pour la suite — sinon on bootstrap une erreur et on accumule de la d
     `quantity` (`DECIMAL`, nullable = « à volonté ») et `unit` (énum), `id`
     surrogate + `UNIQUE(recipe_id, ingredient_id)`.
   - **`review`** : `UNIQUE(user_id, recipe_id)` (1 avis par paire) + `CHECK(grade
-    BETWEEN 1 AND 5)`.
+BETWEEN 1 AND 5)`.
   - **Règles `ON DELETE`** : CASCADE sur les entités possédées (composition, steps,
     review, jonctions côté recette) ; SET NULL pour l'anonymisation (review→user,
     recipe→author) ; RESTRICT pour les entités partagées (ingredient, catégories,

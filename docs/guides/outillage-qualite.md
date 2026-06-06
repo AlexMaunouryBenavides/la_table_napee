@@ -1,13 +1,13 @@
 # Guide — L'outillage qualité du projet
 
-> À lire **avant** la mise en place. Ce guide explique le *pourquoi* et le
-> *comment* de chaque outil. Les règles, elles, vivent dans `docs/conventions/`.
+> À lire **avant** la mise en place. Ce guide explique le _pourquoi_ et le
+> _comment_ de chaque outil. Les règles, elles, vivent dans `docs/conventions/`.
 > Ici on apprend ; là-bas on applique.
 
 L'idée centrale du projet : **la qualité ne doit pas reposer sur ta seule
 vigilance.** Un humain fatigué oublie une virgule, un `await`, un import mort.
-Des outils, non. On délègue donc tout ce qui est *mesurable* à des machines, et
-on garde ton cerveau (et celui de l'IA) pour ce qui demande du *jugement*.
+Des outils, non. On délègue donc tout ce qui est _mesurable_ à des machines, et
+on garde ton cerveau (et celui de l'IA) pour ce qui demande du _jugement_.
 
 ---
 
@@ -36,7 +36,7 @@ Des règles qui demandent de **comprendre l'intention** :
 - « Ce nom décrit-il vraiment ce que fait la fonction ? »
 - « Cette fonction fait-elle UNE seule chose ? »
 - « Cette route REST est-elle bien pensée ? »
-- « Ces deux blocs sont-ils le même *concept* dupliqué (et pas juste du texte
+- « Ces deux blocs sont-ils le même _concept_ dupliqué (et pas juste du texte
   qui se ressemble) ? »
 
 Aucune machine ne tranche ça de façon fiable. C'est le rôle de la revue par
@@ -83,8 +83,8 @@ elle s'exécute à l'identique.
 
 **Pourquoi le pre-commit n'est qu'un confort ?** Parce qu'on peut le sauter avec
 `git commit --no-verify`. La CI, elle, tourne sur le serveur : tu ne peux pas la
-sauter. C'est donc la CI qui *garantit* la qualité, le hook qui te *fait gagner
-du temps* en te prévenant tôt.
+sauter. C'est donc la CI qui _garantit_ la qualité, le hook qui te _fait gagner
+du temps_ en te prévenant tôt.
 
 ---
 
@@ -101,8 +101,8 @@ points-virgules, retours à la ligne). Il ne juge pas la logique, juste l'appare
 **Pourquoi :** met fin aux débats stériles sur le style et aux diffs pollués par
 du reformatage. Tu n'y penses plus jamais : la machine décide, toujours pareil.
 
-Dans `verify` on lance `prettier --check` (il *signale* le non-conforme sans
-modifier). En local, l'éditeur lance `prettier --write` (il *corrige*).
+Dans `verify` on lance `prettier --check` (il _signale_ le non-conforme sans
+modifier). En local, l'éditeur lance `prettier --write` (il _corrige_).
 
 ### ESLint (type-aware) — la chasse aux bugs et aux mauvaises pratiques
 
@@ -142,8 +142,9 @@ l'ensemble et fait respecter le contrat global. C'est lui qui attrape « tu pass
 un `string` là où on attend un `number` » à travers tout le monorepo.
 
 On l'a réglé en mode **strict + flags pro** :
+
 - `strict` : la base de la rigueur TypeScript.
-- `noUncheckedIndexedAccess` : `tableau[i]` est considéré *possiblement* `undefined`
+- `noUncheckedIndexedAccess` : `tableau[i]` est considéré _possiblement_ `undefined`
   → t'oblige à gérer le cas « l'élément n'existe pas » (source n°1 de crashs).
 - `noUnusedLocals` / `noUnusedParameters` : refuse les variables/paramètres morts.
 
@@ -158,8 +159,8 @@ On l'a réglé en mode **strict + flags pro** :
 **Ce qu'il fait :** détecte les **exports, fichiers et dépendances que personne
 n'utilise** dans tout le monorepo.
 
-**Pourquoi en plus d'ESLint ?** ESLint ne voit le code mort que *dans un même
-fichier*. Un export utilisé nulle part dans tout le projet, lui, lui échappe.
+**Pourquoi en plus d'ESLint ?** ESLint ne voit le code mort que _dans un même
+fichier_. Un export utilisé nulle part dans tout le projet, lui, lui échappe.
 knip raisonne à l'échelle du repo entier : c'est lui qui tient la promesse
 « zéro code mort ».
 
@@ -171,13 +172,13 @@ texte).
 **Pourquoi :** le copier-coller est la dette technique la plus courante. Corriger
 un bug dans un seul des cinq exemplaires = quatre bugs qui restent.
 
-**Sa limite (importante) :** jscpd ne voit que la duplication *de texte*. La
-duplication *de concept* (deux fonctions différentes qui font la même chose
+**Sa limite (importante) :** jscpd ne voit que la duplication _de texte_. La
+duplication _de concept_ (deux fonctions différentes qui font la même chose
 autrement) lui échappe → ça, c'est de la couche 2, du jugement.
 
 > jscpd est calibré avec un **seuil permissif** (« anti-abus ») : on ne traque que
-> les gros copier-coller. Règle d'or : *quand l'outil parle, ce doit toujours être
-> un vrai problème.* S'il crie pour rien, on monte le seuil.
+> les gros copier-coller. Règle d'or : _quand l'outil parle, ce doit toujours être
+> un vrai problème._ S'il crie pour rien, on monte le seuil.
 
 ---
 
@@ -220,7 +221,7 @@ Décodage : fichier `recettes.service.ts`, **ligne 42**, la règle
    sauvegarde dans VS Code. Beaucoup de règles ESLint se corrigent aussi seules
    avec `npm run lint -- --fix`.
 2. **Un vrai problème de logique/type ?** Là, pas de magie : lis le message, va à
-   la ligne, comprends *pourquoi* l'outil proteste, corrige. C'est exactement le
+   la ligne, comprends _pourquoi_ l'outil proteste, corrige. C'est exactement le
    moment où tu apprends quelque chose.
 
 > Réflexe à acquérir : un outil qui râle n'est pas un ennemi qui te ralentit,
@@ -230,17 +231,17 @@ Décodage : fichier `recettes.service.ts`, **ligne 42**, la règle
 
 ## 5. Où va quoi (carte mentale)
 
-| Question | Couche | Outil / lieu |
-|---|---|---|
-| Le code est-il bien formaté ? | 1 (mesure) | Prettier |
-| Y a-t-il une promesse oubliée, un nombre magique, une fonction trop longue ? | 1 | ESLint |
-| Les types sont-ils cohérents partout ? | 1 | tsc |
-| Reste-t-il du code mort dans le repo ? | 1 | knip |
-| Y a-t-il du copier-coller ? | 1 | jscpd |
-| Le nom dit-il l'intention ? La fonction fait-elle une chose ? | 2 (jugement) | toi + IA, via `docs/conventions/clean-code.md` |
-| La route REST est-elle bien conçue ? | 2 | `docs/conventions/rest.md` |
-| Le code respecte-t-il la façon de faire de Nest / React Router ? | 2 | `docs/conventions/nest.md`, `client.md` |
+| Question                                                                     | Couche       | Outil / lieu                                   |
+| ---------------------------------------------------------------------------- | ------------ | ---------------------------------------------- |
+| Le code est-il bien formaté ?                                                | 1 (mesure)   | Prettier                                       |
+| Y a-t-il une promesse oubliée, un nombre magique, une fonction trop longue ? | 1            | ESLint                                         |
+| Les types sont-ils cohérents partout ?                                       | 1            | tsc                                            |
+| Reste-t-il du code mort dans le repo ?                                       | 1            | knip                                           |
+| Y a-t-il du copier-coller ?                                                  | 1            | jscpd                                          |
+| Le nom dit-il l'intention ? La fonction fait-elle une chose ?                | 2 (jugement) | toi + IA, via `docs/conventions/clean-code.md` |
+| La route REST est-elle bien conçue ?                                         | 2            | `docs/conventions/rest.md`                     |
+| Le code respecte-t-il la façon de faire de Nest / React Router ?             | 2            | `docs/conventions/nest.md`, `client.md`        |
 
 **La règle à retenir :** une fois `verify` au vert, la revue de jugement n'a plus
 à se soucier du format ni de la syntaxe — tout ça est déjà garanti. Elle se
-concentre uniquement sur ce qui se *juge*.
+concentre uniquement sur ce qui se _juge_.
