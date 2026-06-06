@@ -1,0 +1,11 @@
+{
+	"name": "la-table-nappee",
+	"version": "1.0.0",
+	"description": "website for luxury recipe",
+	"private": true,
+	"workspaces": [
+		"client",
+		"api",
+		"packages/*"
+	]
+}
