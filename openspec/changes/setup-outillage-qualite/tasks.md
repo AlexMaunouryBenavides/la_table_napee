@@ -71,12 +71,12 @@
 
 ## 12. Couche jugement — CLAUDE.md mince + docs/conventions
 
-- [ ] 12.1 Réécrire `CLAUDE.md` en version mince : posture mentor (en tête), stack (sans Biome), 4 priorités résumées, **règle « respecter les conventions officielles des frameworks (Nest, React Router, Vite, TypeORM) — coder à LEUR manière »**, rappel `npm run verify`, INDEX vers `docs/conventions/` et `docs/guides/`
-- [ ] 12.2 Créer `docs/conventions/clean-code.md` (checklist de jugement : faire une chose, nommer l'intention, abstraction, DRY conceptuel, KISS)
-- [ ] 12.3 Créer `docs/conventions/rest.md` (nommage des ressources, codes statut, idempotence, pagination/filtres, gestion d'erreurs)
-- [ ] 12.4 Créer `docs/conventions/nest.md` : la façon de faire OFFICIELLE de Nest — modules par fonctionnalité, providers + injection de dépendances, scaffolding via le CLI `nest g`, `ValidationPipe` global, guards/pipes/interceptors comme mécanismes transverses, controller≠service (jamais de `req/res` dans le métier). Référence : docs.nestjs.com
-- [ ] 12.5 Créer `docs/conventions/client.md` : respecter les conventions React Router v7 (framework mode) + Vite, ne pas contourner les fichiers/dossiers attendus
-- [ ] 12.6 Indiquer dans `CLAUDE.md` ce qui est déjà couvert par `verify` (pour que la revue IA se concentre sur le jugement)
+- [x] 12.1 Réécrire `CLAUDE.md` en version mince : posture mentor (en tête), stack (sans Biome), 4 priorités résumées, **règle « respecter les conventions officielles des frameworks (Nest, React Router, Vite, TypeORM) — coder à LEUR manière »**, rappel `npm run verify`, INDEX vers `docs/conventions/` et `docs/guides/`
+- [x] 12.2 Créer `docs/conventions/clean-code.md` (checklist de jugement : faire une chose, nommer l'intention, abstraction, DRY conceptuel, KISS)
+- [x] 12.3 Créer `docs/conventions/rest.md` (nommage des ressources, codes statut, idempotence, pagination/filtres, gestion d'erreurs)
+- [x] 12.4 Créer `docs/conventions/nest.md` : la façon de faire OFFICIELLE de Nest — modules par fonctionnalité, providers + injection de dépendances, scaffolding via le CLI `nest g`, `ValidationPipe` global, guards/pipes/interceptors comme mécanismes transverses, controller≠service (jamais de `req/res` dans le métier). Référence : docs.nestjs.com
+- [x] 12.5 Créer `docs/conventions/client.md` : respecter les conventions React Router v7 (framework mode) + Vite, ne pas contourner les fichiers/dossiers attendus
+- [x] 12.6 Indiquer dans `CLAUDE.md` ce qui est déjà couvert par `verify` (pour que la revue IA se concentre sur le jugement)
 
 ## 13. Vérification finale
 
