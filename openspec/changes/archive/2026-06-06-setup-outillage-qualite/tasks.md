@@ -67,7 +67,7 @@
 
 - [x] 11.1 Créer `.github/workflows/ci.yml` : install + `npm run verify` + tests sur chaque pull request
 - [x] 11.2 S'assurer que la CI rejoue EXACTEMENT le même `verify` que le local (pas de dérive)
-- [ ] 11.3 (Repo GitHub présent) activer la protection de branche : merge bloqué si CI rouge — MANUEL (UI GitHub, après 1er run CI ; voir note)
+- [x] 11.3 (Repo GitHub présent) activer la protection de branche : merge bloqué si CI rouge — MANUEL (UI GitHub, après 1er run CI ; voir note)
 
 ## 12. Couche jugement — CLAUDE.md mince + docs/conventions
 
