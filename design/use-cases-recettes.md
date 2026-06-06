@@ -22,39 +22,42 @@ larges/structurels, plus il est réservé à un rôle élevé.
 ## Cas d'usage par acteur
 
 ### Visiteur anonyme
-| ID | Cas d'usage | Données touchées |
-|----|-------------|------------------|
-| UC-01 | Consulter la liste des recettes | RECETTE (lecture) |
-| UC-02 | Consulter le détail d'une recette (+ avis) | RECETTE, COMPOSITION, INGREDIENT, AVIS (lecture) |
+
+| ID    | Cas d'usage                                 | Données touchées                                        |
+| ----- | ------------------------------------------- | ------------------------------------------------------- |
+| UC-01 | Consulter la liste des recettes             | RECETTE (lecture)                                       |
+| UC-02 | Consulter le détail d'une recette (+ avis)  | RECETTE, COMPOSITION, INGREDIENT, AVIS (lecture)        |
 | UC-03 | Rechercher / filtrer (multicritère) + trier | RECETTE + jonctions catégories + COMPOSITION/INGREDIENT |
-| UC-04 | Créer un compte (s'inscrire) | UTILISATEUR (création) |
+| UC-04 | Créer un compte (s'inscrire)                | UTILISATEUR (création)                                  |
 
 Note UC-03 : filtres combinables (ex : « desserts végans < 30 min »).
 La recherche traverse les tables de jonction → justifie toute la modélisation N–N.
 Le filtre par ingrédient passe par INGREDIENT puis COMPOSITION (pas de parcours texte).
 
 ### Utilisateur connecté (hérite : UC-01 → UC-04)
-| ID | Cas d'usage | Règle / précondition |
-|----|-------------|----------------------|
-| UC-05 | Se connecter / se déconnecter | vérif. mot de passe (Argon2) |
-| UC-06 | Laisser un avis (note 1–5 + texte) | **1 seul avis par (user, recette)** |
-| UC-07 | Modifier SON avis | l'avis doit lui appartenir |
-| UC-08 | Supprimer SON avis | l'avis doit lui appartenir |
-| UC-09 | Gérer son compte (profil, mot de passe) | c'est bien son compte |
-| UC-09b | Supprimer son propre compte | ses avis → anonymisés (pas supprimés) |
+
+| ID     | Cas d'usage                             | Règle / précondition                  |
+| ------ | --------------------------------------- | ------------------------------------- |
+| UC-05  | Se connecter / se déconnecter           | vérif. mot de passe (Argon2)          |
+| UC-06  | Laisser un avis (note 1–5 + texte)      | **1 seul avis par (user, recette)**   |
+| UC-07  | Modifier SON avis                       | l'avis doit lui appartenir            |
+| UC-08  | Supprimer SON avis                      | l'avis doit lui appartenir            |
+| UC-09  | Gérer son compte (profil, mot de passe) | c'est bien son compte                 |
+| UC-09b | Supprimer son propre compte             | ses avis → anonymisés (pas supprimés) |
 
 Sécurité clé : UC-07/08/09 exigent le **contrôle de propriété au niveau de
 l'objet** (vérifier que l'objet appartient au demandeur, pas juste qu'il est
 connecté). Évite la faille « référence directe non sécurisée à un objet ».
 
 ### Modérateur (hérite : UC-01 → UC-09b)
-| ID | Cas d'usage | Données touchées |
-|----|-------------|------------------|
-| UC-10 | Accéder au panneau d'administration | rôle modérateur ou admin |
-| UC-11 | Créer une recette | RECETTE + COMPOSITION (+ « trouver ou créer » INGREDIENT) + jonctions + nationalité |
-| UC-12 | Modifier n'importe quelle recette | RECETTE + liens |
-| UC-13 | Supprimer n'importe quelle recette | RECETTE + COMPOSITION/jonctions (cascade) |
-| UC-14 | Supprimer n'importe quel avis (modération) | AVIS (suppression) |
+
+| ID    | Cas d'usage                                | Données touchées                                                                    |
+| ----- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| UC-10 | Accéder au panneau d'administration        | rôle modérateur ou admin                                                            |
+| UC-11 | Créer une recette                          | RECETTE + COMPOSITION (+ « trouver ou créer » INGREDIENT) + jonctions + nationalité |
+| UC-12 | Modifier n'importe quelle recette          | RECETTE + liens                                                                     |
+| UC-13 | Supprimer n'importe quelle recette         | RECETTE + COMPOSITION/jonctions (cascade)                                           |
+| UC-14 | Supprimer n'importe quel avis (modération) | AVIS (suppression)                                                                  |
 
 Sécurité clé : UC-14 (supprimer un avis quelconque) repose sur une
 autorisation **par rôle**, à distinguer d'UC-08 (supprimer son avis) qui
@@ -64,10 +67,11 @@ Note UC-11 : à la saisie, pour chaque ingrédient tapé → logique « trouver 
 créer » dans INGREDIENT (réutiliser la ligne existante ou en créer une).
 
 ### Administrateur (hérite : UC-01 → UC-14)
-| ID | Cas d'usage | Règle / précondition |
-|----|-------------|----------------------|
-| UC-15 | Gérer les catégories (régimes, critères santé, types d'aliment, nationalités) | **admin seul** |
-| UC-16 | Gérer les utilisateurs (lister, changer rôle, supprimer) | **admin seul** |
+
+| ID    | Cas d'usage                                                                   | Règle / précondition |
+| ----- | ----------------------------------------------------------------------------- | -------------------- |
+| UC-15 | Gérer les catégories (régimes, critères santé, types d'aliment, nationalités) | **admin seul**       |
+| UC-16 | Gérer les utilisateurs (lister, changer rôle, supprimer)                      | **admin seul**       |
 
 Sécurité critique UC-16 : la **promotion de rôle** distribue le pouvoir →
 route à protéger en priorité. Prévoir une règle anti-auto-rétrogradation
@@ -77,18 +81,18 @@ route à protéger en priorité. Prévoir une règle anti-auto-rétrogradation
 
 ## Décisions de conception & conséquences techniques
 
-| Décision | Conséquence sur la base de données |
-|----------|-----------------------------------|
-| 1 avis par (user, recette) | **Contrainte d'unicité** sur la paire (user_id, recette_id) dans AVIS |
-| Avis anonymisés à la suppression du compte | Lien avis→user **nullable** + `ON DELETE SET NULL` |
-| Suppression d'une recette | Ses lignes de **COMPOSITION** et de jonction partent en cascade — **PAS** les ingrédients ni les catégories (entités partagées) |
-| Ingrédient = entité partagée | Table INGREDIENT (nom unique) + table COMPOSITION porteuse de quantité/unité (relation N–N enrichie) |
-| Catégories dynamiques (gérées par admin) | Tables REGIME, CRITERE_SANTE, TYPE_ALIMENT, NATIONALITE en base |
-| Note moyenne | **Non stockée** : calculée à partir des avis (DRY) |
-| Clés primaires | **UUID** pour UTILISATEUR (anti-énumération) ; **entiers auto-incr.** pour le reste (perf. jointures) |
-| Mot de passe | Hash **Argon2** (le sel est inclus dans le hash → pas de colonne sel) |
-| Difficulté & type de recette | **Figés** dans le code (énumérations stables) |
-| Nationalité | **Entité en base** (relation N–1 : 1 recette → 1 nationalité) |
+| Décision                                   | Conséquence sur la base de données                                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1 avis par (user, recette)                 | **Contrainte d'unicité** sur la paire (user_id, recette_id) dans AVIS                                                           |
+| Avis anonymisés à la suppression du compte | Lien avis→user **nullable** + `ON DELETE SET NULL`                                                                              |
+| Suppression d'une recette                  | Ses lignes de **COMPOSITION** et de jonction partent en cascade — **PAS** les ingrédients ni les catégories (entités partagées) |
+| Ingrédient = entité partagée               | Table INGREDIENT (nom unique) + table COMPOSITION porteuse de quantité/unité (relation N–N enrichie)                            |
+| Catégories dynamiques (gérées par admin)   | Tables REGIME, CRITERE_SANTE, TYPE_ALIMENT, NATIONALITE en base                                                                 |
+| Note moyenne                               | **Non stockée** : calculée à partir des avis (DRY)                                                                              |
+| Clés primaires                             | **UUID** pour UTILISATEUR (anti-énumération) ; **entiers auto-incr.** pour le reste (perf. jointures)                           |
+| Mot de passe                               | Hash **Argon2** (le sel est inclus dans le hash → pas de colonne sel)                                                           |
+| Difficulté & type de recette               | **Figés** dans le code (énumérations stables)                                                                                   |
+| Nationalité                                | **Entité en base** (relation N–1 : 1 recette → 1 nationalité)                                                                   |
 
 ---
 
@@ -104,9 +108,11 @@ route à protéger en priorité. Prévoir une règle anti-auto-rétrogradation
 RECETTE · INGREDIENT · COMPOSITION (jonction enrichie recette⇄ingrédient) ·
 UTILISATEUR · AVIS ·
 REGIME · CRITERE_SANTE · TYPE_ALIMENT · NATIONALITE
-+ 3 tables de jonction (recette ⇄ régime / critère santé / type d'aliment)
+
+- 3 tables de jonction (recette ⇄ régime / critère santé / type d'aliment)
 
 ### Distinction clé : entités possédées vs partagées
+
 - **Possédées** (meurent avec leur parent) : COMPOSITION, jonctions, AVIS
 - **Partagées** (survivent, réutilisées par plusieurs recettes) : INGREDIENT,
   REGIME, CRITERE_SANTE, TYPE_ALIMENT, NATIONALITE
@@ -128,7 +134,7 @@ REGIME · CRITERE_SANTE · TYPE_ALIMENT · NATIONALITE
   une liste d'ingrédients agrégés. S'appuie DIRECTEMENT sur INGREDIENT +
   COMPOSITION qu'on vient de créer (sans eux, ce serait impossible — belle
   preuve que la refonte ingrédient valait le coup). Table LISTE_COURSES
-  + jonction vers INGREDIENT.
+  - jonction vers INGREDIENT.
 
 - **Réponses des modérateurs aux avis** : un modérateur/auteur répond à un
   avis. Colonne `parent_avis_id` nullable dans AVIS (auto-référence), ou

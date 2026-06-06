@@ -24,7 +24,7 @@ jetons portés par des cookies httpOnly, avec une stratégie de révocation rée
 - **Défense CSRF** : `SameSite=Lax` comme première couche ; token anti-CSRF
   double-submit **différé** (défense en profondeur à ajouter au besoin).
 - **Nouvelle entité** `REFRESH_TOKEN` (additive, absente du Merise initial).
-- **Abstraction de stockage** : les refresh passent par un *repository* pour
+- **Abstraction de stockage** : les refresh passent par un _repository_ pour
   permettre une migration future vers Redis sans refonte.
 - **Guide d'apprentissage** `docs/guides/authentification.md` créé en premier (à lire
   avant), et code écrit à la manière de Nest (@nestjs/passport, guards, modules, DI).

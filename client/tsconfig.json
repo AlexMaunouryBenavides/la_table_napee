@@ -1,4 +1,7 @@
 {
+  // Hérite du contrat de rigueur commun, puis garde les options d'ENVIRONNEMENT
+  // propres à une app React Router + Vite (DOM, JSX, résolution bundler).
+  "extends": "../tsconfig.base.json",
   "include": [
     "**/*",
     "**/.server/**/*",

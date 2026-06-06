@@ -1,0 +1,12 @@
+{
+  // Package de types partagés (aucun code exécuté, juste des interfaces/unions).
+  // Hérite du contrat de rigueur commun ; on ne fait que TYPE-CHECKER (noEmit),
+  // la compilation réelle est faite par chaque consommateur (api / client).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true
+  },
+  "include": ["src"]
+}

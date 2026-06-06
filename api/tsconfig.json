@@ -1,4 +1,7 @@
 {
+  // Hérite du contrat de rigueur commun (strict + flags pro), puis ajoute
+  // uniquement les options d'ENVIRONNEMENT propres à un service NestJS (Node).
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
@@ -7,19 +10,17 @@
     "isolatedModules": true,
     "declaration": true,
     "removeComments": true,
+
+    // Requis par NestJS : les décorateurs (@Module, @Injectable, @Get…) et la
+    // métadonnée de type émise pour l'injection de dépendances.
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "incremental": true
   }
 }

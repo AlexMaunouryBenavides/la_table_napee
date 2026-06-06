@@ -1,11 +1,34 @@
 {
-	"name": "la-table-nappee",
-	"version": "1.0.0",
-	"description": "website for luxury recipe",
-	"private": true,
-	"workspaces": [
-		"client",
-		"api",
-		"packages/*"
-	]
+  "name": "la-table-nappee",
+  "version": "1.0.0",
+  "description": "website for luxury recipe",
+  "private": true,
+  "workspaces": [
+    "client",
+    "api",
+    "packages/*"
+  ],
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "knip": "knip",
+    "jscpd": "jscpd api/src api/test client/app packages/types/src",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run knip && npm run jscpd"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.6.0",
+    "jscpd": "^4.2.4",
+    "knip": "^6.16.0",
+    "prettier": "^3.8.3",
+    "typescript-eslint": "^8.60.1"
+  }
 }

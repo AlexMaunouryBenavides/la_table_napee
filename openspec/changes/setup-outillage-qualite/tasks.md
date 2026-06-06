@@ -5,47 +5,47 @@
 ## 1. Comprendre avant de coder
 
 - [x] 1.1 Créer `docs/guides/outillage-qualite.md` expliquant, en français et simplement : le modèle 2 couches (déterministe vs jugement), les 3 lignes de défense (éditeur → pre-commit → CI), ce que fait CHAQUE outil et POURQUOI (Prettier, ESLint type-aware, tsc, knip, jscpd), comment lancer `npm run verify`, lire une erreur et la corriger
-- [ ] 1.2 Présenter le guide à l'utilisateur et attendre sa validation avant de poursuivre
+- [x] 1.2 Présenter le guide à l'utilisateur et attendre sa validation avant de poursuivre
 
 ## 2. Nettoyage et préparation du monorepo
 
-- [ ] 2.1 Retirer Biome : désinstaller la dépendance et supprimer toute config Biome
-- [ ] 2.2 Confirmer/activer les `workspaces` npm dans le `package.json` racine (`api`, `client`, `packages/*`)
-- [ ] 2.3 Ajouter un `.editorconfig` racine (fin de ligne, indentation, charset cohérents)
+- [x] 2.1 Retirer Biome : désinstaller la dépendance et supprimer toute config Biome
+- [x] 2.2 Confirmer/activer les `workspaces` npm dans le `package.json` racine (`api`, `client`, `packages/*`)
+- [x] 2.3 Ajouter un `.editorconfig` racine (fin de ligne, indentation, charset cohérents)
 
 ## 3. Base TypeScript stricte
 
-- [ ] 3.1 Créer `tsconfig.base.json` racine : `strict`, `noUncheckedIndexedAccess`, `noUnusedLocals`, `noUnusedParameters`
-- [ ] 3.2 Faire hériter `api/tsconfig.json`, `client/tsconfig.json` et `packages/types/tsconfig.json` de la base
-- [ ] 3.3 Vérifier les options décorateurs requises par Nest (`experimentalDecorators`, `emitDecoratorMetadata`) côté `api`
-- [ ] 3.4 Lancer `tsc --noEmit` sur chaque package et corriger (convention `nom!: string` pour les propriétés Nest/TypeORM)
+- [x] 3.1 Créer `tsconfig.base.json` racine : `strict`, `noUncheckedIndexedAccess`, `noUnusedLocals`, `noUnusedParameters`
+- [x] 3.2 Faire hériter `api/tsconfig.json`, `client/tsconfig.json` et `packages/types/tsconfig.json` de la base
+- [x] 3.3 Vérifier les options décorateurs requises par Nest (`experimentalDecorators`, `emitDecoratorMetadata`) côté `api`
+- [x] 3.4 Lancer `tsc --noEmit` sur chaque package et corriger (convention `nom!: string` pour les propriétés Nest/TypeORM)
 
 ## 4. Formatage — Prettier
 
-- [ ] 4.1 Installer Prettier et créer `.prettierrc` + `.prettierignore` racine
-- [ ] 4.2 Ajouter un script `format` (`prettier --write`) et `format:check` (`prettier --check`)
-- [ ] 4.3 Formater l'existant une première fois et valider le résultat
+- [x] 4.1 Installer Prettier et créer `.prettierrc` + `.prettierignore` racine
+- [x] 4.2 Ajouter un script `format` (`prettier --write`) et `format:check` (`prettier --check`)
+- [x] 4.3 Formater l'existant une première fois et valider le résultat
 
 ## 5. Linting — ESLint (flat config) + type-aware
 
-- [ ] 5.1 Créer `eslint.config.mjs` racine : base TS commune + `eslint-config-prettier` (désactive les règles de format)
-- [ ] 5.2 Activer le type-aware (`projectService`) pointant vers les `tsconfig` des packages
-- [ ] 5.3 Ajouter les règles Clean Code mécanisables : `max-params`, `complexity`, `max-lines-per-function`, `no-magic-numbers` (autoriser `0`, `1`, `-1`), `no-floating-promises`
-- [ ] 5.4 Côté `api/` : PARTIR de la config Nest recommandée et n'AJOUTER que nos règles (ne rien écraser des conventions du framework)
-- [ ] 5.5 Côté `client/` : PARTIR des configs React Router / Vite recommandées et ajouter plugins React / react-hooks / jsx-a11y
-- [ ] 5.6 Ajouter la règle d'ordre des imports (`import/order`)
-- [ ] 5.7 Ajouter un script `lint` et lancer sur tout le repo, corriger les remontées
+- [x] 5.1 Créer `eslint.config.mjs` racine : base TS commune + `eslint-config-prettier` (désactive les règles de format)
+- [x] 5.2 Activer le type-aware (`projectService`) pointant vers les `tsconfig` des packages
+- [x] 5.3 Ajouter les règles Clean Code mécanisables : `max-params`, `complexity`, `max-lines-per-function`, `no-magic-numbers` (autoriser `0`, `1`, `-1`), `no-floating-promises`
+- [x] 5.4 Côté `api/` : PARTIR de la config Nest recommandée et n'AJOUTER que nos règles (ne rien écraser des conventions du framework)
+- [x] 5.5 Côté `client/` : PARTIR des configs React Router / Vite recommandées et ajouter plugins React / react-hooks / jsx-a11y
+- [x] 5.6 Ajouter la règle d'ordre des imports (`import/order`)
+- [x] 5.7 Ajouter un script `lint` et lancer sur tout le repo, corriger les remontées
 
 ## 6. Code mort et duplication
 
-- [ ] 6.1 Installer et configurer `knip` (entrées/projets du monorepo) ; ajouter un script `knip`
-- [ ] 6.2 Installer et configurer `jscpd` ; **calibrer un seuil permissif** (anti-abus) et ignorer les dossiers générés ; ajouter un script `jscpd`
-- [ ] 6.3 Lancer les deux et atteindre un état vert stable (ajuster les seuils jusqu'à ce que chaque alerte soit un vrai problème)
+- [x] 6.1 Installer et configurer `knip` (entrées/projets du monorepo) ; ajouter un script `knip`
+- [x] 6.2 Installer et configurer `jscpd` ; **calibrer un seuil permissif** (anti-abus) et ignorer les dossiers générés ; ajouter un script `jscpd`
+- [x] 6.3 Lancer les deux et atteindre un état vert stable (ajuster les seuils jusqu'à ce que chaque alerte soit un vrai problème)
 
 ## 7. La commande unique `verify`
 
-- [ ] 7.1 Créer le script racine `verify` = `format:check` && `lint` && `tsc --noEmit` && `knip` && `jscpd`
-- [ ] 7.2 Vérifier qu'il retourne un code non nul si un seul outil échoue (test manuel en cassant volontairement une règle)
+- [x] 7.1 Créer le script racine `verify` = `format:check` && `lint` && `tsc --noEmit` && `knip` && `jscpd`
+- [x] 7.2 Vérifier qu'il retourne un code non nul si un seul outil échoue (test manuel en cassant volontairement une règle)
 
 ## 8. Hook pre-commit — husky + lint-staged
 

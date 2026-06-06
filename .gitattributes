@@ -1,0 +1,15 @@
+# Force des fins de ligne LF dans le working tree, sur toutes les plateformes.
+# Cohérent avec .editorconfig et Prettier (endOfLine: "lf").
+# Sans ça, Git convertirait en CRLF sur Windows et `prettier --check` casserait
+# en local alors qu'il passe en CI (Linux) → le classique « marche pas chez moi ».
+* text=auto eol=lf
+
+# Fichiers binaires : jamais de conversion de fins de ligne.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

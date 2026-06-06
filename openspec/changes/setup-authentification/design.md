@@ -43,7 +43,7 @@ directement (attaque répandue, difficile à neutraliser). Le cookie httpOnly es
 invisible au JS → l'XSS ne peut pas le lire. On échange une faille difficile (XSS
 sur le jeton) contre une faille à parade connue (CSRF, voir D3).
 
-**Alternative écartée :** *localStorage + Authorization header* — immunisé au CSRF
+**Alternative écartée :** _localStorage + Authorization header_ — immunisé au CSRF
 mais expose le jeton à l'XSS ; jugé moins sûr.
 
 ### D2 — Access token court + refresh token long
@@ -54,7 +54,7 @@ mais expose le jeton à l'XSS ; jugé moins sûr.
 rôle (ex. rétrograder un admin) resterait actif jusqu'à l'expiration. L'access court
 borne la fenêtre de dégâts ; au `/refresh`, on relit le rôle/le compte en base.
 
-**Alternative écartée :** *JWT unique* (1h–24h) — beaucoup plus simple mais
+**Alternative écartée :** _JWT unique_ (1h–24h) — beaucoup plus simple mais
 révocation faible, inadapté à des rôles admin/modérateur.
 
 ### D3 — Défense CSRF : SameSite d'abord, double-submit différé
@@ -72,7 +72,7 @@ ce qui tue l'essentiel du CSRF sans casser l'arrivée depuis un lien externe
 même domaine enregistrable (ex. `app.recettes.fr` + `api.recettes.fr` = same site).
 À répercuter sur la configuration Traefik/VPS.
 
-**Alternative écartée :** *`SameSite=Strict`* — plus sûr mais casse « cliquer un
+**Alternative écartée :** _`SameSite=Strict`_ — plus sûr mais casse « cliquer un
 lien et arriver connecté ».
 
 ### D4 — Refresh tokens en MySQL, derrière un repository
@@ -86,8 +86,8 @@ fine, la détection de vol et la gestion d'appareils, et reste le pattern le plu
 **transférable**. Le repository découple le besoin présent (MySQL) d'un éventuel
 besoin futur (Redis pour le cache) → migration contenue.
 
-**Alternatives écartées :** *Redis maintenant* (couplerait auth et cache, ajoute une
-infra avant qu'elle serve, persistance à gérer) ; *colonne `tokenVersion`* (révocation
+**Alternatives écartées :** _Redis maintenant_ (couplerait auth et cache, ajoute une
+infra avant qu'elle serve, persistance à gérer) ; _colonne `tokenVersion`_ (révocation
 en gros, sans rotation ni détection de vol).
 
 ### D5 — Rotation + détection de réutilisation (familles)

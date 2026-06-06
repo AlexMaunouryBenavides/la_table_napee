@@ -35,8 +35,8 @@ sont **générées par diff** (`migration:generate`) et **relues** avant `run`.
 `synchronize: false` partout (en prod surtout : l'auto-sync détruit des données).
 Le `database.sql` devient une archive de genèse, plus une source à synchroniser.
 
-**Alternatives écartées :** *code-first pur* (n'utilise pas le SQL existant) ;
-*database-first* (deux représentations à maintenir → dérive).
+**Alternatives écartées :** _code-first pur_ (n'utilise pas le SQL existant) ;
+_database-first_ (deux représentations à maintenir → dérive).
 
 ### D2 — Composition : jonction enrichie = entité
 
@@ -45,8 +45,8 @@ Le `database.sql` devient une archive de genèse, plus une source à synchronise
 **pas `@ManyToMany`** mais une entité avec deux `@ManyToOne`. C'est ce qui débloque
 les listes de courses (agrégation) et les portions dynamiques (quantité × ratio).
 
-**Alternatives écartées :** *jonction nue* (perd quantité/unité — le cœur du modèle) ;
-*PK composite* (interdit le même ingrédient 2×, plus lourde en ORM).
+**Alternatives écartées :** _jonction nue_ (perd quantité/unité — le cœur du modèle) ;
+_PK composite_ (interdit le même ingrédient 2×, plus lourde en ORM).
 
 ### D3 — Unité en énum applicative
 
@@ -54,7 +54,7 @@ les listes de courses (agrégation) et les portions dynamiques (quantité × rat
 l.90), pas du texte libre. Raison : la cohérence est la condition de l'agrégation
 future (200 « g » + 1 « kg » impossible si l'unité est libre).
 
-**Alternative écartée :** *table UNITE* (extensible mais une table de plus, prématuré).
+**Alternative écartée :** _table UNITE_ (extensible mais une table de plus, prématuré).
 
 ### D4 — UUID pour `users`, entiers ailleurs
 
@@ -90,6 +90,7 @@ un mot de passe en clair (jamais en base) et n'expose jamais `password_hash` ni
 ### D8 — Seeds : données de référence FIXES vs données d'exemple via faker.js
 
 Deux natures de seeds à ne pas confondre :
+
 - **Données de référence** (regime, health_criteria, food_type, nationality) :
   valeurs réelles du domaine, listes **fixes** écrites à la main (« Vegan »,
   « Halal », « Italienne »…). Pas de faker : ce sont de vraies valeurs métier.

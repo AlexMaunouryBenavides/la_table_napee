@@ -1,0 +1,13 @@
+# Dossiers générés ou installés : jamais à formater (et ça ferait du bruit).
+node_modules
+dist
+build
+coverage
+.react-router
+
+# Verrou de dépendances : géré par npm, pas par nous.
+package-lock.json
+
+# Fichiers vendored du plugin (skills/commandes) : pas notre code, réécrits aux mises à jour.
+.claude
+
