@@ -49,9 +49,9 @@
 
 ## 8. Hook pre-commit — husky + lint-staged
 
-- [ ] 8.1 Installer husky et initialiser `.husky/`
-- [ ] 8.2 Configurer `lint-staged` (Prettier + ESLint sur les fichiers indexés uniquement)
-- [ ] 8.3 Brancher le hook `pre-commit` sur lint-staged et tester (commit d'un fichier fautif → bloqué)
+- [x] 8.1 Installer husky et initialiser `.husky/`
+- [x] 8.2 Configurer `lint-staged` (Prettier + ESLint sur les fichiers indexés uniquement)
+- [x] 8.3 Brancher le hook `pre-commit` sur lint-staged et tester (commit d'un fichier fautif → bloqué)
 
 ## 9. Convention de commits — commitlint
 

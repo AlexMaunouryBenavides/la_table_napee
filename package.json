@@ -15,9 +15,12 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "knip": "knip",
     "jscpd": "jscpd api/src api/test client/app packages/types/src",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run knip && npm run jscpd"
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run knip && npm run jscpd",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "^9.39.4",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
@@ -26,9 +29,20 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
     "jscpd": "^4.2.4",
     "knip": "^6.16.0",
+    "lint-staged": "^17.0.7",
     "prettier": "^3.8.3",
     "typescript-eslint": "^8.60.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,mjs,cjs,json,jsonc,md,css,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }
