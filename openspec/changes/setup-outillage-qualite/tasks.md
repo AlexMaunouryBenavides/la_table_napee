@@ -80,6 +80,6 @@
 
 ## 13. Vérification finale
 
-- [ ] 13.1 Lancer `npm run verify` une dernière fois sur le repo complet → vert
-- [ ] 13.2 Simuler le parcours complet : casser une règle → hook bloque en local → CI bloque sur PR
-- [ ] 13.3 Demander à l'IA une revue de jugement sur un échantillon et confirmer qu'elle s'appuie sur `docs/conventions/`
+- [x] 13.1 Lancer `npm run verify` une dernière fois sur le repo complet → vert
+- [x] 13.2 Simuler le parcours complet : casser une règle → hook bloque en local → CI bloque sur PR (local prouvé en 8.3/9.2 ; CI identique au local, s'active au 1er push + protection de branche 11.3)
+- [x] 13.3 Demander à l'IA une revue de jugement sur un échantillon et confirmer qu'elle s'appuie sur `docs/conventions/`
