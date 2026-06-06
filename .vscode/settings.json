@@ -1,4 +1,24 @@
 {
   "editor.fontSize": 16,
-  "editor.formatOnSave": true
+
+  // Formatage automatique à la sauvegarde, via Prettier (la 1re ligne de défense).
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // En plus du format, applique les corrections ESLint auto-fixables à la sauvegarde.
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Le projet utilise la flat config ESLint (eslint.config.mjs).
+  "eslint.useFlatConfig": true,
+
+  // Prettier comme formateur par défaut, langage par langage (sans ambiguïté).
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
 }

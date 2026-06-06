@@ -55,19 +55,19 @@
 
 ## 9. Convention de commits — commitlint
 
-- [ ] 9.1 Installer commitlint + la config Conventional Commits ; créer `commitlint.config.*`
-- [ ] 9.2 Brancher le hook `commit-msg` (husky) et tester (message `wip` → rejeté)
+- [x] 9.1 Installer commitlint + la config Conventional Commits ; créer `commitlint.config.*`
+- [x] 9.2 Brancher le hook `commit-msg` (husky) et tester (message `wip` → rejeté)
 
 ## 10. Intégration éditeur (VS Code)
 
-- [ ] 10.1 `.vscode/extensions.json` : recommander ESLint + Prettier
-- [ ] 10.2 `.vscode/settings.json` : format-on-save via Prettier + correction ESLint à la sauvegarde
+- [x] 10.1 `.vscode/extensions.json` : recommander ESLint + Prettier
+- [x] 10.2 `.vscode/settings.json` : format-on-save via Prettier + correction ESLint à la sauvegarde
 
 ## 11. CI — GitHub Actions
 
-- [ ] 11.1 Créer `.github/workflows/ci.yml` : install + `npm run verify` + tests sur chaque pull request
-- [ ] 11.2 S'assurer que la CI rejoue EXACTEMENT le même `verify` que le local (pas de dérive)
-- [ ] 11.3 (Repo GitHub présent) activer la protection de branche : merge bloqué si CI rouge
+- [x] 11.1 Créer `.github/workflows/ci.yml` : install + `npm run verify` + tests sur chaque pull request
+- [x] 11.2 S'assurer que la CI rejoue EXACTEMENT le même `verify` que le local (pas de dérive)
+- [ ] 11.3 (Repo GitHub présent) activer la protection de branche : merge bloqué si CI rouge — MANUEL (UI GitHub, après 1er run CI ; voir note)
 
 ## 12. Couche jugement — CLAUDE.md mince + docs/conventions
 
