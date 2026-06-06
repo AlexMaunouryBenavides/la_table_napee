@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreDependencies": ["@recipe/types", "tailwindcss"],
+  "ignoreDependencies": ["@recipe/types", "tailwindcss", "pino-pretty"],
   "workspaces": {
     "api": {
       "entry": ["src/main.ts", "src/**/*.spec.ts", "test/**/*.e2e-spec.ts"],
