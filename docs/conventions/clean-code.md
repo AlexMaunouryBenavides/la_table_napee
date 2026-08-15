@@ -56,6 +56,9 @@ Le nom dit le _pourquoi_ et le _quoi métier_, pas le _comment_.
 - ❌ `// incrémente i` (paraphrase du code).
 - Un commentaire qui décrit _ce que fait_ le code est le signe que le code devrait
   être renommé/découpé pour se passer du commentaire.
+- **Peu, et courts.** Une ou deux lignes suffisent dans l'immense majorité des cas. La
+  plupart des fonctions n'ont besoin d'AUCUN commentaire : un bon nom fait le travail.
+  Un commentaire ne se justifie que si le « pourquoi » n'est pas devinable en lisant.
 
 ## Checklist de revue rapide
 
