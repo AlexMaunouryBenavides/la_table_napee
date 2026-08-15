@@ -3,7 +3,13 @@
   "ignoreDependencies": ["@recipe/types", "tailwindcss", "pino-pretty"],
   "workspaces": {
     "api": {
-      "entry": ["src/main.ts", "src/**/*.spec.ts", "test/**/*.e2e-spec.ts"],
+      "entry": [
+        "src/main.ts",
+        "src/config/data-source.ts",
+        "src/migrations/*.ts",
+        "src/**/*.spec.ts",
+        "test/**/*.e2e-spec.ts"
+      ],
       "project": "src/**/*.ts"
     },
     "client": {

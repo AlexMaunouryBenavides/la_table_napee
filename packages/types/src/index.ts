@@ -9,21 +9,76 @@
 //  Pas d'identifiant : ce sont des VALEURS, pas des entités en base.
 // ===================================================================
 
-// Le type union : ce champ ne peut valoir QUE l'une de ces chaînes.
-// TypeScript refusera "Facile" (majuscule) ou "trop dur" → sécurité.
-export type Difficulte = 'facile' | 'moyen' | 'difficile';
+// Chaque énumération est une LISTE constante dont on dérive le type. La liste sert au
+// runtime (validation `@IsIn`), le type sert à la compilation : une seule déclaration
+// pour les deux, donc aucun risque qu'elles divergent.
 
-export type TypeRecette =
-  | 'entree'
-  | 'plat'
-  | 'dessert'
-  | 'glace'
-  | 'boisson'
-  | 'sauce';
+export const DIFFICULTES = ['facile', 'moyen', 'difficile'] as const;
+export type Difficulte = (typeof DIFFICULTES)[number];
 
-// Le rôle vit aussi en union figée : tu ne laisses pas tes admins
+export const TYPES_RECETTE = [
+  'entree',
+  'plat',
+  'dessert',
+  'glace',
+  'boisson',
+  'sauce',
+] as const;
+export type TypeRecette = (typeof TYPES_RECETTE)[number];
+
+// Le rôle vit aussi en liste figée : tu ne laisses pas tes admins
 // inventer de nouveaux rôles depuis le panel (ce serait risqué).
-export type RoleUtilisateur = 'admin' | 'moderateur' | 'utilisateur';
+export const ROLES_UTILISATEUR = [
+  'admin',
+  'moderateur',
+  'utilisateur',
+] as const;
+export type RoleUtilisateur = (typeof ROLES_UTILISATEUR)[number];
+
+// Unités de mesure d'un ingrédient dans une recette. Figées parce qu'une future
+// agrégation (liste de courses) est impossible si l'unité est du texte libre.
+export const UNITES = [
+  'g',
+  'kg',
+  'ml',
+  'cl',
+  'l',
+  'piece',
+  'cuillere_a_soupe',
+  'cuillere_a_cafe',
+  'pincee',
+] as const;
+export type Unite = (typeof UNITES)[number];
+
+// ===================================================================
+//  ZONE 1 bis — Formes de RÉPONSE de l'API (ce que le front reçoit)
+// ===================================================================
+
+// Enveloppe de toute réponse de liste : on ne renvoie jamais un tableau nu,
+// sinon le front n'a aucun moyen de savoir combien de pages restent.
+export interface Page<T> {
+  donnees: T[];
+  total: number;
+  page: number;
+  limite: number;
+}
+
+// Version allégée d'une recette, pour les listes : juste de quoi afficher une carte.
+// Charger les avis, étapes et ingrédients de 20 recettes serait du gaspillage.
+export interface RecetteResume {
+  id: number;
+  titre: string;
+  image: string;
+  difficulte: Difficulte;
+  typeRecette: TypeRecette;
+  tempsPreparation: number;
+  tempsCuisson: number;
+  portions: number;
+  nationalite: string;
+  // `null` quand la recette n'a aucun avis — surtout pas 0, qui se lirait
+  // « très mal notée ».
+  noteMoyenne: number | null;
+}
 
 // ===================================================================
 //  ZONE 2 — Entités stockées en base (elles ont toutes un `id`)

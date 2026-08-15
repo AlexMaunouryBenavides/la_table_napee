@@ -127,12 +127,21 @@ export default tseslint.config(
     },
   },
 
-  // 8. Fichiers JS/config : pas de typage TS à appliquer.
+  // 8. Migrations : fichiers GÉNÉRÉS par TypeORM, suites linéaires de DDL.
+  //    Le seuil de longueur vise la complexité du code métier, pas une liste de CREATE TABLE.
+  {
+    files: ['api/src/migrations/*.ts'],
+    rules: {
+      'max-lines-per-function': 'off',
+    },
+  },
+
+  // 9. Fichiers JS/config : pas de typage TS à appliquer.
   {
     files: ['**/*.{js,mjs,cjs}'],
     extends: [tseslint.configs.disableTypeChecked],
   },
 
-  // 9. EN DERNIER : éteint toutes les règles ESLint qui touchent au format.
+  // 10. EN DERNIER : éteint toutes les règles ESLint qui touchent au format.
   eslintConfigPrettier,
 );
