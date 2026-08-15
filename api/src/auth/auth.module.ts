@@ -1,20 +1,24 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UtilisateursModule } from '../utilisateurs/utilisateurs.module';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { DepotJetons, DepotJetonsMysql } from './depot-jetons';
 import { JetonRafraichissement } from './entities/jeton-rafraichissement.entity';
 import { HachageMotDePasse } from './hachage-mot-de-passe.service';
 import { JetonsService } from './jetons.service';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([JetonRafraichissement]),
     UtilisateursModule,
+    PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -26,7 +30,14 @@ import { JetonsService } from './jetons.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, HachageMotDePasse, JetonsService],
+  providers: [
+    AuthService,
+    HachageMotDePasse,
+    JetonsService,
+    JwtStrategy,
+    // Les services dépendent de l'abstraction ; seul ce câblage connaît MySQL.
+    { provide: DepotJetons, useClass: DepotJetonsMysql },
+  ],
   exports: [TypeOrmModule],
 })
 export class AuthModule {}

@@ -11,7 +11,11 @@ import {
 
 import { Utilisateur } from '../../utilisateurs/entities/utilisateur.entity';
 
-const ETAT_PAR_DEFAUT = 'ACTIVE';
+// Valeurs stockées en base, donc en anglais comme le reste du schéma.
+// ACTIVE : utilisable. USED : déjà tourné. REVOKED : annulé (vol ou déconnexion).
+export type EtatJeton = 'ACTIVE' | 'USED' | 'REVOKED';
+
+const ETAT_PAR_DEFAUT: EtatJeton = 'ACTIVE';
 
 @Entity('refresh_token')
 export class JetonRafraichissement {
@@ -34,7 +38,7 @@ export class JetonRafraichissement {
     length: 10,
     default: ETAT_PAR_DEFAUT,
   })
-  etat!: string;
+  etat!: EtatJeton;
 
   @Column({ name: 'expires_at', type: 'datetime' })
   dateExpiration!: Date;

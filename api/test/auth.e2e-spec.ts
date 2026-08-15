@@ -6,17 +6,16 @@
 //
 //   npm run test:e2e   (docker compose up -d + migration:run:test au préalable)
 
-import { type INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { type INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { type App } from 'supertest/types';
 import { type DataSource } from 'typeorm';
 
-import { AppModule } from '../src/app.module';
 import { JetonRafraichissement } from '../src/auth/entities/jeton-rafraichissement.entity';
 import sourceDeDonnees from '../src/config/data-source';
 
-const PREFIXE = 'api';
+import { creerAppDeTest } from './app-de-test';
+
 const MOT_DE_PASSE = 'phrase-de-passe-assez-longue';
 const LONGUEUR_UUID = 36;
 
@@ -31,22 +30,7 @@ const messageDe = (reponse: { body: unknown }) =>
   (reponse.body as { message: string }).message;
 
 beforeAll(async () => {
-  const module = await Test.createTestingModule({
-    imports: [AppModule],
-  }).compile();
-
-  app = module.createNestApplication();
-  // Mêmes réglages que `main.ts` : sans eux, on testerait une autre application.
-  app.setGlobalPrefix(PREFIXE);
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-  await app.init();
-
+  app = await creerAppDeTest();
   source = await sourceDeDonnees.initialize();
 });
 

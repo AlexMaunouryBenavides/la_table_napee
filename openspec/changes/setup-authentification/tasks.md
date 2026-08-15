@@ -41,23 +41,23 @@
 
 ## 7. Repository de refresh (abstraction pour swap futur)
 
-- [ ] 7.1 Définir l'interface du repository (créer, retrouver par hash, marquer `UTILISÉ`, révoquer famille)
-- [ ] 7.2 Implémentation MySQL (TypeORM) derrière cette interface
+- [x] 7.1 Définir l'interface du repository (créer, retrouver par hash, marquer `UTILISÉ`, révoquer famille)
+- [x] 7.2 Implémentation MySQL (TypeORM) derrière cette interface
 
 ## 8. Renouvellement, rotation & détection de vol
 
-- [ ] 8.1 Endpoint `/refresh` : valider le refresh présenté (actif, non expiré)
-- [ ] 8.2 Relire le compte/rôle en base et émettre un nouvel access token
-- [ ] 8.3 Rotation : marquer l'ancien `UTILISÉ`, émettre un nouveau refresh (même famille)
-- [ ] 8.4 Détection de vol : un refresh `UTILISÉ`/`RÉVOQUÉ` re-présenté → révoquer toute la famille
-- [ ] 8.5 Déconnexion : révoquer la famille courante + effacer les cookies
+- [x] 8.1 Endpoint `/refresh` : valider le refresh présenté (actif, non expiré)
+- [x] 8.2 Relire le compte/rôle en base et émettre un nouvel access token
+- [x] 8.3 Rotation : marquer l'ancien `UTILISÉ`, émettre un nouveau refresh (même famille)
+- [x] 8.4 Détection de vol : un refresh `UTILISÉ`/`RÉVOQUÉ` re-présenté → révoquer toute la famille
+- [x] 8.5 Déconnexion : révoquer la famille courante + effacer les cookies
 
 ## 9. Guards d'autorisation (façon @nestjs/passport)
 
-- [ ] 9.1 Stratégie passport-jwt avec extracteur lisant le JWT depuis le COOKIE
-- [ ] 9.2 `JwtAuthGuard` (authentifié ?) attachant l'identité à la requête
-- [ ] 9.3 Décorateur `@Roles()` + `RolesGuard` (Reflector) pour l'autorisation par rôle
-- [ ] 9.4 Vérifier l'héritage des rôles (admin ⊃ modérateur ⊃ utilisateur)
+- [x] 9.1 Stratégie passport-jwt avec extracteur lisant le JWT depuis le COOKIE
+- [x] 9.2 `JwtAuthGuard` (authentifié ?) attachant l'identité à la requête
+- [x] 9.3 Décorateur `@Roles()` + `RolesGuard` (Reflector) pour l'autorisation par rôle
+- [x] 9.4 Vérifier l'héritage des rôles (admin ⊃ modérateur ⊃ utilisateur)
 
 ## 10. Contrôle de propriété (anti-IDOR)
 
@@ -74,6 +74,6 @@
 ## 12. Vérification de sécurité
 
 - [ ] 12.1 Confirmer : aucun jeton lisible en JS, cookies bien `httpOnly`/`Secure`/`SameSite=Lax`
-- [ ] 12.2 Tester le scénario de vol (refresh réutilisé → famille révoquée)
+- [x] 12.2 Tester le scénario de vol (refresh réutilisé → famille révoquée)
 - [ ] 12.3 Tester rôle insuffisant (403) et propriété (modifier l'avis d'autrui → refusé)
 - [ ] 12.4 Lancer `npm run verify` → vert

@@ -4,18 +4,27 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
-import { type Response } from 'express';
+import { type Request, type Response } from 'express';
 
 import { Utilisateur } from '../utilisateurs/entities/utilisateur.entity';
 
 import { AuthService } from './auth.service';
-import { type OptionsCookiesAuth, poserCookiesAuth } from './cookies-auth';
+import {
+  COOKIE_RAFRAICHISSEMENT,
+  effacerCookiesAuth,
+  lireCookie,
+  type OptionsCookiesAuth,
+  poserCookiesAuth,
+} from './cookies-auth';
 import { ConnexionDto } from './dto/connexion.dto';
 import { InscriptionDto } from './dto/inscription.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 const ENV_PRODUCTION = 'production';
 const FENETRE_ANTI_BRUTEFORCE_MS = 60_000;
@@ -60,5 +69,31 @@ export class AuthController {
     const { utilisateur, jetons } = await this.auth.connecter(dto);
     poserCookiesAuth(reponse, jetons, this.optionsCookies);
     return utilisateur;
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('rafraichissement')
+  async rafraichir(
+    @Req() requete: Request,
+    @Res({ passthrough: true }) reponse: Response,
+  ): Promise<Utilisateur> {
+    const { utilisateur, jetons } = await this.auth.rafraichir(
+      lireCookie(requete, COOKIE_RAFRAICHISSEMENT),
+    );
+    poserCookiesAuth(reponse, jetons, this.optionsCookies);
+    return utilisateur;
+  }
+
+  // Les cookies sont effacés quoi qu'il arrive : une session révoquée côté serveur
+  // mais toujours présente dans le navigateur serait déroutante.
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('deconnexion')
+  async deconnecter(
+    @Req() requete: Request,
+    @Res({ passthrough: true }) reponse: Response,
+  ): Promise<void> {
+    await this.auth.deconnecter(lireCookie(requete, COOKIE_RAFRAICHISSEMENT));
+    effacerCookiesAuth(reponse, this.optionsCookies.secure);
   }
 }
