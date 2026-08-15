@@ -35,6 +35,13 @@ export const ROLES_UTILISATEUR = [
 ] as const;
 export type RoleUtilisateur = (typeof ROLES_UTILISATEUR)[number];
 
+// Contenu signé de l'access token : le strict nécessaire pour autoriser une requête
+// sans toucher la base. `sub` (subject) est le champ standard JWT pour l'identifiant.
+export interface ChargeUtileJeton {
+  sub: string;
+  role: RoleUtilisateur;
+}
+
 // Unités de mesure d'un ingrédient dans une recette. Figées parce qu'une future
 // agrégation (liste de courses) est impossible si l'unité est du texte libre.
 export const UNITES = [

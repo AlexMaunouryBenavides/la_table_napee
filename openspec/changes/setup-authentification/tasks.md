@@ -7,37 +7,37 @@
 
 ## 1. Comprendre avant de coder
 
-- [ ] 1.1 Créer `docs/guides/authentification.md` expliquant simplement : pourquoi cookie httpOnly vs localStorage (la balançoire XSS/CSRF), access token court + refresh long, `SameSite` et la défense CSRF, la rotation + détection de vol (familles), les guards Jwt/Roles, la différence propriété vs rôle (anti-IDOR), Argon2
-- [ ] 1.2 Présenter le guide à l'utilisateur et attendre sa validation avant de poursuivre
+- [x] 1.1 Créer `docs/guides/authentification.md` expliquant simplement : pourquoi cookie httpOnly vs localStorage (la balançoire XSS/CSRF), access token court + refresh long, `SameSite` et la défense CSRF, la rotation + détection de vol (familles), les guards Jwt/Roles, la différence propriété vs rôle (anti-IDOR), Argon2
+- [x] 1.2 Présenter le guide à l'utilisateur et attendre sa validation avant de poursuivre
 
 ## 2. Pré-requis données
 
-- [ ] 2.1 Confirmer l'entité `users` (UUID, role, email unique, password_hash)
-- [ ] 2.2 Confirmer l'entité `refresh_token` (token hashé, `user_id`, `family_id`, état, `expires_at`)
+- [x] 2.1 Confirmer l'entité `users` (UUID, role, email unique, password_hash)
+- [x] 2.2 Confirmer l'entité `refresh_token` (token hashé, `user_id`, `family_id`, état, `expires_at`)
 
 ## 3. Configuration & secrets
 
-- [ ] 3.1 Définir via `@nestjs/config` : secret JWT, durée access, durée refresh, options cookie
-- [ ] 3.2 Valider ces variables au démarrage (l'app refuse de démarrer si une manque)
-- [ ] 3.3 Ne JAMAIS committer de secret ; fournir un `.env.example` sans valeurs réelles
+- [x] 3.1 Définir via `@nestjs/config` : secret JWT, durée access, durée refresh, options cookie
+- [x] 3.2 Valider ces variables au démarrage (l'app refuse de démarrer si une manque)
+- [x] 3.3 Ne JAMAIS committer de secret ; fournir un `.env.example` sans valeurs réelles
 
 ## 4. Module auth à la manière de Nest
 
-- [ ] 4.1 Scaffolder le module via le CLI Nest (`nest g module auth`, `nest g service auth`, `nest g controller auth`) — structure module/provider/DI
-- [ ] 4.2 Garder le controller fin (reçoit la requête) et la logique dans le service (jamais de `req/res` dans le métier)
+- [x] 4.1 Scaffolder le module via le CLI Nest (`nest g module auth`, `nest g service auth`, `nest g controller auth`) — structure module/provider/DI
+- [x] 4.2 Garder le controller fin (reçoit la requête) et la logique dans le service (jamais de `req/res` dans le métier)
 
 ## 5. Mots de passe & inscription
 
-- [ ] 5.1 Service de hachage Argon2 (hash + vérification)
-- [ ] 5.2 DTO d'inscription + class-validator (email, robustesse du mot de passe)
-- [ ] 5.3 Endpoint d'inscription (création de compte, mot de passe haché)
+- [x] 5.1 Service de hachage Argon2 (hash + vérification)
+- [x] 5.2 DTO d'inscription + class-validator (email, robustesse du mot de passe)
+- [x] 5.3 Endpoint d'inscription (création de compte, mot de passe haché)
 
 ## 6. Connexion & émission des jetons
 
-- [ ] 6.1 Vérification des identifiants (message neutre si échec)
-- [ ] 6.2 Émettre l'access token (court) + le refresh token (long)
-- [ ] 6.3 Déposer les deux en cookies `httpOnly` + `Secure` + `SameSite=Lax`
-- [ ] 6.4 Persister le refresh **hashé** avec une nouvelle `family_id`
+- [x] 6.1 Vérification des identifiants (message neutre si échec)
+- [x] 6.2 Émettre l'access token (court) + le refresh token (long)
+- [x] 6.3 Déposer les deux en cookies `httpOnly` + `Secure` + `SameSite=Lax`
+- [x] 6.4 Persister le refresh **hashé** avec une nouvelle `family_id`
 
 ## 7. Repository de refresh (abstraction pour swap futur)
 

@@ -6,6 +6,7 @@ import {
   IsUrl,
   Max,
   Min,
+  MinLength,
   validateSync,
 } from 'class-validator';
 
@@ -15,6 +16,10 @@ const DEFAULT_PORT = 3000;
 const DEFAULT_DB_PORT = 3306;
 const DEFAULT_THROTTLER_TTL_MS = 60_000;
 const DEFAULT_THROTTLER_LIMIT = 100;
+const LONGUEUR_MIN_SECRET_JWT = 32;
+const DEFAULT_ACCES_MINUTES = 15;
+const DEFAULT_RAFRAICHISSEMENT_JOURS = 7;
+const MINIMUM_DUREE = 1;
 
 enum Environnement {
   Development = 'development',
@@ -65,6 +70,24 @@ class VariablesEnvironnement {
   @IsInt()
   @Min(MIN_PORT)
   THROTTLER_LIMIT: number = DEFAULT_THROTTLER_LIMIT;
+
+  // Aucune valeur par défaut, volontairement : un secret de repli finirait un jour en
+  // production, et qui connaît le secret fabrique un jeton « admin » valide.
+  @IsString()
+  @MinLength(LONGUEUR_MIN_SECRET_JWT)
+  JWT_SECRET!: string;
+
+  // Durée de vie de l'access token. Courte : elle borne la fenêtre pendant laquelle un
+  // rôle retiré reste actif (le rôle réel est relu en base au rafraîchissement).
+  @Type(() => Number)
+  @IsInt()
+  @Min(MINIMUM_DUREE)
+  ACCES_MINUTES: number = DEFAULT_ACCES_MINUTES;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(MINIMUM_DUREE)
+  RAFRAICHISSEMENT_JOURS: number = DEFAULT_RAFRAICHISSEMENT_JOURS;
 
   @IsString()
   LOG_LEVEL: string = 'info';
