@@ -24,13 +24,8 @@ import {
   refreshDe,
 } from './aide-auth';
 import { creerAppDeTest } from './app-de-test';
-import {
-  Avis,
-  Nationalite,
-  Recette,
-  Utilisateur,
-  sourceDeDonnees,
-} from './entites';
+import { Avis, Utilisateur, sourceDeDonnees } from './entites';
+import { creerNationalite, creerRecette } from './fixtures';
 
 const NOUVEAU_MOT_DE_PASSE = 'une-autre-phrase-de-passe-longue';
 const MOI = '/api/utilisateurs/moi';
@@ -155,23 +150,7 @@ describe('Suppression du compte', () => {
     app = await creerAppDeTest();
     compte = await ouvrirCompte(app);
 
-    const nationalite = await source
-      .getRepository(Nationalite)
-      .save({ nom: marque('nat') });
-
-    const recette = await source.getRepository(Recette).save({
-      titre: marque('recette'),
-      description: 'description',
-      image: 'https://exemple.test/i.jpg',
-      video: null,
-      difficulte: 'facile',
-      typeRecette: 'plat',
-      tempsPreparation: 10,
-      tempsCuisson: 10,
-      portions: 2,
-      auteur: null,
-      nationalite,
-    });
+    const recette = await creerRecette(source, await creerNationalite(source));
 
     const avis = await request(app.getHttpServer())
       .post(`/api/recettes/${String(recette.id)}/avis`)
