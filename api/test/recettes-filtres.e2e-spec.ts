@@ -67,9 +67,13 @@ async function viderTable(entite: EntityTarget<ObjectLiteral>): Promise<void> {
 
 beforeAll(async () => {
   source = await sourceDeDonnees.initialize();
+  // Ces tests comptent des lignes : ils partent d'une table vide, sans dépendre de ce
+  // qu'une autre spec aurait laissé derrière elle.
+  await viderTable(Recette);
   service = new RecettesService(
     source.getRepository(Recette),
     source.getRepository(Avis),
+    source,
   );
   nationalite = await source.getRepository(Nationalite).save({ nom: marque() });
   vegan = await source.getRepository(Regime).save({ nom: marque() });

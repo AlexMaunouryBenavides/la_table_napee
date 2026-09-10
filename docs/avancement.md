@@ -19,15 +19,15 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   ██████████░░░░░░░░░░   49 %
+GLOBAL   ██████████░░░░░░░░░░   52 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
 | ------------------------------------------ | ----: | ---------: | ---------------------- |
 | 1. Conception                              |  10 % |       75 % | `███████████████░░░░░` |
 | 2. Mise en place (socle)                   |  30 % |       95 % | `███████████████████░` |
-| 3. Features API (les 37 routes du contrat) |  25 % |       27 % | `█████░░░░░░░░░░░░░░░` |
-| 4. Tests                                   |  10 % |       60 % | `████████████░░░░░░░░` |
+| 3. Features API (les 37 routes du contrat) |  25 % |       35 % | `███████░░░░░░░░░░░░░` |
+| 4. Tests                                   |  10 % |       65 % | `█████████████░░░░░░░` |
 | 5. Front                                   |  20 % |        2 % | `░░░░░░░░░░░░░░░░░░░░` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
 
@@ -117,13 +117,13 @@ algorithme JWT épinglé (`passport.r3`) ; erreurs serveur et refus d'accès jou
 
 ---
 
-## 3. Features API — 10 routes sur 37 (27 %)
+## 3. Features API — 13 routes sur 37 (35 %)
 
-`█████░░░░░░░░░░░░░░░`
+`███████░░░░░░░░░░░░░`
 
 Référence : `design/routes-api.md`. Chaque ligne = une route du contrat.
 
-### ✅ Fait (10 routes)
+### ✅ Fait (13 routes)
 
 | Routes                                                                      | UC           | Où                                           |
 | --------------------------------------------------------------------------- | ------------ | -------------------------------------------- |
@@ -131,22 +131,20 @@ Référence : `design/routes-api.md`. Chaque ligne = une route du contrat.
 | `GET /recettes` (pagination, tri, 9 filtres) · `GET /recettes/:id`          | UC-01 → 03   | `api/src/recettes/`                          |
 | `GET` et `POST /recettes/:id/avis`                                          | UC-02, UC-06 | `api/src/avis/avis-de-recette.controller.ts` |
 | `PATCH` et `DELETE /avis/:id`                                               | UC-07/08/14  | `api/src/avis/avis.controller.ts`            |
+| `POST` · `PATCH` · `DELETE /recettes` (F1)                                  | UC-11/12/13  | `api/src/recettes/`                          |
 
-⚠️ Les 4 routes d'avis sont **écrites mais pas encore commitées**.
+### ❌ Reste à faire (24 routes)
 
-### ❌ Reste à faire (27 routes)
+| Ticket | Périmètre                       | Routes | UC            | Comment (l'essentiel à ne pas rater)                                                                                                                                                                                                  |
+| ------ | ------------------------------- | -----: | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **F0** | Seeds d'exemple                 |      0 | —             | faker + `seed.ts`. Débloque le test réel des filtres et de la pagination.                                                                                                                                                             |
+| **F2** | Son propre compte               |      4 | UC-09/09b     | `/utilisateurs/moi` en GET/PATCH/DELETE + `PATCH /moi/mot-de-passe` séparée : exige l'ancien mot de passe (`400` s'il est faux) et **révoque les familles de refresh**. La suppression **anonymise** les avis (`ON DELETE SET NULL`). |
+| **F3** | Administration des utilisateurs |      3 | UC-16         | `@Roles('admin')`. `PATCH /utilisateurs/:id/role` porte la règle anti-auto-rétrogradation (`409` si on se retire admin, ou si c'est le dernier) — **c'est la tâche 10.3 de l'auth**.                                                  |
+| **F4** | Catégories (4 ressources)       |     16 | UC-15         | Le même patron 4 fois : lecture publique, écriture admin. **Ne pas factoriser d'emblée** (`eng-kit/rules/shared/clean-code.md`). Traduire le refus `ON DELETE RESTRICT` de MySQL en `409`, jamais en `500`.                           |
+| **F5** | Ingrédients (autocomplétion)    |      1 | support UC-11 | `GET /ingredients?recherche=`, `@Roles('moderateur')`. Pas de `POST` : la création passe par F1.                                                                                                                                      |
 
-| Ticket | Périmètre                       | Routes | UC            | Comment (l'essentiel à ne pas rater)                                                                                                                                                                                                    |
-| ------ | ------------------------------- | -----: | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **F0** | Seeds d'exemple                 |      0 | —             | faker + `seed.ts`. Débloque le test réel des filtres et de la pagination.                                                                                                                                                               |
-| **F1** | Écriture des recettes           |      3 | UC-11/12/13   | `POST`/`PATCH`/`DELETE /recettes`, guard `@Roles('moderateur')`. Le morceau difficile : « trouver ou créer » l'ingrédient **dans une transaction** et **sans N+1** (un seul `IN (...)` pour tous les noms saisis). `409` si titre pris. |
-| **F2** | Son propre compte               |      4 | UC-09/09b     | `/utilisateurs/moi` en GET/PATCH/DELETE + `PATCH /moi/mot-de-passe` séparée : exige l'ancien mot de passe (`400` s'il est faux) et **révoque les familles de refresh**. La suppression **anonymise** les avis (`ON DELETE SET NULL`).   |
-| **F3** | Administration des utilisateurs |      3 | UC-16         | `@Roles('admin')`. `PATCH /utilisateurs/:id/role` porte la règle anti-auto-rétrogradation (`409` si on se retire admin, ou si c'est le dernier) — **c'est la tâche 10.3 de l'auth**.                                                    |
-| **F4** | Catégories (4 ressources)       |     16 | UC-15         | Le même patron 4 fois : lecture publique, écriture admin. **Ne pas factoriser d'emblée** (`eng-kit/rules/shared/clean-code.md`). Traduire le refus `ON DELETE RESTRICT` de MySQL en `409`, jamais en `500`.                             |
-| **F5** | Ingrédients (autocomplétion)    |      1 | support UC-11 | `GET /ingredients?recherche=`, `@Roles('moderateur')`. Pas de `POST` : la création passe par F1.                                                                                                                                        |
-
-Ordre recommandé : **F0 → F1 → F2 → F3 → F4 → F5**. F1 en premier, parce que sans
-création de recette le front n'aura rien à afficher qui ne vienne d'un seed.
+**F1 est fait** (transaction, « trouver ou créer » en deux requêtes, cascades).
+Ordre recommandé pour la suite : **F2 → F3 → F5 → F4 → F0**.
 
 ---
 
@@ -159,11 +157,11 @@ Le change `setup-tests` affiche **0/18** dans OpenSpec, mais c'est faux : l'infr
 
 | Élément                                               | État |
 | ----------------------------------------------------- | ---- |
-| Jest unitaire (`npm test`) — 15 tests, 4 suites, vert | ✅   |
+| Jest unitaire (`npm test`) — 17 tests, 5 suites, vert | ✅   |
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
-| 7 fichiers e2e — 33 tests, vert                       | ✅   |
+| 8 fichiers e2e — 50 tests, vert (sérialisés)          | ✅   |
 | Guide de tests                                        | ❌   |
 | Factories / fixtures formalisées                      | ❌   |
 | e2e dans la CI                                        | ❌   |
@@ -228,7 +226,7 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 
 1. Commiter la feature avis + l'adaptation au kit (`verify`, `test`, `test:e2e` verts).
 2. Cocher les tâches réellement faites dans les `tasks.md`.
-3. **F1 — écriture des recettes** (le gros morceau back).
+3. **F2 — son propre compte** (`/utilisateurs/moi`).
 4. Maquette / liste d'écrans, puis démarrer le front en parallèle des features restantes.
 
 ---

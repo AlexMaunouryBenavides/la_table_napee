@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 
 import { Avis } from '../avis/entities/avis.entity';
 
@@ -18,6 +18,8 @@ async function creerService(): Promise<RecettesService> {
       RecettesService,
       { provide: getRepositoryToken(Recette), useValue: depotRecettes },
       { provide: getRepositoryToken(Avis), useValue: {} },
+      // `trouverParId` ne l'utilise pas : seules les écritures ouvrent une transaction.
+      { provide: getDataSourceToken(), useValue: {} },
     ],
   }).compile();
 

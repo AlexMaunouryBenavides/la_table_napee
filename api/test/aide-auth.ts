@@ -1,4 +1,5 @@
 import { HttpStatus, type INestApplication } from '@nestjs/common';
+import { type RoleUtilisateur } from '@recipe/types';
 import request from 'supertest';
 import { type App } from 'supertest/types';
 import { type DataSource } from 'typeorm';
@@ -6,6 +7,7 @@ import { type DataSource } from 'typeorm';
 import { JetonRafraichissement } from '../src/auth/entities/jeton-rafraichissement.entity';
 import { hacherJeton } from '../src/auth/jetons.service';
 import sourceDeDonnees from '../src/config/data-source';
+import { Utilisateur } from '../src/utilisateurs/entities/utilisateur.entity';
 
 import { creerAppDeTest } from './app-de-test';
 
@@ -29,6 +31,25 @@ export function valeurCookie(
 ): string | undefined {
   const cookies = reponse.get('Set-Cookie') ?? [];
   return new RegExp(`${nom}=([^;]+)`).exec(cookies.join(';'))?.[1];
+}
+
+// Aucune route n'attribue de rôle (UC-16 n'est pas écrit) : les tests qui ont besoin
+// d'un modérateur ou d'un admin le posent en base, puis se reconnectent pour obtenir
+// un jeton qui porte ce rôle.
+export async function promouvoir(
+  source: DataSource,
+  email: string,
+  role: RoleUtilisateur,
+): Promise<void> {
+  await source.getRepository(Utilisateur).update({ email }, { role });
+}
+
+export function accesDe(reponse: request.Response): string {
+  const valeur = valeurCookie(reponse, COOKIE_ACCES);
+  if (valeur === undefined) {
+    throw new Error("La réponse n'a pas déposé de jeton d'accès");
+  }
+  return valeur;
 }
 
 export function refreshDe(reponse: request.Response): string {

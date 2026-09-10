@@ -12,14 +12,16 @@ import {
   type ObjectLiteral,
 } from 'typeorm';
 
-import { Avis } from '../src/avis/entities/avis.entity';
-import { Nationalite } from '../src/categories/entities/nationalite.entity';
-import sourceDeDonnees from '../src/config/data-source';
-import { Ingredient } from '../src/ingredients/entities/ingredient.entity';
-import { Composition } from '../src/recettes/entities/composition.entity';
-import { Etape } from '../src/recettes/entities/etape.entity';
-import { Recette } from '../src/recettes/entities/recette.entity';
-import { Utilisateur } from '../src/utilisateurs/entities/utilisateur.entity';
+import {
+  Avis,
+  Composition,
+  Etape,
+  Ingredient,
+  Nationalite,
+  Recette,
+  Utilisateur,
+  sourceDeDonnees,
+} from './entites';
 
 let source: DataSource;
 let nationalite: Nationalite;
