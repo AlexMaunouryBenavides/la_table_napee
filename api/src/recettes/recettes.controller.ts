@@ -1,9 +1,13 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 
+import { Public } from '../auth/public.decorator';
+
 import { ListerRecettesQueryDto } from './dto/lister-recettes.query.dto';
 import { RecettesService } from './recettes.service';
 
-// Lecture publique : aucun guard (UC-01 et UC-02, visiteur anonyme).
+// Lecture publique (UC-01 et UC-02, visiteur anonyme). L'application étant fermée
+// par défaut, cette ouverture se déclare explicitement.
+@Public()
 @Controller('recettes')
 export class RecettesController {
   constructor(private readonly recettes: RecettesService) {}

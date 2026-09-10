@@ -29,6 +29,8 @@ export default tseslint.config(
       '**/.react-router/**',
       '**/node_modules/**',
       'eslint.config.mjs',
+      // Bibliothèque de règles : dépôt séparé, hors de nos tsconfig.
+      'eng-kit/**',
     ],
   },
 

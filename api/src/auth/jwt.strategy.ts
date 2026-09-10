@@ -21,6 +21,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromExtractors([lireJetonDansCookie]),
       ignoreExpiration: false,
       secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
+      // `passport.r3` : sans épinglage, la lib accepte n'importe quel algorithme
+      // HMAC — c'est alors l'attaquant qui choisit, ce qui ne doit jamais arriver.
+      algorithms: ['HS256'],
     });
   }
 

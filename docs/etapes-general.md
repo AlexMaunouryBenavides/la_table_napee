@@ -10,10 +10,12 @@ CONCEPTION (une fois)
 MISE EN PLACE (une fois)
 
 - installation du monorepo
-- fondations transverses de l'API (CORS, helmet, throttler, validation globale…)
+- outillage qualité ( eslint, prettiern husky, commitLint, kit)
+- fondations transverses de l'API (CORS, helmet, throttler, validation globale, configuration par variables d environnement, filtre d exeption globale)
 - création de la base de données (+ docker)
-- migration initiale : le DDL devient la migration n°1
+- Creation du CI
 - les entités
+- migration initiale : le DDL devient la migration n°1
 - les seeds (données de référence = obligatoires / données d'exemple = confort)
 - authentification et rôles
 
@@ -29,4 +31,4 @@ FRONT (en boucle, par écran)
 
 MISE EN LIGNE
 
-- déploiement (build, variables d'environnement, hébergement)
+- déploiement (nom de domaine, variables de production, hébergement)

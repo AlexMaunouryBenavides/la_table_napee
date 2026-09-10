@@ -1,0 +1,241 @@
+# Avancement du projet — La Table Nappée
+
+> **Ce fichier se tient à la main.** Il consolide ce qu'aucune commande ne sait dire
+> seule : `npx openspec list` ne voit que les _changes_ en cours (les archivés
+> disparaissent, le front n'en a aucun), et `git log` ne dit pas ce qui reste.
+>
+> Sources croisées pour l'écrire : `git log`, `npx openspec list`,
+> `openspec/changes/*/tasks.md`, `design/routes-api.md` (le contrat = la liste
+> exhaustive de ce qu'il faut construire), `docs/etapes-general.md` (le plan global).
+>
+> **Dernière vérification : 2026-09-10** — commit `9f329fa` + le travail non commité
+> de la branche `setup-authentification` (feature avis, puis adaptation à `eng-kit`).
+>
+> Les RÈGLES d'ingénierie vivent maintenant dans `eng-kit/` (dépôt séparé, ignoré ici) :
+> `docs/conventions/` et `docs/guides/` ont été supprimés.
+
+---
+
+## Vue d'ensemble
+
+```
+GLOBAL   ██████████░░░░░░░░░░   49 %
+```
+
+| Lot                                        | Poids | Avancement | Barre                  |
+| ------------------------------------------ | ----: | ---------: | ---------------------- |
+| 1. Conception                              |  10 % |       75 % | `███████████████░░░░░` |
+| 2. Mise en place (socle)                   |  30 % |       95 % | `███████████████████░` |
+| 3. Features API (les 37 routes du contrat) |  25 % |       27 % | `█████░░░░░░░░░░░░░░░` |
+| 4. Tests                                   |  10 % |       60 % | `████████████░░░░░░░░` |
+| 5. Front                                   |  20 % |        2 % | `░░░░░░░░░░░░░░░░░░░░` |
+| 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
+
+Les poids sont un jugement, pas une science : ils disent seulement que le front pèse
+autant qu'un quart du back. Le global en découle (somme pondérée).
+
+**En une phrase** : le socle back est fini et solide, mais seules 10 routes sur 37
+existent, et le front n'a pas commencé.
+
+---
+
+## 1. Conception — 75 %
+
+`███████████████░░░░░`
+
+| Élément                      | État | Où                             |
+| ---------------------------- | ---- | ------------------------------ |
+| Cas d'usage (UC-01 → UC-16)  | ✅   | `design/use-cases-recettes.md` |
+| Modélisation base de données | ✅   | `docs/database.sql`            |
+| Contrat des routes de l'API  | ✅   | `design/routes-api.md`         |
+| **Maquette front**           | ❌   | —                              |
+
+**Reste à faire — et comment**
+
+- **Maquette front** : le seul trou de la phase conception, et il bloque le lot 5. Pas
+  besoin de Figma : une liste d'écrans (liste des recettes, détail, connexion,
+  inscription, mon compte, panneau de modération) avec, pour chacun, les données
+  affichées et les actions possibles. Un `design/ecrans.md` suffit.
+- **4 décisions laissées ouvertes** dans `design/routes-api.md` § 5, à trancher au
+  moment d'écrire la feature concernée : forme des étapes (tableau vs sous-ressource),
+  syntaxe de tri, note moyenne dans les listes, favoris (reporté).
+
+---
+
+## 2. Mise en place (socle) — 95 %
+
+`███████████████████░`
+
+| Étape                                    | État | Preuve                                                |
+| ---------------------------------------- | ---- | ----------------------------------------------------- |
+| Monorepo npm (workspaces)                | ✅   | `package.json`                                        |
+| Outillage qualité (`npm run verify`)     | ✅   | change archivé `setup-outillage-qualite`              |
+| Fondations transverses API               | ✅   | change archivé `setup-fondations-api`                 |
+| Base MySQL + docker                      | ✅   | `api/docker-compose.yml`, `api/src/config/`           |
+| CI GitHub Actions                        | 🟡   | `.github/workflows/ci.yml` (les e2e n'y tournent pas) |
+| Entités TypeORM                          | ✅   | `api/src/*/entities/`                                 |
+| Migration initiale (DDL → migration n°1) | ✅   | `api/src/migrations/1786718528873-SchemaInitial.ts`   |
+| Seeds de RÉFÉRENCE                       | ✅   | `api/src/seeds/donnees-reference.ts`                  |
+| Seeds d'EXEMPLE (volume)                 | ❌   | faker non installé                                    |
+| Authentification & rôles                 | 🟡   | `api/src/auth/` — détail ci-dessous                   |
+
+### 2.a Authentification — 30/37 tâches (`setup-authentification`)
+
+Fait : Argon2, inscription, connexion, cookies `httpOnly`/`Secure`/`SameSite=Lax`,
+refresh persisté hashé, rotation, détection de vol par famille, déconnexion, stratégie
+passport-jwt lisant le cookie, `JwtAuthGuard`, `@Roles()` + `RolesGuard`, hiérarchie
+admin ⊃ modérateur ⊃ utilisateur (`auth/hierarchie-roles.ts`), `@UtilisateurCourant()`,
+et le contrôle de propriété anti-IDOR (10.1/10.2) appliqué sur les avis.
+
+Depuis l'adoption du kit : **deny-by-default** (`nest-authz.r1`) — l'API est fermée par
+défaut par un `APP_GUARD` global, seules les routes `@Public()` sont ouvertes ;
+algorithme JWT épinglé (`passport.r3`) ; erreurs serveur et refus d'accès journalisés
+(`error-handling.r8`, `security.r9`).
+
+**Reste à faire — et comment**
+
+- **10.3 anti-auto-rétrogradation du dernier admin** : ne peut pas se coder seule,
+  c'est une règle du service `utilisateurs` → elle arrive avec la feature **F3**.
+- **11.x intégration client** (formulaires, `credentials: 'include'`, refresh
+  transparent sur 401) : appartient de fait au lot 5, à faire au premier écran protégé.
+- **12.1 / 12.3 vérifications de sécurité** : deux tests e2e — un `403` pour rôle
+  insuffisant, un `403` pour modification de l'avis d'autrui.
+
+### 2.b Couche de données — 23/28 tâches (`setup-couche-donnees`)
+
+**Reste à faire — et comment**
+
+- **6.2 validation des énums là où elles entrent** (`@IsIn(DIFFICULTES)`,
+  `@IsIn(UNITES)`…) : déjà fait sur le DTO de query des recettes ; le reste arrive
+  mécaniquement avec les DTO d'écriture (F1).
+- **7.2 / 7.5 seeds d'exemple** : installer `@faker-js/faker` en dev et étendre
+  `api/src/seeds/seed.ts` (script idempotent déjà en place) pour générer ~50 recettes.
+  C'est le ticket **F0**, utile surtout pour éprouver pagination et filtres.
+- **8.1 / 8.2 DTO d'entrée par cas d'usage** : ne se fait pas d'un bloc, c'est une ligne
+  de chaque feature ci-dessous. À re-vérifier à chaque DTO : jamais `password_hash`,
+  jamais `role` en entrée utilisateur.
+
+---
+
+## 3. Features API — 10 routes sur 37 (27 %)
+
+`█████░░░░░░░░░░░░░░░`
+
+Référence : `design/routes-api.md`. Chaque ligne = une route du contrat.
+
+### ✅ Fait (10 routes)
+
+| Routes                                                                      | UC           | Où                                           |
+| --------------------------------------------------------------------------- | ------------ | -------------------------------------------- |
+| `POST /auth/inscription` · `connexion` · `rafraichissement` · `deconnexion` | UC-04, UC-05 | `api/src/auth/auth.controller.ts`            |
+| `GET /recettes` (pagination, tri, 9 filtres) · `GET /recettes/:id`          | UC-01 → 03   | `api/src/recettes/`                          |
+| `GET` et `POST /recettes/:id/avis`                                          | UC-02, UC-06 | `api/src/avis/avis-de-recette.controller.ts` |
+| `PATCH` et `DELETE /avis/:id`                                               | UC-07/08/14  | `api/src/avis/avis.controller.ts`            |
+
+⚠️ Les 4 routes d'avis sont **écrites mais pas encore commitées**.
+
+### ❌ Reste à faire (27 routes)
+
+| Ticket | Périmètre                       | Routes | UC            | Comment (l'essentiel à ne pas rater)                                                                                                                                                                                                    |
+| ------ | ------------------------------- | -----: | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **F0** | Seeds d'exemple                 |      0 | —             | faker + `seed.ts`. Débloque le test réel des filtres et de la pagination.                                                                                                                                                               |
+| **F1** | Écriture des recettes           |      3 | UC-11/12/13   | `POST`/`PATCH`/`DELETE /recettes`, guard `@Roles('moderateur')`. Le morceau difficile : « trouver ou créer » l'ingrédient **dans une transaction** et **sans N+1** (un seul `IN (...)` pour tous les noms saisis). `409` si titre pris. |
+| **F2** | Son propre compte               |      4 | UC-09/09b     | `/utilisateurs/moi` en GET/PATCH/DELETE + `PATCH /moi/mot-de-passe` séparée : exige l'ancien mot de passe (`400` s'il est faux) et **révoque les familles de refresh**. La suppression **anonymise** les avis (`ON DELETE SET NULL`).   |
+| **F3** | Administration des utilisateurs |      3 | UC-16         | `@Roles('admin')`. `PATCH /utilisateurs/:id/role` porte la règle anti-auto-rétrogradation (`409` si on se retire admin, ou si c'est le dernier) — **c'est la tâche 10.3 de l'auth**.                                                    |
+| **F4** | Catégories (4 ressources)       |     16 | UC-15         | Le même patron 4 fois : lecture publique, écriture admin. **Ne pas factoriser d'emblée** (`eng-kit/rules/shared/clean-code.md`). Traduire le refus `ON DELETE RESTRICT` de MySQL en `409`, jamais en `500`.                             |
+| **F5** | Ingrédients (autocomplétion)    |      1 | support UC-11 | `GET /ingredients?recherche=`, `@Roles('moderateur')`. Pas de `POST` : la création passe par F1.                                                                                                                                        |
+
+Ordre recommandé : **F0 → F1 → F2 → F3 → F4 → F5**. F1 en premier, parce que sans
+création de recette le front n'aura rien à afficher qui ne vienne d'un seed.
+
+---
+
+## 4. Tests — 60 %
+
+`████████████░░░░░░░░`
+
+Le change `setup-tests` affiche **0/18** dans OpenSpec, mais c'est faux : l'infra a été
+écrite en cours de route sans que les cases soient cochées. La réalité :
+
+| Élément                                               | État |
+| ----------------------------------------------------- | ---- |
+| Jest unitaire (`npm test`) — 15 tests, 4 suites, vert | ✅   |
+| Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
+| Base de test isolée + garde-fou anti-écrasement       | ✅   |
+| Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
+| 7 fichiers e2e — 33 tests, vert                       | ✅   |
+| Guide de tests                                        | ❌   |
+| Factories / fixtures formalisées                      | ❌   |
+| e2e dans la CI                                        | ❌   |
+| Tests sur la feature avis                             | ❌   |
+
+**Reste à faire — et comment**
+
+- **Cocher les groupes 2 à 5** de `openspec/changes/setup-tests/tasks.md` : ils sont
+  faits, c'est le suivi qui ment.
+- **e2e dans la CI** : le workflow ne lance que `npm test`. Ajouter un service MySQL au
+  job, `npm run migration:run:test`, puis `npm run test:e2e --workspace api`.
+- **Factories** : au premier test qui a besoin d'une recette complète (F1), plutôt que
+  de recopier un objet à dix champs dans chaque fichier.
+- **`docs/guides/tests.md`** : optionnel maintenant que l'infra existe.
+
+---
+
+## 5. Front — 2 %
+
+`░░░░░░░░░░░░░░░░░░░░`
+
+**Rien n'a commencé.** `client/` est encore le template React Router v7 par défaut
+(`app/root.tsx`, `app/routes/home.tsx`, `app/welcome/`). Tailwind v4 est installé,
+`@recipe/types` est déjà lié.
+
+**Reste à faire — et comment**
+
+1. Poser les écrans (dépend de la maquette du lot 1) et `app/routes.ts`.
+2. Une couche d'accès API **unique** (`fetch` avec `credentials: 'include'` —
+   obligatoire, l'auth passe par cookie) plutôt qu'un `fetch` dispersé par route.
+3. Refresh transparent : sur `401`, appeler `/auth/rafraichissement` puis rejouer la
+   requête **une seule fois**. Aucun token en JS, jamais de `localStorage`.
+4. Écrans dans l'ordre : liste → détail → connexion/inscription → avis → mon compte →
+   panneau de modération.
+5. Créer un change OpenSpec `setup-front` : aujourd'hui aucun change ne couvre le
+   front, donc rien ne le suit.
+
+---
+
+## 6. Déploiement — 0 %
+
+`░░░░░░░░░░░░░░░░░░░░`
+
+Rien : pas d'hébergement choisi, pas de variables de production, pas de nom de domaine.
+À traiter en dernier. Le seul point à ne pas oublier le jour venu : `Secure` sur les
+cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*`.
+
+---
+
+## Dette et écarts repérés
+
+| Point                                                                 | Quoi en faire                     |
+| --------------------------------------------------------------------- | --------------------------------- |
+| Feature avis écrite mais **non commitée** (10 fichiers)               | commiter tout de suite            |
+| Tâches OpenSpec faites mais non cochées (auth 10.1/10.2, tests 2 → 5) | le suivi ment, le corriger        |
+| 4 décisions ouvertes dans `design/routes-api.md` § 5                  | trancher au fil de l'eau          |
+| Aucun change OpenSpec ne couvre le front                              | à créer avant d'attaquer le lot 5 |
+
+---
+
+## Prochaines étapes, dans l'ordre
+
+1. Commiter la feature avis + l'adaptation au kit (`verify`, `test`, `test:e2e` verts).
+2. Cocher les tâches réellement faites dans les `tasks.md`.
+3. **F1 — écriture des recettes** (le gros morceau back).
+4. Maquette / liste d'écrans, puis démarrer le front en parallèle des features restantes.
+
+---
+
+## Comment mettre à jour ce fichier
+
+Après chaque feature terminée : cocher les cases du `tasks.md` concerné, mettre à jour
+la ligne correspondante du lot 3, recalculer le pourcentage du lot (routes faites ÷
+routes du contrat), puis le global (somme pondérée du tableau de tête). Et changer la
+date de « dernière vérification ».

@@ -5,9 +5,9 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { RolesGuard } from './auth/roles.guard';
 import { AvisModule } from './avis/avis.module';
 import { CategoriesModule } from './categories/categories.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -68,10 +68,13 @@ const ENV_PRODUCTION = 'production';
 
     AuthModule,
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
+    // L'ORDRE COMPTE (`nest-authz.r2`) : on limite le débit, puis on identifie,
+    // puis seulement on autorise — le garde de rôles lit `request.user`, qui doit
+    // déjà être peuplé. Fermé par défaut : `@Public()` est la seule ouverture.
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
   ],

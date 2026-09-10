@@ -6,7 +6,6 @@ import {
   Post,
   Req,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
@@ -24,7 +23,7 @@ import {
 } from './cookies-auth';
 import { ConnexionDto } from './dto/connexion.dto';
 import { InscriptionDto } from './dto/inscription.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { Public } from './public.decorator';
 
 const ENV_PRODUCTION = 'production';
 const FENETRE_ANTI_BRUTEFORCE_MS = 60_000;
@@ -53,6 +52,7 @@ export class AuthController {
   }
 
   // 201 par défaut chez Nest : une ressource a bien été créée.
+  @Public()
   @Post('inscription')
   inscrire(@Body() dto: InscriptionDto): Promise<Utilisateur> {
     return this.auth.inscrire(dto);
@@ -60,6 +60,7 @@ export class AuthController {
 
   // `passthrough` laisse Nest sérialiser la réponse : le controller ne touche qu'aux
   // cookies, le métier ne connaît ni `req` ni `res`.
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('connexion')
   async connecter(
@@ -71,6 +72,9 @@ export class AuthController {
     return utilisateur;
   }
 
+  // Publique au sens du jeton d'ACCÈS : cette route ne présente qu'un jeton de
+  // rafraîchissement, précisément parce que l'accès est expiré.
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('rafraichissement')
   async rafraichir(
@@ -86,7 +90,6 @@ export class AuthController {
 
   // Les cookies sont effacés quoi qu'il arrive : une session révoquée côté serveur
   // mais toujours présente dans le navigateur serait déroutante.
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('deconnexion')
   async deconnecter(

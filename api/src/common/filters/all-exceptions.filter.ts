@@ -4,6 +4,7 @@ import {
   type ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
@@ -16,6 +17,11 @@ interface ReponseErreur {
 }
 
 const MESSAGE_INTERNE = 'Erreur interne du serveur';
+
+// Élargis en `number` : `HttpException.getStatus()` renvoie un nombre, pas un membre
+// de l'énumération — les comparer directement serait une comparaison d'énums bancale.
+const PREMIERE_ERREUR_SERVEUR: number = HttpStatus.INTERNAL_SERVER_ERROR;
+const REFUS: number[] = [HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN];
 const MESSAGE_ENTREE_INVALIDE = 'Requête invalide';
 
 // Le ValidationPipe range ses erreurs dans un TABLEAU à l'intérieur de la réponse de
@@ -42,7 +48,28 @@ function decrire(exception: HttpException): {
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly journal = new Logger(AllExceptionsFilter.name);
+
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+
+  // Ce que le client reçoit et ce que le serveur retient sont deux choses distinctes :
+  // le client a un message générique, nous gardons la cause. Les fautes d'entrée (400,
+  // 404, 409) ne sont PAS journalisées : elles sont normales et noieraient le reste.
+  private journaliser(exception: unknown, statusCode: number, chemin: string) {
+    if (statusCode >= PREMIERE_ERREUR_SERVEUR) {
+      this.journal.error(
+        `${String(statusCode)} ${chemin}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
+      return;
+    }
+
+    // Refus d'authentification ou d'autorisation : trace obligatoire, c'est le
+    // signal qui révèle une tentative d'accès illégitime.
+    if (REFUS.includes(statusCode)) {
+      this.journal.warn(`Accès refusé — ${String(statusCode)} ${chemin}`);
+    }
+  }
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
@@ -57,12 +84,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       ? decrire(exception)
       : { message: MESSAGE_INTERNE, details: undefined };
 
+    const chemin = String(httpAdapter.getRequestUrl(ctx.getRequest<unknown>()));
+
+    this.journaliser(exception, statusCode, chemin);
+
     const corps: ReponseErreur = {
       statusCode,
       message,
       ...(details ? { details } : {}),
       timestamp: new Date().toISOString(),
-      path: String(httpAdapter.getRequestUrl(ctx.getRequest<unknown>())),
+      path: chemin,
     };
 
     httpAdapter.reply(ctx.getResponse<unknown>(), corps, statusCode);

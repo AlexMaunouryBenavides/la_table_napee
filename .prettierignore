@@ -11,3 +11,6 @@ package-lock.json
 # Fichiers vendored du plugin (skills/commandes) : pas notre code, réécrits aux mises à jour.
 .claude
 
+
+# Bibliothèque de règles : dépôt séparé, pas notre code.
+eng-kit
