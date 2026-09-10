@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { UtilisateursModule } from '../utilisateurs/utilisateurs.module';
+import { Utilisateur } from '../utilisateurs/entities/utilisateur.entity';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -16,8 +16,9 @@ import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([JetonRafraichissement]),
-    UtilisateursModule,
+    // Ce module déclare lui-même les dépôts dont il a besoin : il ne dépend donc plus
+    // de `UtilisateursModule`, qui l'importe désormais (aucun cycle, `nest.r14`).
+    TypeOrmModule.forFeature([JetonRafraichissement, Utilisateur]),
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -39,6 +40,6 @@ import { JwtStrategy } from './jwt.strategy';
     // Les services dépendent de l'abstraction ; seul ce câblage connaît MySQL.
     { provide: DepotJetons, useClass: DepotJetonsMysql },
   ],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, HachageMotDePasse, DepotJetons],
 })
 export class AuthModule {}

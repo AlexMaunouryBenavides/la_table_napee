@@ -22,6 +22,7 @@ export abstract class DepotJetons {
   abstract trouverParHash(hash: string): Promise<JetonRafraichissement | null>;
   abstract marquerUtilise(id: string): Promise<void>;
   abstract revoquerFamille(familleId: string): Promise<void>;
+  abstract revoquerToutesLesFamilles(utilisateurId: string): Promise<void>;
 }
 
 @Injectable()
@@ -53,5 +54,14 @@ export class DepotJetonsMysql extends DepotJetons {
   // UNE requête pour toute la lignée : c'est ce que l'index sur `family_id` sert.
   async revoquerFamille(familleId: string): Promise<void> {
     await this.jetons.update({ familleId }, { etat: 'REVOKED' });
+  }
+
+  // Après un changement de mot de passe, aucune session ouverte ailleurs ne doit
+  // survivre : on coupe toutes les lignées du compte, pas seulement la courante.
+  async revoquerToutesLesFamilles(utilisateurId: string): Promise<void> {
+    await this.jetons.update(
+      { utilisateur: { id: utilisateurId } },
+      { etat: 'REVOKED' },
+    );
   }
 }
