@@ -19,14 +19,14 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   ████████████░░░░░░░░   59 %
+GLOBAL   █████████████░░░░░░░   64 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
 | ------------------------------------------ | ----: | ---------: | ---------------------- |
 | 1. Conception                              |  10 % |       75 % | `███████████████░░░░░` |
 | 2. Mise en place (socle)                   |  30 % |       95 % | `███████████████████░` |
-| 3. Features API (les 37 routes du contrat) |  25 % |       57 % | `███████████░░░░░░░░░` |
+| 3. Features API (les 37 routes du contrat) |  25 % |      100 % | `████████████████████` |
 | 4. Tests                                   |  10 % |       75 % | `███████████████░░░░░` |
 | 5. Front                                   |  20 % |        2 % | `░░░░░░░░░░░░░░░░░░░░` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
@@ -117,33 +117,33 @@ algorithme JWT épinglé (`passport.r3`) ; erreurs serveur et refus d'accès jou
 
 ---
 
-## 3. Features API — 21 routes sur 37 (57 %)
+## 3. Features API — 37 routes sur 37 (100 %)
 
 `███████████░░░░░░░░░`
 
 Référence : `design/routes-api.md`. Chaque ligne = une route du contrat.
 
-### ✅ Fait (21 routes)
+### ✅ Fait (37 routes)
 
-| Routes                                                                       | UC            | Où                                                               |
-| ---------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------- |
-| `POST /auth/inscription` · `connexion` · `rafraichissement` · `deconnexion`  | UC-04, UC-05  | `api/src/auth/auth.controller.ts`                                |
-| `GET /recettes` (pagination, tri, 9 filtres) · `GET /recettes/:id`           | UC-01 → 03    | `api/src/recettes/`                                              |
-| `GET` et `POST /recettes/:id/avis`                                           | UC-02, UC-06  | `api/src/avis/avis-de-recette.controller.ts`                     |
-| `PATCH` et `DELETE /avis/:id`                                                | UC-07/08/14   | `api/src/avis/avis.controller.ts`                                |
-| `POST` · `PATCH` · `DELETE /recettes` (F1)                                   | UC-11/12/13   | `api/src/recettes/`                                              |
-| `/utilisateurs/moi` en GET · PATCH · DELETE + `PATCH /moi/mot-de-passe` (F2) | UC-09, UC-09b | `api/src/utilisateurs/`                                          |
-| `GET /utilisateurs` · `PATCH /:id/role` · `DELETE /:id` (F3)                 | UC-16         | `api/src/utilisateurs/administration-utilisateurs.controller.ts` |
-| `GET /ingredients?recherche=` (F5)                                           | support UC-11 | `api/src/ingredients/`                                           |
+| Routes                                                                                               | UC            | Où                                                               |
+| ---------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------- |
+| `POST /auth/inscription` · `connexion` · `rafraichissement` · `deconnexion`                          | UC-04, UC-05  | `api/src/auth/auth.controller.ts`                                |
+| `GET /recettes` (pagination, tri, 9 filtres) · `GET /recettes/:id`                                   | UC-01 → 03    | `api/src/recettes/`                                              |
+| `GET` et `POST /recettes/:id/avis`                                                                   | UC-02, UC-06  | `api/src/avis/avis-de-recette.controller.ts`                     |
+| `PATCH` et `DELETE /avis/:id`                                                                        | UC-07/08/14   | `api/src/avis/avis.controller.ts`                                |
+| `POST` · `PATCH` · `DELETE /recettes` (F1)                                                           | UC-11/12/13   | `api/src/recettes/`                                              |
+| `/utilisateurs/moi` en GET · PATCH · DELETE + `PATCH /moi/mot-de-passe` (F2)                         | UC-09, UC-09b | `api/src/utilisateurs/`                                          |
+| `GET /utilisateurs` · `PATCH /:id/role` · `DELETE /:id` (F3)                                         | UC-16         | `api/src/utilisateurs/administration-utilisateurs.controller.ts` |
+| `GET /ingredients?recherche=` (F5)                                                                   | support UC-11 | `api/src/ingredients/`                                           |
+| `/regimes`, `/criteres-sante`, `/types-aliment`, `/nationalites` en GET · POST · PATCH · DELETE (F4) | UC-03, UC-15  | `api/src/categories/`                                            |
 
-### ❌ Reste à faire (16 routes)
+### ❌ Reste à faire : plus aucune route
 
-| Ticket | Périmètre                 | Routes | UC    | Comment (l'essentiel à ne pas rater)                                                                                                                                                                        |
-| ------ | ------------------------- | -----: | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **F0** | Seeds d'exemple           |      0 | —     | faker + `seed.ts`. Débloque le test réel des filtres et de la pagination.                                                                                                                                   |
-| **F4** | Catégories (4 ressources) |     16 | UC-15 | Le même patron 4 fois : lecture publique, écriture admin. **Ne pas factoriser d'emblée** (`eng-kit/rules/shared/clean-code.md`). Traduire le refus `ON DELETE RESTRICT` de MySQL en `409`, jamais en `500`. |
+| Ticket | Périmètre       | Routes | UC  | Comment (l'essentiel à ne pas rater)                                      |
+| ------ | --------------- | -----: | --- | ------------------------------------------------------------------------- |
+| **F0** | Seeds d'exemple |      0 | —   | faker + `seed.ts`. Débloque le test réel des filtres et de la pagination. |
 
-**F1, F2, F3 et F5 sont faits.** Ordre pour la suite : **F4 → F0**.
+**Toutes les routes du contrat existent.** Reste F0 (seeds d'exemple), hors contrat.
 
 ---
 
@@ -160,7 +160,7 @@ Le change `setup-tests` affiche **0/18** dans OpenSpec, mais c'est faux : l'infr
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
-| 12 fichiers e2e — 95 tests, vert (sérialisés)         | ✅   |
+| 13 fichiers e2e — 108 tests, vert (sérialisés)        | ✅   |
 | Guide de tests                                        | ❌   |
 | Factories / fixtures (`test/fixtures.ts`)             | ✅   |
 | e2e dans la CI                                        | ❌   |
@@ -235,7 +235,7 @@ dernier admin) est derrière.
 | ----- | ------------------------------------------- | -----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ~~1~~ | ~~**Tests e2e de la feature avis**~~        |      0 | **Fait** — 14 tests e2e, le contrôle de propriété est tenu (tâche 12.3 close).                                                                                               |
 | ~~2~~ | ~~**F5 — autocomplétion des ingrédients**~~ |      1 | **Fait** — enveloppe paginée, recherche insensible à la casse, 8 tests e2e.                                                                                                  |
-| 3     | **F4 — catégories (4 ressources)**          |     16 | Le gros du volume restant, mais répétitif. Lecture publique, écriture admin. **Ne pas factoriser d'emblée** ; traduire le `RESTRICT` de MySQL en `409`.                      |
+| ~~3~~ | ~~**F4 — catégories (4 ressources)**~~      |     16 | **Fait** — fabrique de contrôleur partagée, `409` si la catégorie est encore utilisée, 13 tests e2e.                                                                         |
 | 4     | **F0 — seeds d'exemple (faker)**            |      0 | Pas bloquant pour l'API, mais indispensable pour éprouver pagination et filtres pour de vrai, et pour amorcer le front. Couvre les tâches 7.2/7.5 de `setup-couche-donnees`. |
 | 5     | **Synchroniser le suivi OpenSpec**          |      0 | Cocher ce qui est fait (auth 10.1→10.3, 12.1, 12.3, 12.4 ; données 6.2, 8.1, 8.2 ; tests 2→5) et archiver ce qui est clos.                                                   |
 
