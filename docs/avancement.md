@@ -19,7 +19,7 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   ████████████░░░░░░░░   57 %
+GLOBAL   ████████████░░░░░░░░   58 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
@@ -27,7 +27,7 @@ GLOBAL   ████████████░░░░░░░░   57 %
 | 1. Conception                              |  10 % |       75 % | `███████████████░░░░░` |
 | 2. Mise en place (socle)                   |  30 % |       95 % | `███████████████████░` |
 | 3. Features API (les 37 routes du contrat) |  25 % |       54 % | `███████████░░░░░░░░░` |
-| 4. Tests                                   |  10 % |       65 % | `█████████████░░░░░░░` |
+| 4. Tests                                   |  10 % |       75 % | `███████████████░░░░░` |
 | 5. Front                                   |  20 % |        2 % | `░░░░░░░░░░░░░░░░░░░░` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
 
@@ -147,9 +147,9 @@ Référence : `design/routes-api.md`. Chaque ligne = une route du contrat.
 
 ---
 
-## 4. Tests — 60 %
+## 4. Tests — 75 %
 
-`████████████░░░░░░░░`
+`███████████████░░░░░`
 
 Le change `setup-tests` affiche **0/18** dans OpenSpec, mais c'est faux : l'infra a été
 écrite en cours de route sans que les cases soient cochées. La réalité :
@@ -160,11 +160,11 @@ Le change `setup-tests` affiche **0/18** dans OpenSpec, mais c'est faux : l'infr
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
-| 10 fichiers e2e — 73 tests, vert (sérialisés)         | ✅   |
+| 11 fichiers e2e — 87 tests, vert (sérialisés)         | ✅   |
 | Guide de tests                                        | ❌   |
-| Factories / fixtures formalisées                      | ❌   |
+| Factories / fixtures (`test/fixtures.ts`)             | ✅   |
 | e2e dans la CI                                        | ❌   |
-| Tests sur la feature avis                             | ❌   |
+| Tests sur la feature avis                             | ✅   |
 
 **Reste à faire — et comment**
 
@@ -214,7 +214,6 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 
 | Point                                                                     | Quoi en faire                     |
 | ------------------------------------------------------------------------- | --------------------------------- |
-| **La feature avis n'a aucun e2e dédié** alors qu'elle porte l'anti-IDOR   | étape 1 du plan ci-dessous        |
 | Tâches OpenSpec faites mais non cochées (auth 10.x/12.x, données 6.2/8.x) | le suivi ment, le corriger        |
 | Note moyenne absente des listes (`routes-api.md` § 5)                     | trancher : agrégation, jamais N+1 |
 | Aucun change OpenSpec ne couvre le front                                  | à créer avant d'attaquer le lot 5 |
@@ -232,13 +231,13 @@ routes manquantes, 16 sont le même patron CRUD répété quatre fois et 1 est u
 requête de recherche. Le difficile (transaction + N+1, anti-IDOR, rotation de jetons,
 dernier admin) est derrière.
 
-| #   | Étape                                   | Routes | Pourquoi dans cet ordre                                                                                                                                                       |
-| --- | --------------------------------------- | -----: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Tests e2e de la feature avis**        |      0 | Elle porte le contrôle de propriété (UC-07/08 vs UC-14) et **rien ne le tient**. C'est un risque, pas une dette de confort. Couvre la tâche 12.3 de `setup-authentification`. |
-| 2   | **F5 — autocomplétion des ingrédients** |      1 | `GET /ingredients?recherche=`, `@Roles('moderateur')`. Court, et débloque le formulaire de recette côté front. Pas de `POST` : la création passe par F1.                      |
-| 3   | **F4 — catégories (4 ressources)**      |     16 | Le gros du volume restant, mais répétitif. Lecture publique, écriture admin. **Ne pas factoriser d'emblée** ; traduire le `RESTRICT` de MySQL en `409`.                       |
-| 4   | **F0 — seeds d'exemple (faker)**        |      0 | Pas bloquant pour l'API, mais indispensable pour éprouver pagination et filtres pour de vrai, et pour amorcer le front. Couvre les tâches 7.2/7.5 de `setup-couche-donnees`.  |
-| 5   | **Synchroniser le suivi OpenSpec**      |      0 | Cocher ce qui est fait (auth 10.1→10.3, 12.1, 12.3, 12.4 ; données 6.2, 8.1, 8.2 ; tests 2→5) et archiver ce qui est clos.                                                    |
+| #     | Étape                                   | Routes | Pourquoi dans cet ordre                                                                                                                                                      |
+| ----- | --------------------------------------- | -----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~ | ~~**Tests e2e de la feature avis**~~    |      0 | **Fait** — 14 tests e2e, le contrôle de propriété est tenu (tâche 12.3 close).                                                                                               |
+| 2     | **F5 — autocomplétion des ingrédients** |      1 | `GET /ingredients?recherche=`, `@Roles('moderateur')`. Court, et débloque le formulaire de recette côté front. Pas de `POST` : la création passe par F1.                     |
+| 3     | **F4 — catégories (4 ressources)**      |     16 | Le gros du volume restant, mais répétitif. Lecture publique, écriture admin. **Ne pas factoriser d'emblée** ; traduire le `RESTRICT` de MySQL en `409`.                      |
+| 4     | **F0 — seeds d'exemple (faker)**        |      0 | Pas bloquant pour l'API, mais indispensable pour éprouver pagination et filtres pour de vrai, et pour amorcer le front. Couvre les tâches 7.2/7.5 de `setup-couche-donnees`. |
+| 5     | **Synchroniser le suivi OpenSpec**      |      0 | Cocher ce qui est fait (auth 10.1→10.3, 12.1, 12.3, 12.4 ; données 6.2, 8.1, 8.2 ; tests 2→5) et archiver ce qui est clos.                                                   |
 
 À la fin de l'étape 5, l'API couvre les **37 routes du contrat** et le lot 3 est à
 100 %.
