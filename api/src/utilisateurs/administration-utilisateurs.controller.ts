@@ -15,9 +15,9 @@ import { type Page } from '@recipe/types';
 import { type IdentiteRequete } from '../auth/identite-requete';
 import { Roles } from '../auth/roles.decorator';
 import { UtilisateurCourant } from '../auth/utilisateur-courant.decorator';
+import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 
 import { ChangerRoleDto } from './dto/changer-role.dto';
-import { ListerUtilisateursQueryDto } from './dto/lister-utilisateurs.query.dto';
 import { Utilisateur } from './entities/utilisateur.entity';
 import { UtilisateursService } from './utilisateurs.service';
 
@@ -30,9 +30,7 @@ export class AdministrationUtilisateursController {
   constructor(private readonly utilisateurs: UtilisateursService) {}
 
   @Get()
-  lister(
-    @Query() query: ListerUtilisateursQueryDto,
-  ): Promise<Page<Utilisateur>> {
+  lister(@Query() query: PaginationQueryDto): Promise<Page<Utilisateur>> {
     return this.utilisateurs.lister(query);
   }
 

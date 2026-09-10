@@ -9,19 +9,15 @@
 //   npm run test:e2e   (docker compose up -d + npm run migration:run:test au préalable)
 
 import { HttpStatus, type INestApplication } from '@nestjs/common';
-import { type RoleUtilisateur } from '@recipe/types';
 import request from 'supertest';
 import { type App } from 'supertest/types';
 import { type DataSource } from 'typeorm';
 
 import {
   COOKIE_ACCES,
-  accesDe,
-  connecter,
+  type CompteDeTest,
+  compteAvecRole,
   enTantQue,
-  inscrire,
-  marque,
-  promouvoir,
 } from './aide-auth';
 import { creerAppDeTest } from './app-de-test';
 import { Avis, Nationalite, Utilisateur, sourceDeDonnees } from './entites';
@@ -35,25 +31,9 @@ let app: INestApplication<App>;
 let source: DataSource;
 let nationalite: Nationalite;
 
-interface Compte {
-  email: string;
-  acces: string;
-}
-
-async function compteConnecte(role: RoleUtilisateur): Promise<Compte> {
-  const email = `${marque(role)}@exemple.test`;
-  await inscrire(app, email).expect(HttpStatus.CREATED);
-  await promouvoir(source, email, role);
-
-  return {
-    email,
-    acces: accesDe(await connecter(app, email).expect(HttpStatus.OK)),
-  };
-}
-
-let auteur: Compte;
-let autre: Compte;
-let moderateur: Compte;
+let auteur: CompteDeTest;
+let autre: CompteDeTest;
+let moderateur: CompteDeTest;
 
 const deposer = (recetteId: number, jeton: string, note = NOTE) =>
   request(app.getHttpServer())
@@ -62,7 +42,7 @@ const deposer = (recetteId: number, jeton: string, note = NOTE) =>
     .send({ note, commentaire: 'Un commentaire' });
 
 // Chaque avis exige un couple (utilisateur, recette) neuf : la base impose l'unicité.
-async function avisDe(compte: Compte): Promise<number> {
+async function avisDe(compte: CompteDeTest): Promise<number> {
   const recette = await creerRecette(source, nationalite);
   const reponse = await deposer(recette.id, compte.acces).expect(
     HttpStatus.CREATED,
@@ -78,9 +58,9 @@ beforeAll(async () => {
   source = await sourceDeDonnees.initialize();
   nationalite = await creerNationalite(source);
 
-  auteur = await compteConnecte('utilisateur');
-  autre = await compteConnecte('utilisateur');
-  moderateur = await compteConnecte('moderateur');
+  auteur = await compteAvecRole(app, source, 'utilisateur');
+  autre = await compteAvecRole(app, source, 'utilisateur');
+  moderateur = await compteAvecRole(app, source, 'moderateur');
 });
 
 afterAll(async () => {

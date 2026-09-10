@@ -7,18 +7,16 @@
 //   npm run test:e2e   (docker compose up -d + npm run migration:run:test au préalable)
 
 import { HttpStatus, type INestApplication } from '@nestjs/common';
-import { type RoleUtilisateur } from '@recipe/types';
 import request from 'supertest';
 import { type App } from 'supertest/types';
 import { type DataSource } from 'typeorm';
 
 import {
-  accesDe,
-  connecter,
+  type CompteDeTest,
+  compteAvecRole,
   enTantQue,
   inscrire,
   marque,
-  promouvoir,
 } from './aide-auth';
 import { creerAppDeTest } from './app-de-test';
 import { Utilisateur, sourceDeDonnees } from './entites';
@@ -27,12 +25,6 @@ const UTILISATEURS = '/api/utilisateurs';
 const INCONNU = '00000000-0000-4000-8000-000000000000';
 
 let source: DataSource;
-
-interface Compte {
-  id: string;
-  email: string;
-  acces: string;
-}
 
 // « Le dernier admin » ne veut rien dire si d'autres specs en ont laissé traîner :
 // on repart d'une base sans aucun administrateur.
@@ -58,21 +50,6 @@ async function identifiantDe(email: string): Promise<string> {
   return utilisateur.id;
 }
 
-// Inscrit, pose le rôle en base, puis se connecte : le jeton porte alors ce rôle.
-async function compteConnecte(
-  app: INestApplication<App>,
-  role: RoleUtilisateur,
-): Promise<Compte> {
-  const email = await inscrit(app, role);
-  await promouvoir(source, email, role);
-
-  return {
-    id: await identifiantDe(email),
-    email,
-    acces: accesDe(await connecter(app, email).expect(HttpStatus.OK)),
-  };
-}
-
 beforeAll(async () => {
   source = await sourceDeDonnees.initialize();
 });
@@ -85,18 +62,18 @@ afterAll(async () => {
 // le compteur est propre à chaque instance.
 describe('Liste et changement de rôle', () => {
   let app: INestApplication<App>;
-  let admin: Compte;
-  let autreAdmin: Compte;
-  let moderateur: Compte;
+  let admin: CompteDeTest;
+  let autreAdmin: CompteDeTest;
+  let moderateur: CompteDeTest;
   let cible: string;
 
   beforeAll(async () => {
     app = await creerAppDeTest();
     await neutraliserAdmins();
 
-    admin = await compteConnecte(app, 'admin');
-    autreAdmin = await compteConnecte(app, 'admin');
-    moderateur = await compteConnecte(app, 'moderateur');
+    admin = await compteAvecRole(app, source, 'admin');
+    autreAdmin = await compteAvecRole(app, source, 'admin');
+    moderateur = await compteAvecRole(app, source, 'moderateur');
     cible = await identifiantDe(await inscrit(app, 'cible'));
   });
 
@@ -171,17 +148,17 @@ describe('Liste et changement de rôle', () => {
 
 describe('Suppression par un administrateur', () => {
   let app: INestApplication<App>;
-  let admin: Compte;
+  let admin: CompteDeTest;
   let victime: string;
-  let moi: Compte;
+  let moi: CompteDeTest;
 
   beforeAll(async () => {
     app = await creerAppDeTest();
     await neutraliserAdmins();
 
-    admin = await compteConnecte(app, 'admin');
+    admin = await compteAvecRole(app, source, 'admin');
     victime = await identifiantDe(await inscrit(app, 'victime'));
-    moi = await compteConnecte(app, 'utilisateur');
+    moi = await compteAvecRole(app, source, 'utilisateur');
   });
 
   afterAll(async () => {

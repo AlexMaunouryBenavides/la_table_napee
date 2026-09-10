@@ -82,6 +82,35 @@ export const jetonStocke = (source: DataSource, refresh: string) =>
     .getRepository(JetonRafraichissement)
     .findOne({ where: { jetonHash: hacherJeton(refresh) } });
 
+export interface CompteDeTest {
+  id: string;
+  email: string;
+  acces: string;
+}
+
+// Aucune route n'attribue de rôle tant qu'un admin n'existe pas : les specs inscrivent
+// un compte, posent son rôle en base, puis se reconnectent pour obtenir un jeton qui
+// le porte. Quatre fichiers en avaient besoin — il vit donc ici.
+export async function compteAvecRole(
+  app: INestApplication<App>,
+  source: DataSource,
+  role: RoleUtilisateur,
+): Promise<CompteDeTest> {
+  const email = `${marque(role)}@exemple.test`;
+  await inscrire(app, email).expect(HttpStatus.CREATED);
+  await promouvoir(source, email, role);
+
+  const { id } = await source
+    .getRepository(Utilisateur)
+    .findOneByOrFail({ email });
+
+  return {
+    id,
+    email,
+    acces: accesDe(await connecter(app, email).expect(HttpStatus.OK)),
+  };
+}
+
 export type MethodeSimple = 'get' | 'patch' | 'delete';
 
 // Rejoue une requête au nom d'un compte donné : le jeton d'accès voyage en cookie,

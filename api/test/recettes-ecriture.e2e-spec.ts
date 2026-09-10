@@ -10,14 +10,7 @@ import request from 'supertest';
 import { type App } from 'supertest/types';
 import { type DataSource } from 'typeorm';
 
-import {
-  COOKIE_ACCES,
-  accesDe,
-  connecter,
-  inscrire,
-  marque,
-  promouvoir,
-} from './aide-auth';
+import { COOKIE_ACCES, compteAvecRole, marque } from './aide-auth';
 import { creerAppDeTest } from './app-de-test';
 import {
   Avis,
@@ -41,15 +34,6 @@ const jetons: Record<'moderateur' | 'admin' | 'utilisateur', string> = {
   admin: '',
   utilisateur: '',
 };
-
-// Inscrit un compte, lui pose son rôle en base, puis se reconnecte : le jeton porte
-// alors le bon rôle.
-async function compte(role: keyof typeof jetons): Promise<string> {
-  const email = `${marque(role)}@exemple.test`;
-  await inscrire(app, email).expect(HttpStatus.CREATED);
-  await promouvoir(source, email, role);
-  return accesDe(await connecter(app, email).expect(HttpStatus.OK));
-}
 
 interface IngredientSaisi {
   nom: string;
@@ -107,9 +91,9 @@ beforeAll(async () => {
     .getRepository(Nationalite)
     .save({ nom: marque('nationalite') });
 
-  jetons.moderateur = await compte('moderateur');
-  jetons.admin = await compte('admin');
-  jetons.utilisateur = await compte('utilisateur');
+  jetons.moderateur = (await compteAvecRole(app, source, 'moderateur')).acces;
+  jetons.admin = (await compteAvecRole(app, source, 'admin')).acces;
+  jetons.utilisateur = (await compteAvecRole(app, source, 'utilisateur')).acces;
 });
 
 afterAll(async () => {

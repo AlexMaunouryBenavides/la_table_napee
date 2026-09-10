@@ -10,10 +10,10 @@ import { Not, Repository } from 'typeorm';
 
 import { DepotJetons } from '../auth/depot-jetons';
 import { HachageMotDePasse } from '../auth/hachage-mot-de-passe.service';
+import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 
 import { ChangerMotDePasseDto } from './dto/changer-mot-de-passe.dto';
 import { ChangerRoleDto } from './dto/changer-role.dto';
-import { ListerUtilisateursQueryDto } from './dto/lister-utilisateurs.query.dto';
 import { ModifierProfilDto } from './dto/modifier-profil.dto';
 import { Utilisateur } from './entities/utilisateur.entity';
 
@@ -103,7 +103,7 @@ export class UtilisateursService {
 
   // UC-16 — la liste est paginée comme toutes les listes de l'API : on ne renvoie
   // jamais une table entière.
-  async lister(query: ListerUtilisateursQueryDto): Promise<Page<Utilisateur>> {
+  async lister(query: PaginationQueryDto): Promise<Page<Utilisateur>> {
     const [donnees, total] = await this.utilisateurs.findAndCount({
       skip: (query.page - PREMIERE_PAGE) * query.limite,
       take: query.limite,
