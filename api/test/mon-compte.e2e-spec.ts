@@ -17,6 +17,7 @@ import {
   MOT_DE_PASSE,
   accesDe,
   connecter,
+  enTantQue,
   inscrire,
   marque,
   rafraichir,
@@ -51,16 +52,6 @@ async function ouvrirCompte(app: INestApplication<App>): Promise<Compte> {
   return { email, acces: accesDe(connexion), refresh: refreshDe(connexion) };
 }
 
-const avecJeton = (
-  app: INestApplication<App>,
-  methode: 'get' | 'patch' | 'delete',
-  chemin: string,
-  jeton: string,
-) =>
-  request(app.getHttpServer())
-    [methode](chemin)
-    .set('Cookie', `${COOKIE_ACCES}=${jeton}`);
-
 beforeAll(async () => {
   source = await sourceDeDonnees.initialize();
 });
@@ -88,7 +79,7 @@ describe('Profil et mot de passe', () => {
     request(app.getHttpServer()).get(MOI).expect(HttpStatus.UNAUTHORIZED));
 
   it('renvoie le compte courant sans jamais exposer le hash', async () => {
-    const reponse = await avecJeton(app, 'get', MOI, compte.acces).expect(
+    const reponse = await enTantQue(app, 'get', MOI, compte.acces).expect(
       HttpStatus.OK,
     );
 
@@ -103,11 +94,11 @@ describe('Profil et mot de passe', () => {
   it('change le pseudo', async () => {
     const pseudo = marque('pseudo');
 
-    await avecJeton(app, 'patch', MOI, compte.acces)
+    await enTantQue(app, 'patch', MOI, compte.acces)
       .send({ pseudo })
       .expect(HttpStatus.OK);
 
-    const reponse = await avecJeton(app, 'get', MOI, compte.acces).expect(
+    const reponse = await enTantQue(app, 'get', MOI, compte.acces).expect(
       HttpStatus.OK,
     );
     expect(reponse.body).toMatchObject({ pseudo });
@@ -117,18 +108,18 @@ describe('Profil et mot de passe', () => {
     const autre = `${marque('autre')}@exemple.test`;
     await inscrire(app, autre).expect(HttpStatus.CREATED);
 
-    await avecJeton(app, 'patch', MOI, compte.acces)
+    await enTantQue(app, 'patch', MOI, compte.acces)
       .send({ email: autre })
       .expect(HttpStatus.CONFLICT);
   });
 
   it('refuse de s’attribuer un rôle (400)', () =>
-    avecJeton(app, 'patch', MOI, compte.acces)
+    enTantQue(app, 'patch', MOI, compte.acces)
       .send({ role: 'admin' })
       .expect(HttpStatus.BAD_REQUEST));
 
   it('refuse un ancien mot de passe faux (400, pas 401)', () =>
-    avecJeton(app, 'patch', MOI_MOT_DE_PASSE, compte.acces)
+    enTantQue(app, 'patch', MOI_MOT_DE_PASSE, compte.acces)
       .send({
         ancienMotDePasse: 'ce-n-est-pas-le-bon-mot-de-passe',
         nouveauMotDePasse: NOUVEAU_MOT_DE_PASSE,
@@ -136,7 +127,7 @@ describe('Profil et mot de passe', () => {
       .expect(HttpStatus.BAD_REQUEST));
 
   it('change le mot de passe : l’ancien ne connecte plus, le nouveau oui', async () => {
-    await avecJeton(app, 'patch', MOI_MOT_DE_PASSE, compte.acces)
+    await enTantQue(app, 'patch', MOI_MOT_DE_PASSE, compte.acces)
       .send({
         ancienMotDePasse: MOT_DE_PASSE,
         nouveauMotDePasse: NOUVEAU_MOT_DE_PASSE,
@@ -196,7 +187,7 @@ describe('Suppression du compte', () => {
   });
 
   it('supprime le compte (204)', async () => {
-    await avecJeton(app, 'delete', MOI, compte.acces).expect(
+    await enTantQue(app, 'delete', MOI, compte.acces).expect(
       HttpStatus.NO_CONTENT,
     );
 

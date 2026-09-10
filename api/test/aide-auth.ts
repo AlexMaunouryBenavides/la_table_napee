@@ -82,6 +82,20 @@ export const jetonStocke = (source: DataSource, refresh: string) =>
     .getRepository(JetonRafraichissement)
     .findOne({ where: { jetonHash: hacherJeton(refresh) } });
 
+export type MethodeSimple = 'get' | 'patch' | 'delete';
+
+// Rejoue une requête au nom d'un compte donné : le jeton d'accès voyage en cookie,
+// jamais en en-tête, exactement comme depuis un navigateur.
+export const enTantQue = (
+  app: INestApplication<App>,
+  methode: MethodeSimple,
+  chemin: string,
+  jeton: string,
+) =>
+  request(app.getHttpServer())
+    [methode](chemin)
+    .set('Cookie', `${COOKIE_ACCES}=${jeton}`);
+
 export interface ContexteAuth {
   app: INestApplication<App>;
   source: DataSource;
