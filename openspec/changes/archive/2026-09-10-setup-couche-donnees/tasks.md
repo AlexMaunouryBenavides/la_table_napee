@@ -39,20 +39,20 @@
 ## 6. Énumérations applicatives
 
 - [x] 6.1 Définir les énums en code : `role`, `difficulty`, `recipe_type`, `unit`
-- [ ] 6.2 Brancher leur validation (class-validator) là où elles entrent
+- [x] 6.2 Brancher leur validation (class-validator) là où elles entrent
 
 ## 7. Seeds
 
 - [x] 7.1 Écrire les seeds des données de RÉFÉRENCE en listes fixes (regime, health_criteria, food_type, nationalités) — vraies valeurs métier, PAS de faker
-- [ ] 7.2 Installer `@faker-js/faker` (dépendance de dev) pour les données d'EXEMPLE en volume
+- [x] 7.2 Installer `@faker-js/faker` (dépendance de dev) pour les données d'EXEMPLE en volume
 - [x] 7.3 Mettre en place l'infrastructure de seed (script idempotent, ordre de dépendances)
 - [x] 7.4 Distinguer clairement seeds (données) et migrations (structure)
-- [ ] 7.5 (Le seed de recettes d'exemple via faker = ticket feature F0, s'appuie sur cette infra)
+- [x] 7.5 (Le seed de recettes d'exemple via faker = ticket feature F0, s'appuie sur cette infra)
 
 ## 8. DTO à la main (≠ colonnes) — validation par DTO + class-validator (façon Nest)
 
-- [ ] 8.1 Écrire les DTO d'entrée par cas d'usage (jamais une copie des colonnes), validés par class-validator + `ValidationPipe`
-- [ ] 8.2 Vérifier qu'aucun DTO n'expose `password_hash`, l'attribution de `role`, ni d'identifiant interne sensible
+- [x] 8.1 Écrire les DTO d'entrée par cas d'usage (jamais une copie des colonnes), validés par class-validator + `ValidationPipe`
+- [x] 8.2 Vérifier qu'aucun DTO n'expose `password_hash`, l'attribution de `role`, ni d'identifiant interne sensible
 
 ## 9. Vérification
 

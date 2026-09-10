@@ -61,9 +61,9 @@
 
 ## 10. Contrôle de propriété (anti-IDOR)
 
-- [ ] 10.1 Dans le service, comparer `user.id` au propriétaire pour les ressources possédées (avis, compte)
-- [ ] 10.2 Distinguer explicitement propriété (UC-07/08) et rôle (UC-14) dans le code
-- [ ] 10.3 Règle anti-auto-rétrogradation pour le dernier admin (UC-16)
+- [x] 10.1 Dans le service, comparer `user.id` au propriétaire pour les ressources possédées (avis, compte)
+- [x] 10.2 Distinguer explicitement propriété (UC-07/08) et rôle (UC-14) dans le code
+- [x] 10.3 Règle anti-auto-rétrogradation pour le dernier admin (UC-16)
 
 ## 11. Intégration client
 
@@ -73,7 +73,7 @@
 
 ## 12. Vérification de sécurité
 
-- [ ] 12.1 Confirmer : aucun jeton lisible en JS, cookies bien `httpOnly`/`Secure`/`SameSite=Lax`
+- [x] 12.1 Confirmer : aucun jeton lisible en JS, cookies bien `httpOnly`/`Secure`/`SameSite=Lax`
 - [x] 12.2 Tester le scénario de vol (refresh réutilisé → famille révoquée)
-- [ ] 12.3 Tester rôle insuffisant (403) et propriété (modifier l'avis d'autrui → refusé)
-- [ ] 12.4 Lancer `npm run verify` → vert
+- [x] 12.3 Tester rôle insuffisant (403) et propriété (modifier l'avis d'autrui → refusé)
+- [x] 12.4 Lancer `npm run verify` → vert

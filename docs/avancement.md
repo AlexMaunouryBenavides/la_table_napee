@@ -79,7 +79,7 @@ existent, et le front n'a pas commencé.
 | Seeds d'EXEMPLE (volume)                 | ✅   | `npm run seed:exemples` (faker, idempotent)           |
 | Authentification & rôles                 | 🟡   | `api/src/auth/` — détail ci-dessous                   |
 
-### 2.a Authentification — 30/37 tâches (`setup-authentification`)
+### 2.a Authentification — 34/37 tâches (`setup-authentification`)
 
 Fait : Argon2, inscription, connexion, cookies `httpOnly`/`Secure`/`SameSite=Lax`,
 refresh persisté hashé, rotation, détection de vol par famille, déconnexion, stratégie
@@ -101,19 +101,12 @@ algorithme JWT épinglé (`passport.r3`) ; erreurs serveur et refus d'accès jou
 - **12.1 / 12.3 vérifications de sécurité** : deux tests e2e — un `403` pour rôle
   insuffisant, un `403` pour modification de l'avis d'autrui.
 
-### 2.b Couche de données — 23/28 tâches (`setup-couche-donnees`)
+### 2.b Couche de données — terminée et archivée
 
-**Reste à faire — et comment**
-
-- **6.2 validation des énums là où elles entrent** (`@IsIn(DIFFICULTES)`,
-  `@IsIn(UNITES)`…) : déjà fait sur le DTO de query des recettes ; le reste arrive
-  mécaniquement avec les DTO d'écriture (F1).
-- ~~7.2 / 7.5 seeds d'exemple~~ : **fait** — `npm run seed:exemples [n]`, titres
-  déterministes (donc rejouable sans doublon), ingrédients tirés du module `food` de
-  faker.
-- **8.1 / 8.2 DTO d'entrée par cas d'usage** : ne se fait pas d'un bloc, c'est une ligne
-  de chaque feature ci-dessous. À re-vérifier à chaque DTO : jamais `password_hash`,
-  jamais `role` en entrée utilisateur.
+Les 28 tâches sont cochées et le change est archivé
+(`openspec/changes/archive/2026-09-10-setup-couche-donnees`). Les DTO d'entrée et la
+validation des énumérations sont arrivés avec les features ; les seeds d'exemple avec
+F0.
 
 ---
 
@@ -211,11 +204,10 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 
 ## Dette et écarts repérés
 
-| Point                                                                     | Quoi en faire                     |
-| ------------------------------------------------------------------------- | --------------------------------- |
-| Tâches OpenSpec faites mais non cochées (auth 10.x/12.x, données 6.2/8.x) | le suivi ment, le corriger        |
-| Note moyenne absente des listes (`routes-api.md` § 5)                     | trancher : agrégation, jamais N+1 |
-| Aucun change OpenSpec ne couvre le front                                  | à créer avant d'attaquer le lot 5 |
+| Point                                                 | Quoi en faire                     |
+| ----------------------------------------------------- | --------------------------------- |
+| Note moyenne absente des listes (`routes-api.md` § 5) | trancher : agrégation, jamais N+1 |
+| Aucun change OpenSpec ne couvre le front              | à créer avant d'attaquer le lot 5 |
 
 ---
 
@@ -230,13 +222,13 @@ routes manquantes, 16 sont le même patron CRUD répété quatre fois et 1 est u
 requête de recherche. Le difficile (transaction + N+1, anti-IDOR, rotation de jetons,
 dernier admin) est derrière.
 
-| #     | Étape                                       | Routes | Pourquoi dans cet ordre                                                                                                    |
-| ----- | ------------------------------------------- | -----: | -------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~ | ~~**Tests e2e de la feature avis**~~        |      0 | **Fait** — 14 tests e2e, le contrôle de propriété est tenu (tâche 12.3 close).                                             |
-| ~~2~~ | ~~**F5 — autocomplétion des ingrédients**~~ |      1 | **Fait** — enveloppe paginée, recherche insensible à la casse, 8 tests e2e.                                                |
-| ~~3~~ | ~~**F4 — catégories (4 ressources)**~~      |     16 | **Fait** — fabrique de contrôleur partagée, `409` si la catégorie est encore utilisée, 13 tests e2e.                       |
-| ~~4~~ | ~~**F0 — seeds d'exemple (faker)**~~        |      0 | **Fait** — `npm run seed:exemples [n]`, titres déterministes donc rejouable, 3 tests e2e.                                  |
-| 5     | **Synchroniser le suivi OpenSpec**          |      0 | Cocher ce qui est fait (auth 10.1→10.3, 12.1, 12.3, 12.4 ; données 6.2, 8.1, 8.2 ; tests 2→5) et archiver ce qui est clos. |
+| #     | Étape                                       | Routes | Pourquoi dans cet ordre                                                                                                                                              |
+| ----- | ------------------------------------------- | -----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~ | ~~**Tests e2e de la feature avis**~~        |      0 | **Fait** — 14 tests e2e, le contrôle de propriété est tenu (tâche 12.3 close).                                                                                       |
+| ~~2~~ | ~~**F5 — autocomplétion des ingrédients**~~ |      1 | **Fait** — enveloppe paginée, recherche insensible à la casse, 8 tests e2e.                                                                                          |
+| ~~3~~ | ~~**F4 — catégories (4 ressources)**~~      |     16 | **Fait** — fabrique de contrôleur partagée, `409` si la catégorie est encore utilisée, 13 tests e2e.                                                                 |
+| ~~4~~ | ~~**F0 — seeds d'exemple (faker)**~~        |      0 | **Fait** — `npm run seed:exemples [n]`, titres déterministes donc rejouable, 3 tests e2e.                                                                            |
+| ~~5~~ | ~~**Synchroniser le suivi OpenSpec**~~      |      0 | **Fait** — tâches cochées, `setup-couche-donnees` archivé. Restent ouverts : `setup-authentification` 34/37 (groupe 11 = front) et `setup-tests` 14/18 (guide + CI). |
 
 À la fin de l'étape 5, l'API couvre les **37 routes du contrat** et le lot 3 est à
 100 %.
