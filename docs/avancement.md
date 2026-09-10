@@ -19,13 +19,13 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   █████████████░░░░░░░   64 %
+GLOBAL   █████████████░░░░░░░   65 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
 | ------------------------------------------ | ----: | ---------: | ---------------------- |
 | 1. Conception                              |  10 % |       75 % | `███████████████░░░░░` |
-| 2. Mise en place (socle)                   |  30 % |       95 % | `███████████████████░` |
+| 2. Mise en place (socle)                   |  30 % |      100 % | `████████████████████` |
 | 3. Features API (les 37 routes du contrat) |  25 % |      100 % | `████████████████████` |
 | 4. Tests                                   |  10 % |       75 % | `███████████████░░░░░` |
 | 5. Front                                   |  20 % |        2 % | `░░░░░░░░░░░░░░░░░░░░` |
@@ -62,7 +62,7 @@ existent, et le front n'a pas commencé.
 
 ---
 
-## 2. Mise en place (socle) — 95 %
+## 2. Mise en place (socle) — 100 %
 
 `███████████████████░`
 
@@ -76,7 +76,7 @@ existent, et le front n'a pas commencé.
 | Entités TypeORM                          | ✅   | `api/src/*/entities/`                                 |
 | Migration initiale (DDL → migration n°1) | ✅   | `api/src/migrations/1786718528873-SchemaInitial.ts`   |
 | Seeds de RÉFÉRENCE                       | ✅   | `api/src/seeds/donnees-reference.ts`                  |
-| Seeds d'EXEMPLE (volume)                 | ❌   | faker non installé                                    |
+| Seeds d'EXEMPLE (volume)                 | ✅   | `npm run seed:exemples` (faker, idempotent)           |
 | Authentification & rôles                 | 🟡   | `api/src/auth/` — détail ci-dessous                   |
 
 ### 2.a Authentification — 30/37 tâches (`setup-authentification`)
@@ -108,9 +108,9 @@ algorithme JWT épinglé (`passport.r3`) ; erreurs serveur et refus d'accès jou
 - **6.2 validation des énums là où elles entrent** (`@IsIn(DIFFICULTES)`,
   `@IsIn(UNITES)`…) : déjà fait sur le DTO de query des recettes ; le reste arrive
   mécaniquement avec les DTO d'écriture (F1).
-- **7.2 / 7.5 seeds d'exemple** : installer `@faker-js/faker` en dev et étendre
-  `api/src/seeds/seed.ts` (script idempotent déjà en place) pour générer ~50 recettes.
-  C'est le ticket **F0**, utile surtout pour éprouver pagination et filtres.
+- ~~7.2 / 7.5 seeds d'exemple~~ : **fait** — `npm run seed:exemples [n]`, titres
+  déterministes (donc rejouable sans doublon), ingrédients tirés du module `food` de
+  faker.
 - **8.1 / 8.2 DTO d'entrée par cas d'usage** : ne se fait pas d'un bloc, c'est une ligne
   de chaque feature ci-dessous. À re-vérifier à chaque DTO : jamais `password_hash`,
   jamais `role` en entrée utilisateur.
@@ -139,11 +139,10 @@ Référence : `design/routes-api.md`. Chaque ligne = une route du contrat.
 
 ### ❌ Reste à faire : plus aucune route
 
-| Ticket | Périmètre       | Routes | UC  | Comment (l'essentiel à ne pas rater)                                      |
-| ------ | --------------- | -----: | --- | ------------------------------------------------------------------------- |
-| **F0** | Seeds d'exemple |      0 | —   | faker + `seed.ts`. Débloque le test réel des filtres et de la pagination. |
+| Ticket | Périmètre | Routes | UC  | Comment (l'essentiel à ne pas rater) |
+| ------ | --------- | -----: | --- | ------------------------------------ |
 
-**Toutes les routes du contrat existent.** Reste F0 (seeds d'exemple), hors contrat.
+**Toutes les routes du contrat existent, et F0 est fait.** Reste l’étape 5 : synchroniser le suivi OpenSpec.
 
 ---
 
@@ -160,7 +159,7 @@ Le change `setup-tests` affiche **0/18** dans OpenSpec, mais c'est faux : l'infr
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
-| 13 fichiers e2e — 108 tests, vert (sérialisés)        | ✅   |
+| 14 fichiers e2e — 111 tests, vert (sérialisés)        | ✅   |
 | Guide de tests                                        | ❌   |
 | Factories / fixtures (`test/fixtures.ts`)             | ✅   |
 | e2e dans la CI                                        | ❌   |
@@ -231,13 +230,13 @@ routes manquantes, 16 sont le même patron CRUD répété quatre fois et 1 est u
 requête de recherche. Le difficile (transaction + N+1, anti-IDOR, rotation de jetons,
 dernier admin) est derrière.
 
-| #     | Étape                                       | Routes | Pourquoi dans cet ordre                                                                                                                                                      |
-| ----- | ------------------------------------------- | -----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~ | ~~**Tests e2e de la feature avis**~~        |      0 | **Fait** — 14 tests e2e, le contrôle de propriété est tenu (tâche 12.3 close).                                                                                               |
-| ~~2~~ | ~~**F5 — autocomplétion des ingrédients**~~ |      1 | **Fait** — enveloppe paginée, recherche insensible à la casse, 8 tests e2e.                                                                                                  |
-| ~~3~~ | ~~**F4 — catégories (4 ressources)**~~      |     16 | **Fait** — fabrique de contrôleur partagée, `409` si la catégorie est encore utilisée, 13 tests e2e.                                                                         |
-| 4     | **F0 — seeds d'exemple (faker)**            |      0 | Pas bloquant pour l'API, mais indispensable pour éprouver pagination et filtres pour de vrai, et pour amorcer le front. Couvre les tâches 7.2/7.5 de `setup-couche-donnees`. |
-| 5     | **Synchroniser le suivi OpenSpec**          |      0 | Cocher ce qui est fait (auth 10.1→10.3, 12.1, 12.3, 12.4 ; données 6.2, 8.1, 8.2 ; tests 2→5) et archiver ce qui est clos.                                                   |
+| #     | Étape                                       | Routes | Pourquoi dans cet ordre                                                                                                    |
+| ----- | ------------------------------------------- | -----: | -------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~ | ~~**Tests e2e de la feature avis**~~        |      0 | **Fait** — 14 tests e2e, le contrôle de propriété est tenu (tâche 12.3 close).                                             |
+| ~~2~~ | ~~**F5 — autocomplétion des ingrédients**~~ |      1 | **Fait** — enveloppe paginée, recherche insensible à la casse, 8 tests e2e.                                                |
+| ~~3~~ | ~~**F4 — catégories (4 ressources)**~~      |     16 | **Fait** — fabrique de contrôleur partagée, `409` si la catégorie est encore utilisée, 13 tests e2e.                       |
+| ~~4~~ | ~~**F0 — seeds d'exemple (faker)**~~        |      0 | **Fait** — `npm run seed:exemples [n]`, titres déterministes donc rejouable, 3 tests e2e.                                  |
+| 5     | **Synchroniser le suivi OpenSpec**          |      0 | Cocher ce qui est fait (auth 10.1→10.3, 12.1, 12.3, 12.4 ; données 6.2, 8.1, 8.2 ; tests 2→5) et archiver ce qui est clos. |
 
 À la fin de l'étape 5, l'API couvre les **37 routes du contrat** et le lot 3 est à
 100 %.
