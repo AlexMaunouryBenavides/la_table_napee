@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 
-import { seDeconnecter } from '../acces-api/authentification';
 import { type Session } from '../acces-api/session';
 import { AccesRefuse } from '../composants/acces-refuse';
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
-import { useSession } from '../session-courante';
+import { useDeconnexion, useSession } from '../session-courante';
 
 import { peutAcceder, roleExigePour } from './acces-panneau';
 import { sectionsPour, type SectionPanneau } from './entrees-panneau';
@@ -45,7 +44,7 @@ function NavigationLaterale({
   sections: SectionPanneau[];
   connecte: boolean;
 }) {
-  const naviguer = useNavigate();
+  const seDeconnecterEtRevalider = useDeconnexion();
 
   return (
     <nav
@@ -74,9 +73,7 @@ function NavigationLaterale({
             variante="texte"
             taille="sm"
             className="!px-0 text-nappe"
-            onClick={() => {
-              void seDeconnecter().then(() => naviguer('/'));
-            }}
+            onClick={seDeconnecterEtRevalider}
           >
             Se déconnecter
           </Bouton>

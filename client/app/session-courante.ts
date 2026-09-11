@@ -1,5 +1,6 @@
-import { useRouteLoaderData } from 'react-router';
+import { useNavigate, useRevalidator, useRouteLoaderData } from 'react-router';
 
+import { seDeconnecter } from './acces-api/authentification';
 import type { Session } from './acces-api/session';
 
 // L'identifiant que React Router donne à la route racine : c'est par lui que les
@@ -29,4 +30,28 @@ export function useSession(): EtatSession {
       sessionIndisponible: true,
     }
   );
+}
+
+/**
+ * Déconnecte, puis REVALIDE.
+ *
+ * Le loader racine ne se rejoue pas de lui-même sur une navigation impérative : sans
+ * la revalidation, l'en-tête continuerait d'afficher le pseudo d'une session déjà
+ * close. On revalide même si l'appel a échoué — la revalidation dit alors la vérité,
+ * à savoir que la session tient toujours.
+ */
+export function useDeconnexion(): () => void {
+  const naviguer = useNavigate();
+  const { revalidate } = useRevalidator();
+
+  return () => {
+    void (async () => {
+      try {
+        await seDeconnecter();
+        await naviguer('/');
+      } finally {
+        await revalidate();
+      }
+    })();
+  };
 }

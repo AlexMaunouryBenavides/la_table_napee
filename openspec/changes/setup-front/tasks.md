@@ -76,7 +76,7 @@
 
 - [x] 9.1 Écran de fumée : une page publique qui liste des recettes via la couche d'accès, avec ses trois états — elle prouve le socle de bout en bout
 - [x] 9.2 Vérifié dans Chrome, **API éteinte** (Docker non lancé) : vitrine debout malgré l'API injoignable, bandeau `role="alert"`, session dégradée en visiteur, 404 avec sa navigation, 401 dans la coquille du back-office sans redirection, coquille d'authentification au bon rendu, console sans erreur autre que `ERR_CONNECTION_REFUSED`
-- [ ] 9.2b **Reste à vérifier avec la base et l'API lancées** : connexion, jeton expiré rejoué sans clignotement, déconnexion, et `403` sur `/panneau/utilisateurs` avec un compte modérateur
+- [x] 9.2b Vérifié avec la base, l'API et le client lancés : connexion (cookies posés, `document.cookie` vide côté JS), **jeton expiré rejoué sans clignotement** (`401` → `rafraichissement` → rejeu, un seul de chaque, l'écran ne montre rien), déconnexion (l'en-tête repasse à Connexion/Inscription immédiatement), et `403` sur `/panneau/utilisateurs` avec un compte modérateur — nommant les deux rôles, à l'URL demandée, sans redirection
 - [x] 9.3 Chercher `localStorage`, `sessionStorage`, « token » et le motif `-[` dans `client/app` : aucune occurrence
 - [x] 9.4 `npm test` et `npm run verify` verts, sortie à l'appui
 - [x] 9.5 Groupe 11 de `setup-authentification` : 11.2 et 11.3 cochés (11.3 reformulée, sans react-query). **11.1 reste ouvert** — les formulaires arrivent avec les écrans 4 et 5, donc le change ne se ferme pas encore

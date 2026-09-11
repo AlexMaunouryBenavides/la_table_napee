@@ -1,4 +1,4 @@
-import type { RoleUtilisateur } from '@recipe/types';
+import { aAuMoins, type RoleUtilisateur } from '@recipe/types';
 import { Link } from 'react-router';
 
 import { PageImpasse } from './page-impasse';
@@ -45,9 +45,17 @@ export function AccesRefuse({
       // et ce qu'il aurait fallu être.
       explication={`Elle demande le rôle ${LIBELLES[roleExige]}, et vous êtes ${LIBELLES[roleCourant]}.`}
       actions={
-        <Link to="/panneau" className="underline">
-          Retour au tableau de bord
-        </Link>
+        // Renvoyer vers le tableau de bord quelqu'un qui n'a rien à faire dans le
+        // panneau, c'est le renvoyer sur un second refus. On le ramène au site.
+        aAuMoins(roleCourant, 'moderateur') ? (
+          <Link to="/panneau" className="underline">
+            Retour au tableau de bord
+          </Link>
+        ) : (
+          <Link to="/" className="underline">
+            Retour au site
+          </Link>
+        )
       }
     />
   );

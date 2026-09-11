@@ -1,8 +1,7 @@
-import { Form, Link, useNavigate } from 'react-router';
+import { Form, Link } from 'react-router';
 
-import { seDeconnecter } from '../acces-api/authentification';
 import { Bouton } from '../composants/bouton';
-import { useSession } from '../session-courante';
+import { useDeconnexion, useSession } from '../session-courante';
 
 function RechercheRapide() {
   return (
@@ -32,20 +31,14 @@ function AccesVisiteur() {
 }
 
 function AccesConnecte({ pseudo }: { pseudo: string | null }) {
-  const naviguer = useNavigate();
+  const seDeconnecterEtRevalider = useDeconnexion();
 
   return (
     <>
       {/* `pseudo` est facultatif en base : jamais « Bonjour, null », et surtout pas
           l'e-mail en remplacement — ce serait exposer une donnée personnelle. */}
       <Link to="/mon-compte">{pseudo ?? 'Mon compte'}</Link>
-      <Bouton
-        variante="texte"
-        taille="sm"
-        onClick={() => {
-          void seDeconnecter().then(() => naviguer('/'));
-        }}
-      >
+      <Bouton variante="texte" taille="sm" onClick={seDeconnecterEtRevalider}>
         Se déconnecter
       </Bouton>
     </>
