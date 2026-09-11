@@ -1,4 +1,4 @@
-import type { Page, RecetteResume } from '@recipe/types';
+import type { Page, Recette, RecetteResume } from '@recipe/types';
 
 import { appelerApi } from './appeler-api';
 
@@ -14,4 +14,9 @@ export function listerRecettes(
   return appelerApi<Page<RecetteResume>>(
     requete === '' ? '/recettes' : `/recettes?${requete}`,
   );
+}
+
+/** Recette complète : compositions, étapes déjà triées, avis et note moyenne. */
+export function obtenirRecette(id: number): Promise<Recette> {
+  return appelerApi<Recette>(`/recettes/${String(id)}`);
 }
