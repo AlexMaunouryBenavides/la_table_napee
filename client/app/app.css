@@ -1,16 +1,140 @@
+/* Polices servies par le site (licence OFL) : aucune requête vers un tiers, et la
+   page reste lisible hors réseau grâce aux replis déclarés dans --font-*.
+   On ne charge que les graisses réellement dessinées par les maquettes. */
+@import '@fontsource/cormorant-garamond/300.css';
+@import '@fontsource/cormorant-garamond/300-italic.css';
+@import '@fontsource/cormorant-garamond/400.css';
+@import '@fontsource/cormorant-garamond/400-italic.css';
+@import '@fontsource/cormorant-garamond/500.css';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource/maitree/300.css';
+@import '@fontsource/maitree/400.css';
+@import '@fontsource/maitree/500.css';
+@import '@fontsource/ruthie/400.css';
+
 @import 'tailwindcss';
 
+/* Source unique des valeurs visuelles. Un écran qui a besoin d'une couleur, d'une
+   taille ou d'un rayon le prend ici : aucune valeur arbitraire (p-[13px], text-[#333])
+   n'a le droit d'exister dans le code des écrans. */
 @theme {
-  --font-sans:
-    'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  /* ── Couleurs ── */
+  --color-nappe: #f8f8ff; /* fond d'application */
+  --color-lin: #e9e7e0; /* hors-cadre, bureau */
+  --color-craie: #ffffff; /* surfaces élevées : cartes, tableaux, champs */
+  --color-encre: #111111; /* texte principal — 18.1:1 sur nappe */
+  --color-encre-70: #4a4a4a; /* texte courant secondaire — 8.4:1 */
+  --color-encre-55: #6d6d6d; /* méta, aides — 5.3:1 (AA) */
+  --color-encre-35: #9a9a9a; /* placeholder uniquement — jamais porteur d'info */
+  --color-ardoise: #2f4f4f; /* accent, actions, liens — 9.1:1 */
+  --color-ardoise-fonce: #1f3a3a; /* survol */
+  --color-ardoise-clair: #5c7c7c; /* texte sur aplat lavande */
+  --color-lavande: #e6e6fa; /* fond doux, avatar, numéros d'étape */
+  --color-acier: #b0c4de; /* traits décoratifs, bordure d'élément actif */
+  --color-succes: #2f6b4f;
+  --color-succes-fond: #e8f1ec;
+  --color-alerte: #8a5a10;
+  --color-alerte-fond: #faf1e0;
+  --color-erreur: #9b2c2c;
+  --color-erreur-fond: #fbeceb;
+  --color-trait: #e2e0dd; /* séparateurs */
+  --color-trait-fort: #c9c6c1; /* bordure de champ, de tableau */
+
+  /* ── Typographie ── */
+  --font-titre: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-texte: 'Maitree', Georgia, serif;
+  --font-signature: 'Ruthie', 'Brush Script MT', cursive; /* logotype, ≥ 24px */
+
+  --text-xs: 11px; /* libellés capitales, étiquettes */
+  --text-sm: 13px; /* méta, cellules de tableau */
+  --text-base: 15px; /* corps, étapes */
+  --text-lg: 18px; /* chapô, nom d'ingrédient */
+  --text-xl: 22px; /* titre de carte recette */
+  --text-2xl: 28px; /* titre d'état vide, de modale */
+  --text-3xl: 40px; /* titre de section, h1 back-office */
+  --text-4xl: 56px; /* titre de page */
+  --text-5xl: 74px; /* titre héros desktop */
+
+  /* ── Interlettrage ── les trois valeurs des capitales du handoff */
+  --tracking-etiquette: 1px; /* libellés de champ, étiquettes de rôle */
+  --tracking-section: 1.5px; /* titres de section dans la navigation */
+  --tracking-bouton: 2px; /* libellés de bouton */
+
+  /* ── Espacements — échelle 4px stricte : p-4 = 16px ── */
+  --spacing: 4px;
+
+  /* ── Rayons ── */
+  --radius-xs: 4px; /* case à cocher, miniature */
+  --radius-sm: 8px; /* champ, bandeau, bouton de pagination */
+  --radius-md: 12px; /* carte, tableau, panneau */
+  --radius-lg: 16px; /* modale, fenêtre */
+  --radius-xl: 24px;
+  --radius-pilule: 999px; /* bouton, chip, champ de recherche */
+
+  /* ── Ombres ── */
+  --shadow-1: 0 1px 2px rgb(17 17 17 / 0.06);
+  --shadow-2: 0 4px 14px rgb(17 17 17 / 0.08);
+  --shadow-3: 0 18px 44px rgb(17 17 17 / 0.14);
+  --shadow-4: 0 30px 70px rgb(17 17 17 / 0.18);
 }
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
+@layer base {
+  html {
+    font-family: var(--font-texte);
+    font-weight: 300;
+  }
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+  body {
+    background: var(--color-nappe);
+    color: var(--color-encre);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titre);
+    font-weight: 400;
+  }
+
+  a {
+    color: var(--color-ardoise);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-ardoise-fonce);
+    text-decoration: underline;
+  }
+
+  /* Le contour de focus ne se supprime pas : sans lui, la navigation au clavier
+     devient aveugle. */
+  :focus-visible {
+    outline: 2px solid var(--color-ardoise);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  /* Transitions sobres, communes à tout ce qui réagit au pointeur. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role='button'],
+  [role='checkbox'] {
+    transition:
+      background-color 0.18s,
+      color 0.18s,
+      border-color 0.18s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 }
