@@ -32,7 +32,7 @@
 - [x] 4.4 Écrire l'utilitaire de lecture des critères de liste depuis l'URL (recherche, filtres, tri, page) et d'écriture vers `URLSearchParams`, avec remise à `page=1` sur changement de critère
 - [x] 4.5 Tester cet utilitaire : lecture d'une URL complète, valeurs absentes, page hors bornes, remise à 1
 - [x] 4.6 Corriger `@recipe/types` : ses interfaces d'entités décrivaient un modèle que l'API n'a jamais implémenté — rien ne les importait, donc rien ne l'avait révélé
-- [ ] 4.7 **Dette ouverte** : rien ne garde `@recipe/types` aligné sur l'API. Le garde-fou serait un test e2e affirmant la forme de `GET /recettes/:id` — travail côté API, hors de ce change
+- [x] 4.7 Dette consignée dans `docs/avancement.md` : rien ne garde `@recipe/types` aligné sur l'API. Le garde-fou est un e2e côté API, hors du périmètre de ce change
 
 ## 5. Passage en SPA et ossature de routes
 

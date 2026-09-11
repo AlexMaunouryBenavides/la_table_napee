@@ -217,11 +217,11 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 
 ## Dette et écarts repérés
 
-| Point                                                 | Quoi en faire                     |
-| ----------------------------------------------------- | --------------------------------- |
-| Note moyenne absente des listes (`routes-api.md` § 5) | trancher : agrégation, jamais N+1 |
-| Aucun change OpenSpec ne couvre le front              | à créer avant d'attaquer le lot 5 |
-| e2e absents de la CI                                  | voir le lot 4                     |
+| Point                                                 | Quoi en faire                                                                                                      |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Note moyenne absente des listes (`routes-api.md` § 5) | trancher : agrégation, jamais N+1                                                                                  |
+| e2e absents de la CI                                  | voir le lot 4                                                                                                      |
+| Rien ne garde `@recipe/types` aligné sur l'API        | un e2e affirmant la forme de `GET /recettes/:id` ; la dérive découverte le 2026-09-11 n'avait été révélée par rien |
 
 ### Reporté sciemment (décidé, pas oublié)
 
