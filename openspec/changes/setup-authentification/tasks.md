@@ -67,9 +67,9 @@
 
 ## 11. Intégration client
 
-- [ ] 11.1 Formulaires connexion/inscription (react-hook-form)
-- [ ] 11.2 Appels API avec envoi des cookies ; aucun token stocké côté JS
-- [ ] 11.3 Refresh transparent sur 401 (react-query) puis rejouer la requête
+- [ ] 11.1 Formulaires connexion/inscription — arrive avec les écrans 4 et 5 ; react-hook-form sera tranché à ce moment-là, le socle n'en a pas eu besoin
+- [x] 11.2 Appels API avec envoi des cookies ; aucun token stocké côté JS — `client/app/acces-api/appeler-api.ts`, `credentials: 'include'` sur tout appel ; aucune occurrence de `localStorage`, `sessionStorage` ni de jeton dans `client/app`
+- [x] 11.3 Refresh transparent sur 401 puis rejeu de la requête — **sans react-query** : les `clientLoader` de React Router v7 tiennent l'état serveur, et empiler react-query par-dessus donnerait deux caches pour la même donnée. 17 tests couvrent le rejeu unique et la promesse partagée entre appels parallèles
 
 ## 12. Vérification de sécurité
 

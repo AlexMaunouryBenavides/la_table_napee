@@ -6,10 +6,11 @@
 >
 > Sources croisées pour l'écrire : `git log`, `npx openspec list`,
 > `openspec/changes/*/tasks.md`, `design/routes-api.md` (le contrat = la liste
-> exhaustive de ce qu'il faut construire), `docs/etapes-general.md` (le plan global).
+> exhaustive de ce qu'il faut construire), `design/ecrans.md` (la liste exhaustive des
+> écrans), `docs/etapes-general.md` (le plan global).
 >
-> **Dernière vérification : 2026-09-10** — commit `9f329fa` + le travail non commité
-> de la branche `setup-authentification` (feature avis, puis adaptation à `eng-kit`).
+> **Dernière vérification : 2026-09-11** — branche `setup-authentification`, socle du
+> front écrit (change `setup-front`, groupes 1 à 9).
 >
 > Les RÈGLES d'ingénierie vivent maintenant dans `eng-kit/` (dépôt séparé, ignoré ici) :
 > `docs/conventions/` et `docs/guides/` ont été supprimés.
@@ -19,52 +20,55 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   █████████████░░░░░░░   65 %
+GLOBAL   ████████████████░░░░   78 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
 | ------------------------------------------ | ----: | ---------: | ---------------------- |
-| 1. Conception                              |  10 % |       75 % | `███████████████░░░░░` |
+| 1. Conception                              |  10 % |      100 % | `████████████████████` |
 | 2. Mise en place (socle)                   |  30 % |      100 % | `████████████████████` |
 | 3. Features API (les 37 routes du contrat) |  25 % |      100 % | `████████████████████` |
 | 4. Tests                                   |  10 % |       75 % | `███████████████░░░░░` |
-| 5. Front                                   |  20 % |        2 % | `░░░░░░░░░░░░░░░░░░░░` |
+| 5. Front                                   |  20 % |       25 % | `█████░░░░░░░░░░░░░░░` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
 
 Les poids sont un jugement, pas une science : ils disent seulement que le front pèse
 autant qu'un quart du back. Le global en découle (somme pondérée).
 
-**En une phrase** : le socle back est fini et solide, mais seules 10 routes sur 37
-existent, et le front n'a pas commencé.
+**En une phrase** : le back est terminé, le **socle du front est posé et prouvé dans un
+navigateur** (tokens, couche d'accès API avec refresh transparent, composants partagés,
+coquilles, écrans système) ; restent les onze écrans de contenu, puis le déploiement.
 
 ---
 
-## 1. Conception — 75 %
+## 1. Conception — 100 %
 
-`███████████████░░░░░`
+`████████████████████`
 
-| Élément                      | État | Où                             |
-| ---------------------------- | ---- | ------------------------------ |
-| Cas d'usage (UC-01 → UC-16)  | ✅   | `design/use-cases-recettes.md` |
-| Modélisation base de données | ✅   | `docs/database.sql`            |
-| Contrat des routes de l'API  | ✅   | `design/routes-api.md`         |
-| **Maquette front**           | ❌   | —                              |
+| Élément                      | État | Où                                           |
+| ---------------------------- | ---- | -------------------------------------------- |
+| Cas d'usage (UC-01 → UC-16)  | ✅   | `design/use-cases-recettes.md`               |
+| Modélisation base de données | ✅   | `docs/database.sql`                          |
+| Contrat des routes de l'API  | ✅   | `design/routes-api.md`                       |
+| Maquette front               | ✅   | `design/ecrans.md` + le handoff (hors dépôt) |
 
-**Reste à faire — et comment**
+**Sur la maquette** : `design/ecrans.md` liste les **14 écrans**, chacun rattaché à ses
+routes et à ses UC — aucun écran sans route, aucune route orpheline. Le rendu détaillé
+vit dans `design_handoff_la_table_nappee/` : 14 maquettes HTML haute fidélité (desktop
+et mobile, états chargement / vide / erreur) et `theme.css` (les tokens, à coller dans
+`app/app.css`). **Ce dossier est volontairement hors dépôt** (`.gitignore`) : c'est une
+référence de conception locale, pas du code du projet — ses classes maison (`lt-btn`,
+`lt-champ`) sont à traduire en Tailwind, jamais à recopier.
 
-- **Maquette front** : le seul trou de la phase conception, et il bloque le lot 5. Pas
-  besoin de Figma : une liste d'écrans (liste des recettes, détail, connexion,
-  inscription, mon compte, panneau de modération) avec, pour chacun, les données
-  affichées et les actions possibles. Un `design/ecrans.md` suffit.
-- **4 décisions laissées ouvertes** dans `design/routes-api.md` § 5, à trancher au
-  moment d'écrire la feature concernée : forme des étapes (tableau vs sous-ressource),
-  syntaxe de tri, note moyenne dans les listes, favoris (reporté).
+**Reste ouvert (sciemment)** : les 4 décisions de `design/routes-api.md` § 5 — forme
+des étapes, syntaxe de tri, note moyenne dans les listes, favoris (reporté). À trancher
+au moment d'écrire l'écran ou la feature concernée.
 
 ---
 
 ## 2. Mise en place (socle) — 100 %
 
-`███████████████████░`
+`████████████████████`
 
 | Étape                                    | État | Preuve                                                |
 | ---------------------------------------- | ---- | ----------------------------------------------------- |
@@ -77,74 +81,61 @@ existent, et le front n'a pas commencé.
 | Migration initiale (DDL → migration n°1) | ✅   | `api/src/migrations/1786718528873-SchemaInitial.ts`   |
 | Seeds de RÉFÉRENCE                       | ✅   | `api/src/seeds/donnees-reference.ts`                  |
 | Seeds d'EXEMPLE (volume)                 | ✅   | `npm run seed:exemples` (faker, idempotent)           |
-| Authentification & rôles                 | 🟡   | `api/src/auth/` — détail ci-dessous                   |
+| Authentification & rôles                 | ✅   | `api/src/auth/` — détail ci-dessous                   |
 
-### 2.a Authentification — 34/37 tâches (`setup-authentification`)
+### 2.a Authentification — 34/37 tâches, mais côté serveur c'est fini
 
 Fait : Argon2, inscription, connexion, cookies `httpOnly`/`Secure`/`SameSite=Lax`,
 refresh persisté hashé, rotation, détection de vol par famille, déconnexion, stratégie
 passport-jwt lisant le cookie, `JwtAuthGuard`, `@Roles()` + `RolesGuard`, hiérarchie
 admin ⊃ modérateur ⊃ utilisateur (`auth/hierarchie-roles.ts`), `@UtilisateurCourant()`,
-et le contrôle de propriété anti-IDOR (10.1/10.2) appliqué sur les avis.
+le contrôle de propriété anti-IDOR appliqué sur les avis, et la protection du dernier
+admin (auto-rétrogradation comme `DELETE /moi`).
 
 Depuis l'adoption du kit : **deny-by-default** (`nest-authz.r1`) — l'API est fermée par
 défaut par un `APP_GUARD` global, seules les routes `@Public()` sont ouvertes ;
 algorithme JWT épinglé (`passport.r3`) ; erreurs serveur et refus d'accès journalisés
 (`error-handling.r8`, `security.r9`).
 
-**Reste à faire — et comment**
-
-- **10.3 anti-auto-rétrogradation du dernier admin** : **fait** avec F3 — règle du
-  service `utilisateurs`, appliquée aussi à `DELETE /moi`.
-- **11.x intégration client** (formulaires, `credentials: 'include'`, refresh
-  transparent sur 401) : appartient de fait au lot 5, à faire au premier écran protégé.
-- **12.1 / 12.3 vérifications de sécurité** : deux tests e2e — un `403` pour rôle
-  insuffisant, un `403` pour modification de l'avis d'autrui.
+**Les 3 tâches restantes (groupe 11) sont du front** et se feront dans le lot 5 :
+formulaires connexion/inscription, appels avec `credentials: 'include'` sans aucun jeton
+en JS, refresh transparent sur 401. Le change `setup-authentification` ne se fermera
+donc qu'avec les premiers écrans protégés.
 
 ### 2.b Couche de données — terminée et archivée
 
 Les 28 tâches sont cochées et le change est archivé
-(`openspec/changes/archive/2026-09-10-setup-couche-donnees`). Les DTO d'entrée et la
-validation des énumérations sont arrivés avec les features ; les seeds d'exemple avec
-F0.
+(`openspec/changes/archive/2026-09-10-setup-couche-donnees`).
 
 ---
 
 ## 3. Features API — 37 routes sur 37 (100 %)
 
-`███████████░░░░░░░░░`
+`████████████████████`
 
-Référence : `design/routes-api.md`. Chaque ligne = une route du contrat.
+Référence : `design/routes-api.md`. Chaque ligne = une part du contrat.
 
-### ✅ Fait (37 routes)
+| Routes                                                                                          | UC            | Où                                                               |
+| ----------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------- |
+| `POST /auth/inscription` · `connexion` · `rafraichissement` · `deconnexion`                     | UC-04, UC-05  | `api/src/auth/auth.controller.ts`                                |
+| `GET /recettes` (pagination, tri, 9 filtres) · `GET /recettes/:id`                              | UC-01 → 03    | `api/src/recettes/`                                              |
+| `GET` et `POST /recettes/:id/avis`                                                              | UC-02, UC-06  | `api/src/avis/avis-de-recette.controller.ts`                     |
+| `PATCH` et `DELETE /avis/:id`                                                                   | UC-07/08/14   | `api/src/avis/avis.controller.ts`                                |
+| `POST` · `PATCH` · `DELETE /recettes`                                                           | UC-11/12/13   | `api/src/recettes/`                                              |
+| `/utilisateurs/moi` en GET · PATCH · DELETE + `PATCH /moi/mot-de-passe`                         | UC-09, UC-09b | `api/src/utilisateurs/`                                          |
+| `GET /utilisateurs` · `PATCH /:id/role` · `DELETE /:id`                                         | UC-16         | `api/src/utilisateurs/administration-utilisateurs.controller.ts` |
+| `GET /ingredients?recherche=`                                                                   | support UC-11 | `api/src/ingredients/`                                           |
+| `/regimes`, `/criteres-sante`, `/types-aliment`, `/nationalites` en GET · POST · PATCH · DELETE | UC-03, UC-15  | `api/src/categories/`                                            |
 
-| Routes                                                                                               | UC            | Où                                                               |
-| ---------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------- |
-| `POST /auth/inscription` · `connexion` · `rafraichissement` · `deconnexion`                          | UC-04, UC-05  | `api/src/auth/auth.controller.ts`                                |
-| `GET /recettes` (pagination, tri, 9 filtres) · `GET /recettes/:id`                                   | UC-01 → 03    | `api/src/recettes/`                                              |
-| `GET` et `POST /recettes/:id/avis`                                                                   | UC-02, UC-06  | `api/src/avis/avis-de-recette.controller.ts`                     |
-| `PATCH` et `DELETE /avis/:id`                                                                        | UC-07/08/14   | `api/src/avis/avis.controller.ts`                                |
-| `POST` · `PATCH` · `DELETE /recettes` (F1)                                                           | UC-11/12/13   | `api/src/recettes/`                                              |
-| `/utilisateurs/moi` en GET · PATCH · DELETE + `PATCH /moi/mot-de-passe` (F2)                         | UC-09, UC-09b | `api/src/utilisateurs/`                                          |
-| `GET /utilisateurs` · `PATCH /:id/role` · `DELETE /:id` (F3)                                         | UC-16         | `api/src/utilisateurs/administration-utilisateurs.controller.ts` |
-| `GET /ingredients?recherche=` (F5)                                                                   | support UC-11 | `api/src/ingredients/`                                           |
-| `/regimes`, `/criteres-sante`, `/types-aliment`, `/nationalites` en GET · POST · PATCH · DELETE (F4) | UC-03, UC-15  | `api/src/categories/`                                            |
-
-### ❌ Reste à faire : plus aucune route
-
-| Ticket | Périmètre | Routes | UC  | Comment (l'essentiel à ne pas rater) |
-| ------ | --------- | -----: | --- | ------------------------------------ |
-
-**Toutes les routes du contrat existent, et F0 est fait.** Reste l’étape 5 : synchroniser le suivi OpenSpec.
+**Le contrat est couvert intégralement. Plus aucune route à écrire.** Le plan API en
+cinq étapes (tests avis, ingrédients, catégories, seeds d'exemple, suivi OpenSpec) est
+terminé.
 
 ---
 
 ## 4. Tests — 75 %
 
 `███████████████░░░░░`
-
-Le change `setup-tests` affiche **0/18** dans OpenSpec, mais c'est faux : l'infra a été
-écrite en cours de route sans que les cases soient cochées. La réalité :
 
 | Élément                                               | État |
 | ----------------------------------------------------- | ---- |
@@ -153,42 +144,64 @@ Le change `setup-tests` affiche **0/18** dans OpenSpec, mais c'est faux : l'infr
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
 | 14 fichiers e2e — 111 tests, vert (sérialisés)        | ✅   |
-| Guide de tests                                        | ❌   |
 | Factories / fixtures (`test/fixtures.ts`)             | ✅   |
-| e2e dans la CI                                        | ❌   |
-| Tests sur la feature avis                             | ✅   |
+| Tests sur toutes les features API                     | ✅   |
+| Guide de tests (`setup-tests` 1.1 / 1.2)              | ❌   |
+| e2e dans la CI (`setup-tests` 6.1 / 6.2)              | ❌   |
+
+`setup-tests` est à **14/18** : il ne reste que ces deux sujets.
 
 **Reste à faire — et comment**
 
-- **Cocher les groupes 2 à 5** de `openspec/changes/setup-tests/tasks.md` : ils sont
-  faits, c'est le suivi qui ment.
 - **e2e dans la CI** : le workflow ne lance que `npm test`. Ajouter un service MySQL au
-  job, `npm run migration:run:test`, puis `npm run test:e2e --workspace api`.
-- **Factories** : au premier test qui a besoin d'une recette complète (F1), plutôt que
-  de recopier un objet à dix champs dans chaque fichier.
-- **`docs/guides/tests.md`** : optionnel maintenant que l'infra existe.
+  job, `npm run migration:run:test`, puis `npm run test:e2e --workspace api`, et
+  vérifier que le merge est bloqué si un test échoue.
+- **Guide de tests** : optionnel maintenant que l'infra existe et qu'elle s'imite par
+  l'exemple. À écrire seulement si le besoin se fait sentir.
 
 ---
 
-## 5. Front — 2 %
+## 5. Front — 25 %
 
-`░░░░░░░░░░░░░░░░░░░░`
+`█████░░░░░░░░░░░░░░░`
 
-**Rien n'a commencé.** `client/` est encore le template React Router v7 par défaut
-(`app/root.tsx`, `app/routes/home.tsx`, `app/welcome/`). Tailwind v4 est installé,
-`@recipe/types` est déjà lié.
+Le change **`setup-front`** a posé le socle (groupes 1 à 9 sur 9). 76 tests côté client,
+`npm run verify` vert, et les écrans vérifiés dans un vrai navigateur.
 
-**Reste à faire — et comment**
+### Ce qui existe
 
-1. Poser les écrans (dépend de la maquette du lot 1) et `app/routes.ts`.
-2. Une couche d'accès API **unique** (`fetch` avec `credentials: 'include'` —
-   obligatoire, l'auth passe par cookie) plutôt qu'un `fetch` dispersé par route.
-3. Refresh transparent : sur `401`, appeler `/auth/rafraichissement` puis rejouer la
-   requête **une seule fois**. Aucun token en JS, jamais de `localStorage`.
-4. Écrans dans l'ordre : liste → détail → connexion/inscription → avis → mon compte →
-   panneau de modération.
-5. Créer un change OpenSpec `setup-front` : aujourd'hui aucun change ne couvre le
-   front, donc rien ne le suit.
+| Brique                                          | Où                                       |
+| ----------------------------------------------- | ---------------------------------------- |
+| Harnais Vitest + Testing Library                | `client/vite.config.ts`, `client/test/`  |
+| Les 43 tokens du handoff en `@theme`            | `client/app/app.css`                     |
+| Polices auto-hébergées (`@fontsource`)          | pas de requête tierce                    |
+| Couche d'accès API unique + refresh transparent | `client/app/acces-api/`                  |
+| Session et rôles depuis le serveur              | `root.tsx`, `session-courante.ts`        |
+| Composants partagés (9)                         | `client/app/composants/`                 |
+| Trois coquilles, nav construite depuis le rôle  | `client/app/coquilles/`                  |
+| Ossature des 14 routes                          | `client/app/routes.ts`                   |
+| Écrans système 404 / 403 / 500                  | `composants/page-impasse.tsx` et voisins |
+
+### Décisions structurantes
+
+- **SPA (`ssr: false`)** : l'auth passe par cookie `httpOnly` sur une autre origine.
+  Dans le navigateur, `credentials: 'include'` suffit ; en SSR il aurait fallu relayer
+  chaque `Set-Cookie`, rotation comprise. Le SEO se rattrapera par `prerender`.
+- **Pas de react-query** : les `clientLoader` tiennent l'état serveur. Si un état
+  transverse apparaît un jour, ce sera **Zustand**.
+- Le refresh vit dans `appeler-api.ts`, avec une **promesse partagée** : deux appels
+  parallèles ne déclenchent qu'un seul rafraîchissement, sinon la rotation invalide la
+  famille de jetons et déconnecte l'utilisateur.
+
+### Reste à faire — les onze écrans
+
+Dans l'ordre : catalogue → détail d'une recette → connexion / inscription → avis →
+mon compte → back-office (recettes, éditeur, utilisateurs, catégories). L'accueil
+existe en version minimale (liste réelle + trois états) ; il reste à l'habiller.
+
+Chaque écran apporte son module d'accès API et ses composants propres : la règle tenue
+tout au long du socle est qu'un fichier naît **avec son premier consommateur**, jamais
+avant — knip le vérifie.
 
 ---
 
@@ -208,30 +221,7 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 | ----------------------------------------------------- | --------------------------------- |
 | Note moyenne absente des listes (`routes-api.md` § 5) | trancher : agrégation, jamais N+1 |
 | Aucun change OpenSpec ne couvre le front              | à créer avant d'attaquer le lot 5 |
-
----
-
-## Plan pour terminer l'API
-
-> **Objectif courant : boucler l'API. Le front vient après.** Les étapes sont dans
-> l'ordre d'exécution ; chacune suit la même boucle — je propose les tests, tu les
-> valides, je les fais passer, on commite.
-
-**Ce qui reste ne contient plus rien de conceptuellement difficile** : sur les 17
-routes manquantes, 16 sont le même patron CRUD répété quatre fois et 1 est une simple
-requête de recherche. Le difficile (transaction + N+1, anti-IDOR, rotation de jetons,
-dernier admin) est derrière.
-
-| #     | Étape                                       | Routes | Pourquoi dans cet ordre                                                                                                                                              |
-| ----- | ------------------------------------------- | -----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~ | ~~**Tests e2e de la feature avis**~~        |      0 | **Fait** — 14 tests e2e, le contrôle de propriété est tenu (tâche 12.3 close).                                                                                       |
-| ~~2~~ | ~~**F5 — autocomplétion des ingrédients**~~ |      1 | **Fait** — enveloppe paginée, recherche insensible à la casse, 8 tests e2e.                                                                                          |
-| ~~3~~ | ~~**F4 — catégories (4 ressources)**~~      |     16 | **Fait** — fabrique de contrôleur partagée, `409` si la catégorie est encore utilisée, 13 tests e2e.                                                                 |
-| ~~4~~ | ~~**F0 — seeds d'exemple (faker)**~~        |      0 | **Fait** — `npm run seed:exemples [n]`, titres déterministes donc rejouable, 3 tests e2e.                                                                            |
-| ~~5~~ | ~~**Synchroniser le suivi OpenSpec**~~      |      0 | **Fait** — tâches cochées, `setup-couche-donnees` archivé. Restent ouverts : `setup-authentification` 34/37 (groupe 11 = front) et `setup-tests` 14/18 (guide + CI). |
-
-À la fin de l'étape 5, l'API couvre les **37 routes du contrat** et le lot 3 est à
-100 %.
+| e2e absents de la CI                                  | voir le lot 4                     |
 
 ### Reporté sciemment (décidé, pas oublié)
 
@@ -247,7 +237,6 @@ dernier admin) est derrière.
 
 ## Comment mettre à jour ce fichier
 
-Après chaque feature terminée : cocher les cases du `tasks.md` concerné, mettre à jour
-la ligne correspondante du lot 3, recalculer le pourcentage du lot (routes faites ÷
-routes du contrat), puis le global (somme pondérée du tableau de tête). Et changer la
-date de « dernière vérification ».
+Après chaque écran terminé : cocher les cases du `tasks.md` concerné, mettre à jour la
+liste du lot 5, recalculer le pourcentage du lot (écrans faits ÷ 14), puis le global
+(somme pondérée du tableau de tête). Et changer la date de « dernière vérification ».
