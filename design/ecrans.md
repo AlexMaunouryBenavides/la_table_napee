@@ -75,6 +75,24 @@ immédiate.
 
 ---
 
+## Là où le handoff de maquettes se trompe
+
+Le paquet `design_handoff_la_table_nappee/` a été dessiné APRÈS l'API, mais sans la
+lire jusqu'au bout. **Le projet fait foi ; le handoff s'adapte.** Les écarts relevés
+en construisant les écrans :
+
+| Le handoff dit                                       | La réalité                                                                                                                                                |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /authentification/connexion`                   | c'est `/auth/connexion`                                                                                                                                   |
+| `GET /avis` global, file de modération               | n'existe pas                                                                                                                                              |
+| `POST /ingredients`                                  | n'existe pas : seul `GET /ingredients` est au contrat, donc pas de création à la volée                                                                    |
+| Filtres `typeRecette`, `tempsTotalMax`, des pluriels | `type`, `tempsMax`, et `regime`/`critereSante`/`typeAliment` au singulier, répétables                                                                     |
+| `tri=noteMoyenne`                                    | n'existe pas : `dateCreation`, `titre`, `tempsPreparation`, avec `-` pour décroissant                                                                     |
+| Difficulté et type en choix multiple                 | l'API les valide par `@IsIn` sans `each` : **une seule valeur**, sinon 400                                                                                |
+| « adresse déjà utilisée » sur le champ e-mail        | l'API répond 409 « Email ou pseudo déjà utilisé », sans dire lequel : message global uniquement                                                           |
+| Inscription → « connecté immédiatement »             | `POST /auth/inscription` ne pose **aucun cookie**. Créer un compte et ouvrir une session sont deux actes distincts : après le 201, on envoie se connecter |
+| Avis d'une recette paginés                           | l'API les renvoie tous, et déjà inclus dans `GET /recettes/:id`                                                                                           |
+
 ## Contraintes qui traversent tous les écrans
 
 - **Authentification par cookie `httpOnly`** : aucun jeton n'est lisible en JS, donc
