@@ -1,8 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { type RoleUtilisateur } from '@recipe/types';
+import { aAuMoins, type RoleUtilisateur } from '@recipe/types';
 
-import { aAuMoins } from './hierarchie-roles';
 import { type RequeteAuthentifiee } from './identite-requete';
 import { CLE_ROLES } from './roles.decorator';
 

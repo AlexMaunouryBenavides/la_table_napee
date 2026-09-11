@@ -88,88 +88,123 @@ export interface RecetteResume {
 }
 
 // ===================================================================
-//  ZONE 2 — Entités stockées en base (elles ont toutes un `id`)
+//  ZONE 2 — Entités, telles que l'API les RENVOIE
+//
+//  Ces formes décrivent le JSON réellement reçu par le front, pas un modèle
+//  théorique : les dates sont des chaînes ISO (le JSON n'a pas de type date), les
+//  décimaux des chaînes (c'est ainsi que le pilote MySQL les rend), et les relations
+//  facultatives valent `null`, jamais `undefined`.
 // ===================================================================
 
-// Un ingrédient appartient à UNE recette (relation 1—N).
-// Pas besoin d'id propre ici : un ingrédient n'existe que DANS sa recette
-// et n'est jamais partagé ni référencé ailleurs.
-export interface Ingredient {
-  nom: string; // ex : "farine"
-  quantite: number; // ex : 250
-  unite: string; // ex : "g", "ml", "cuillère à soupe"
+/** Identifiant de compte : un UUID, pas un entier — un entier séquentiel se devine
+ *  et permettrait d'énumérer les comptes. */
+export interface Utilisateur {
+  id: string;
+  pseudo: string | null;
+  email: string;
+  role: RoleUtilisateur;
+  dateCreation: string;
 }
 
-// Les trois catégories gérées par les admins en base.
-// Elles partagent exactement la même forme (id + nom), donc on factorise
-// avec une interface de base plutôt que de répéter trois fois la structure.
-export interface Categorie {
-  id: string;
+/** Un ingrédient est un référentiel PARTAGÉ entre recettes : il porte son propre id
+ *  et ne connaît ni quantité ni unité — celles-ci appartiennent au lien. */
+export interface Ingredient {
+  id: number;
   nom: string;
 }
-// Ces alias donnent un NOM MÉTIER clair à chaque catégorie, tout en
-// réutilisant la même forme. Le code devient auto-documenté.
+
+/** Les quatre catégories ont exactement la même forme. */
+export interface Categorie {
+  id: number;
+  nom: string;
+}
+
 export type Regime = Categorie; // ex : végan, sans gluten
 export type CritereSante = Categorie; // ex : faible en sel, diabète
 export type TypeAliment = Categorie; // ex : viande rouge, poisson
 export type Nationalite = Categorie; // ex : française, italienne, thaïe
 
-// L'utilisateur. On NE met JAMAIS le mot de passe dans ce type partagé :
-// le front ne doit jamais le voir. Il restera côté back uniquement.
-export interface Utilisateur {
-  id: string;
-  pseudo: string;
-  email: string;
-  role: RoleUtilisateur;
+/** Le lien recette—ingrédient, ENRICHI : il porte la quantité et l'unité, donc c'est
+ *  une entité et non une simple jointure. */
+export interface Composition {
+  id: number;
+  // Chaîne et non nombre : le pilote MySQL rend les décimaux ainsi, et `null` ne veut
+  // pas dire zéro mais « à volonté » (sel, poivre).
+  quantite: string | null;
+  unite: Unite;
+  ingredient: Ingredient;
 }
 
-// Un avis relie un utilisateur à une recette.
-// Il porte son propre id car c'est une entité à part entière.
+/** Une étape de préparation. `numero` vient de la POSITION dans la liste : il n'est
+ *  jamais saisi, et supprimer une étape renumérote les suivantes. */
+export interface Etape {
+  id: number;
+  numero: number;
+  contenu: string;
+}
+
+/** `utilisateur` est `null` quand le compte a été supprimé : l'avis reste publié mais
+ *  devient anonyme. */
 export interface Avis {
-  id: string;
-  auteur: Utilisateur; // qui a écrit l'avis
-  note: number; // étoiles, de 1 à 5
-  commentaire: string;
-  date: string; // date ISO, ex : "2026-05-23"
+  id: number;
+  note: number;
+  commentaire: string | null;
+  dateCreation: string;
+  utilisateur: Utilisateur | null;
 }
 
 // ===================================================================
-//  ZONE 3 — La recette, qui rassemble tout
+//  ZONE 3 — La recette détaillée, ce que rend GET /recettes/:id
 // ===================================================================
 
 export interface Recette {
-  id: string;
+  id: number;
   titre: string;
   description: string;
-  image: string; // URL de la photo du plat
-  video?: string; // URL YouTube. Le `?` = FACULTATIF :
-  // une recette peut exister sans vidéo.
+  image: string;
+  video: string | null;
 
-  ingredients: Ingredient[]; // liste (1—N)
-  etapes: string[]; // liste ordonnée d'instructions
+  difficulte: Difficulte;
+  typeRecette: TypeRecette;
+  nationalite: Nationalite;
 
-  difficulte: Difficulte; // une seule valeur (union figée)
-  typeRecette: TypeRecette; // une seule valeur (union figée)
-  nationalite: Nationalite; // référence vers l'entité (relation N—1) :
-  // plusieurs recettes peuvent être françaises,
-  // mais chaque recette n'a QU'UNE nationalité
-
-  tempsPreparation: number; // en minutes
-  tempsCuisson: number; // en minutes
+  tempsPreparation: number; // minutes
+  tempsCuisson: number; // minutes
   portions: number;
 
-  // Relations N—N : une recette cumule plusieurs catégories.
-  // Côté code on manipule de simples listes ; l'ORM gérera en coulisses
-  // les tables de jonction dont on a parlé.
+  compositions: Composition[];
+  // Déjà triées par `numero` croissant par l'API.
+  etapes: Etape[];
+  avis: Avis[];
+
   regimes: Regime[];
   criteresSante: CritereSante[];
   typesAliment: TypeAliment[];
 
-  avis: Avis[]; // tous les avis sur cette recette
-
-  // PAS de champ "note moyenne" stocké : on la CALCULE à partir des avis.
-  // Stocker une moyenne qu'on peut recalculer = duplication = risque
-  // d'incohérence. (cf. principe DRY)
-  auteur: Utilisateur; // qui a publié la recette (un admin/modo)
+  // `null` si le compte auteur a été supprimé : la recette lui survit.
+  auteur: Utilisateur | null;
   dateCreation: string;
+
+  // Calculée à partir des avis, jamais stockée. `null` = aucun avis, surtout pas 0.
+  noteMoyenne: number | null;
+}
+
+// ===================================================================
+//  ZONE 4 — Règles partagées entre le front et le back
+// ===================================================================
+
+// L'héritage des rôles : admin ⊃ modérateur ⊃ utilisateur. Une seule définition, car
+// l'API l'applique (guards, règles métier) et le client s'en sert pour construire une
+// interface qui ne promet rien qu'elle ne puisse tenir.
+const NIVEAUX_DE_ROLE: Record<RoleUtilisateur, number> = {
+  utilisateur: 1,
+  moderateur: 2,
+  admin: 3,
+};
+
+export function aAuMoins(
+  role: RoleUtilisateur,
+  exige: RoleUtilisateur,
+): boolean {
+  return NIVEAUX_DE_ROLE[role] >= NIVEAUX_DE_ROLE[exige];
 }
