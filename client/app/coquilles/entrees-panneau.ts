@@ -1,6 +1,6 @@
 import type { RoleUtilisateur } from '@recipe/types';
 
-type EntreePanneau = { libelle: string; vers: string };
+export type EntreePanneau = { libelle: string; vers: string };
 export type SectionPanneau = { titre: string; entrees: EntreePanneau[] };
 
 const GESTION: SectionPanneau = {

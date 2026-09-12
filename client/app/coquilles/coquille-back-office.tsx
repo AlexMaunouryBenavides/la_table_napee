@@ -154,7 +154,9 @@ export default function CoquilleBackOffice() {
           </Bouton>
         </div>
 
-        <main className="p-5 md:p-10">
+        {/* La colonne est bornée : tableaux et formulaires étalés sur 1900 px se
+            lisent mal, et rien ici ne gagne à la pleine largeur. */}
+        <main className="mx-auto max-w-320 p-5 md:p-10">
           <ContenuDuPanneau
             session={session}
             sessionIndisponible={sessionIndisponible}
