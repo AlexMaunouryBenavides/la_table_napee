@@ -10,9 +10,9 @@
 > écrans), `docs/etapes-general.md` (le plan global).
 >
 > **Dernière vérification : 2026-09-12** — branche `setup-authentification`, socle du
-> front archivé (`setup-front`, 57/57) et **huit écrans livrés** : accueil (minimal),
-> catalogue, détail d'une recette, connexion, inscription, mon compte, tableau de bord
-> et liste de gestion des recettes.
+> front archivé (`setup-front`, 57/57) et **neuf écrans livrés** : accueil (minimal),
+> catalogue, détail d'une recette, connexion, inscription, mon compte, tableau de bord,
+> liste de gestion des recettes et éditeur de recette.
 >
 > Les RÈGLES d'ingénierie vivent maintenant dans `eng-kit/` (dépôt séparé, ignoré ici) :
 > `docs/conventions/` et `docs/guides/` ont été supprimés.
@@ -22,7 +22,7 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   █████████████████░░░   86 %
+GLOBAL   ██████████████████░░   87 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
@@ -31,16 +31,15 @@ GLOBAL   █████████████████░░░   86 %
 | 2. Mise en place (socle)                   |  30 % |      100 % | `████████████████████` |
 | 3. Features API (les 37 routes du contrat) |  25 % |      100 % | `████████████████████` |
 | 4. Tests                                   |  10 % |       75 % | `███████████████░░░░░` |
-| 5. Front                                   |  20 % |       66 % | `█████████████░░░░░░░` |
+| 5. Front                                   |  20 % |       71 % | `██████████████░░░░░░` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
 
 Les poids sont un jugement, pas une science : ils disent seulement que le front pèse
 autant qu'un quart du back. Le global en découle (somme pondérée).
 
 **En une phrase** : le back est terminé, **les cinq écrans publics existent** et le
-back-office est entamé (tableau de bord, gestion des recettes) ; restent l'éditeur de
-recette, les utilisateurs, les catégories, l'habillage de l'accueil, puis le
-déploiement.
+back-office tient debout (tableau de bord, gestion des recettes, éditeur) ; restent les
+utilisateurs, les catégories, l'habillage de l'accueil, puis le déploiement.
 
 ---
 
@@ -143,7 +142,7 @@ terminé.
 | Élément                                               | État |
 | ----------------------------------------------------- | ---- |
 | Jest unitaire (`npm test`) — 17 tests, 5 suites, vert | ✅   |
-| Vitest côté client — 166 tests, 30 fichiers, vert     | ✅   |
+| Vitest côté client — 182 tests, 32 fichiers, vert     | ✅   |
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
@@ -165,12 +164,12 @@ terminé.
 
 ---
 
-## 5. Front — 66 %
+## 5. Front — 71 %
 
-`█████████████░░░░░░░`
+`██████████████░░░░░░`
 
-Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **sept
-écrans réels** ont été écrits par-dessus. 166 tests côté client, `npm run verify` vert,
+Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **huit
+écrans réels** ont été écrits par-dessus. 182 tests côté client, `npm run verify` vert,
 et chaque écran vérifié dans un vrai navigateur avant d'être commité.
 
 ### Le socle
@@ -189,21 +188,21 @@ et chaque écran vérifié dans un vrai navigateur avant d'être commité.
 
 ### Les écrans
 
-| #   | Écran                  | État | Où                                               |
-| --- | ---------------------- | ---- | ------------------------------------------------ |
-| 1   | Accueil                | 🟡   | `routes/accueil.tsx` — liste réelle, à habiller  |
-| 2   | Catalogue              | ✅   | `routes/catalogue.tsx` + `app/catalogue/`        |
-| 3   | Détail d'une recette   | ✅   | `routes/detail-recette.tsx` + `app/recette/`     |
-| 4   | Connexion              | ✅   | `routes/connexion.tsx` + `app/auth/`             |
-| 5   | Inscription            | ✅   | `routes/inscription.tsx` + `app/auth/`           |
-| 6   | Mon compte             | ✅   | `routes/mon-compte.tsx` + `app/compte/`          |
-| 7   | Panneau — accueil      | ✅   | `routes/panneau/accueil.tsx` + `app/panneau/`    |
-| 8   | Panneau — recettes     | ✅   | `routes/panneau/recettes.tsx` + `app/panneau/`   |
-| 9   | Panneau — éditeur      | ❌   | `routes/panneau/editeur-recette.tsx`             |
-| 10  | Panneau — utilisateurs | ❌   | `routes/panneau/utilisateurs.tsx`                |
-| 11  | Panneau — catégories   | ❌   | `routes/panneau/categories.tsx`                  |
-| 12  | 404                    | ✅   | `routes/introuvable.tsx`                         |
-| 13  | 403 · 14. Erreur       | ✅   | `ErrorBoundary` de segment, pas des destinations |
+| #   | Écran                  | État | Où                                                    |
+| --- | ---------------------- | ---- | ----------------------------------------------------- |
+| 1   | Accueil                | 🟡   | `routes/accueil.tsx` — liste réelle, à habiller       |
+| 2   | Catalogue              | ✅   | `routes/catalogue.tsx` + `app/catalogue/`             |
+| 3   | Détail d'une recette   | ✅   | `routes/detail-recette.tsx` + `app/recette/`          |
+| 4   | Connexion              | ✅   | `routes/connexion.tsx` + `app/auth/`                  |
+| 5   | Inscription            | ✅   | `routes/inscription.tsx` + `app/auth/`                |
+| 6   | Mon compte             | ✅   | `routes/mon-compte.tsx` + `app/compte/`               |
+| 7   | Panneau — accueil      | ✅   | `routes/panneau/accueil.tsx` + `app/panneau/`         |
+| 8   | Panneau — recettes     | ✅   | `routes/panneau/recettes.tsx` + `app/panneau/`        |
+| 9   | Panneau — éditeur      | ✅   | `routes/panneau/editeur-recette.tsx` + `app/panneau/` |
+| 10  | Panneau — utilisateurs | ❌   | `routes/panneau/utilisateurs.tsx`                     |
+| 11  | Panneau — catégories   | ❌   | `routes/panneau/categories.tsx`                       |
+| 12  | 404                    | ✅   | `routes/introuvable.tsx`                              |
+| 13  | 403 · 14. Erreur       | ✅   | `ErrorBoundary` de segment, pas des destinations      |
 
 Le catalogue porte **huit filtres**, tous dans l'URL (recherche débattue comprise) : un
 lien de résultats se partage et le retour arrière fonctionne. Le détail d'une recette
@@ -216,6 +215,13 @@ Le back-office ne montre **aucune statistique venant d'une route interdite au r�
 un modérateur ne demande pas `GET /utilisateurs`, il ne voit simplement pas la tuile.
 La liste de gestion donne un `useFetcher` par ligne — « Suppression… » puis, en cas
 d'échec, un message sur SA ligne, sans recharger la page ni toucher aux autres.
+
+L'éditeur est **un seul formulaire pour créer et modifier** : toute sa logique vit dans
+`brouillon-recette.ts` (brouillon → corps de requête), testable sans rendu. Le numéro
+d'une étape vient de sa POSITION, jamais d'une saisie. Trois promesses de la maquette
+sont tombées faute de route : quantité en texte libre (l'API veut un nombre positif),
+`POST /ingredients` (qui n'existe pas — un ingrédient inconnu naît à l'enregistrement,
+par « trouver ou créer »), et le téléversement d'image (l'API attend une URL).
 
 ### Décisions structurantes
 
@@ -230,10 +236,9 @@ d'échec, un message sur SA ligne, sans recharger la page ni toucher aux autres.
 - **L'URL est la source de vérité des critères de liste** (`acces-api/criteres-url.ts`) :
   aucun état de filtre en mémoire, changer un filtre ramène page 1.
 
-### Reste à faire — trois écrans
+### Reste à faire — deux écrans
 
-L'éditeur de recette (le seul formulaire complexe du projet), les utilisateurs, les
-catégories. Puis l'habillage de l'accueil.
+Les utilisateurs et les catégories. Puis l'habillage de l'accueil.
 
 Chaque écran apporte son module d'accès API et ses composants propres : la règle tenue
 tout au long est qu'un fichier naît **avec son premier consommateur**, jamais avant —

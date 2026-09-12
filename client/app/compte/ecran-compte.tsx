@@ -7,9 +7,9 @@ import { Bouton } from '../composants/bouton';
 import { Champ } from '../composants/champ';
 import { EtiquetteRole } from '../composants/etiquette-role';
 import { ModaleConfirmation } from '../composants/modale-confirmation';
+import { ZoneReglage } from '../composants/zone-reglage';
 
 import type { ResultatCompte } from './actions-compte';
-import { ZoneReglage } from './zone-reglage';
 
 const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
 const LONGUEUR_MIN_PSEUDO = 3;
