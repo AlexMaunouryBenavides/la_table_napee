@@ -10,9 +10,8 @@
 > écrans), `docs/etapes-general.md` (le plan global).
 >
 > **Dernière vérification : 2026-09-12** — branche `setup-authentification`, socle du
-> front archivé (`setup-front`, 57/57) et **les 14 écrans en place** : seul l'accueil
-> reste en version minimale, tout le reste est écrit — les cinq écrans publics, les
-> cinq du back-office et les trois écrans système.
+> front archivé (`setup-front`, 57/57) et **les 14 écrans terminés** : les cinq écrans
+> publics, les cinq du back-office et les trois écrans système.
 >
 > Les RÈGLES d'ingénierie vivent maintenant dans `eng-kit/` (dépôt séparé, ignoré ici) :
 > `docs/conventions/` et `docs/guides/` ont été supprimés.
@@ -22,7 +21,7 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   ██████████████████░░   89 %
+GLOBAL   ███████████████████░   93 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
@@ -31,15 +30,14 @@ GLOBAL   ██████████████████░░   89 %
 | 2. Mise en place (socle)                   |  30 % |      100 % | `████████████████████` |
 | 3. Features API (les 37 routes du contrat) |  25 % |      100 % | `████████████████████` |
 | 4. Tests                                   |  10 % |       75 % | `███████████████░░░░░` |
-| 5. Front                                   |  20 % |       80 % | `████████████████░░░░` |
+| 5. Front                                   |  20 % |      100 % | `████████████████████` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
 
 Les poids sont un jugement, pas une science : ils disent seulement que le front pèse
 autant qu'un quart du back. Le global en découle (somme pondérée).
 
-**En une phrase** : le back est terminé et **le front est fonctionnellement complet** —
-les cinq écrans publics, les cinq du back-office, les écrans système ; restent
-l'habillage de l'accueil, les e2e dans la CI, puis le déploiement.
+**En une phrase** : le back et le front sont **terminés** ; il reste les e2e dans la
+CI, puis le déploiement — qui n'a pas commencé.
 
 ---
 
@@ -142,7 +140,7 @@ terminé.
 | Élément                                               | État |
 | ----------------------------------------------------- | ---- |
 | Jest unitaire (`npm test`) — 17 tests, 5 suites, vert | ✅   |
-| Vitest côté client — 208 tests, 37 fichiers, vert     | ✅   |
+| Vitest côté client — 214 tests, 38 fichiers, vert     | ✅   |
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
@@ -164,12 +162,12 @@ terminé.
 
 ---
 
-## 5. Front — 80 %
+## 5. Front — 100 %
 
-`████████████████░░░░`
+`████████████████████`
 
-Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **dix
-écrans réels** ont été écrits par-dessus. 208 tests côté client, `npm run verify` vert,
+Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **onze
+écrans réels** ont été écrits par-dessus. 214 tests côté client, `npm run verify` vert,
 et chaque écran vérifié dans un vrai navigateur avant d'être commité — c'est là que se
 sont trouvés la plupart des défauts corrigés en chemin.
 
@@ -191,7 +189,7 @@ sont trouvés la plupart des défauts corrigés en chemin.
 
 | #   | Écran                  | État | Où                                                    |
 | --- | ---------------------- | ---- | ----------------------------------------------------- |
-| 1   | Accueil                | 🟡   | `routes/accueil.tsx` — liste réelle, à habiller       |
+| 1   | Accueil                | ✅   | `routes/accueil.tsx` + `app/accueil/`                 |
 | 2   | Catalogue              | ✅   | `routes/catalogue.tsx` + `app/catalogue/`             |
 | 3   | Détail d'une recette   | ✅   | `routes/detail-recette.tsx` + `app/recette/`          |
 | 4   | Connexion              | ✅   | `routes/connexion.tsx` + `app/auth/`                  |
@@ -243,10 +241,10 @@ par « trouver ou créer »), et le téléversement d'image (l'API attend une UR
 - **L'URL est la source de vérité des critères de liste** (`acces-api/criteres-url.ts`) :
   aucun état de filtre en mémoire, changer un filtre ramène page 1.
 
-### Reste à faire — l'habillage de l'accueil
+### Reste à faire — rien sur le front
 
-L'accueil affiche une liste réelle et ses trois états, mais pas la mise en forme de la
-maquette (bandeau d'ouverture, mise en avant). C'est le dernier écran à reprendre.
+Les 14 écrans sont écrits, testés et vérifiés dans un navigateur. Ce qui reste au
+projet est ailleurs : les e2e dans la CI (lot 4) et le déploiement (lot 6).
 
 Chaque écran apporte son module d'accès API et ses composants propres : la règle tenue
 tout au long est qu'un fichier naît **avec son premier consommateur**, jamais avant —
