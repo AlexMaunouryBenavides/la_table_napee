@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { Bouton } from './bouton';
 
@@ -242,7 +243,10 @@ export function ModaleConfirmation(proprietes: ProprietesModale) {
   useFocusDeModale(annulation);
   useClavierDeModale(panneau, proprietes.surAnnulation);
 
-  return (
+  // Rendue dans un PORTAIL : une modale s'ouvre depuis n'importe où, y compris depuis
+  // une ligne de tableau — et un `<div>` dans un `<tbody>` est du HTML invalide que le
+  // navigateur déplace, ce qui casse le rendu. Sa place est à la racine du document.
+  return createPortal(
     <div className="fixed inset-0 flex items-center justify-center bg-encre/40">
       <PanneauDeModale
         proprietes={proprietes}
@@ -251,6 +255,7 @@ export function ModaleConfirmation(proprietes: ProprietesModale) {
         saisie={saisie}
         surSaisie={setSaisie}
       />
-    </div>
+    </div>,
+    document.body,
   );
 }

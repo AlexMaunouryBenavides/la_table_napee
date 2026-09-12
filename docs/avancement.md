@@ -10,9 +10,9 @@
 > écrans), `docs/etapes-general.md` (le plan global).
 >
 > **Dernière vérification : 2026-09-12** — branche `setup-authentification`, socle du
-> front archivé (`setup-front`, 57/57) et **neuf écrans livrés** : accueil (minimal),
-> catalogue, détail d'une recette, connexion, inscription, mon compte, tableau de bord,
-> liste de gestion des recettes et éditeur de recette.
+> front archivé (`setup-front`, 57/57) et **les 14 écrans en place** : seul l'accueil
+> reste en version minimale, tout le reste est écrit — les cinq écrans publics, les
+> cinq du back-office et les trois écrans système.
 >
 > Les RÈGLES d'ingénierie vivent maintenant dans `eng-kit/` (dépôt séparé, ignoré ici) :
 > `docs/conventions/` et `docs/guides/` ont été supprimés.
@@ -22,7 +22,7 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   ██████████████████░░   87 %
+GLOBAL   ██████████████████░░   89 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
@@ -31,15 +31,15 @@ GLOBAL   ██████████████████░░   87 %
 | 2. Mise en place (socle)                   |  30 % |      100 % | `████████████████████` |
 | 3. Features API (les 37 routes du contrat) |  25 % |      100 % | `████████████████████` |
 | 4. Tests                                   |  10 % |       75 % | `███████████████░░░░░` |
-| 5. Front                                   |  20 % |       71 % | `██████████████░░░░░░` |
+| 5. Front                                   |  20 % |       80 % | `████████████████░░░░` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
 
 Les poids sont un jugement, pas une science : ils disent seulement que le front pèse
 autant qu'un quart du back. Le global en découle (somme pondérée).
 
-**En une phrase** : le back est terminé, **les cinq écrans publics existent** et le
-back-office tient debout (tableau de bord, gestion des recettes, éditeur) ; restent les
-utilisateurs, les catégories, l'habillage de l'accueil, puis le déploiement.
+**En une phrase** : le back est terminé et **le front est fonctionnellement complet** —
+les cinq écrans publics, les cinq du back-office, les écrans système ; restent
+l'habillage de l'accueil, les e2e dans la CI, puis le déploiement.
 
 ---
 
@@ -142,7 +142,7 @@ terminé.
 | Élément                                               | État |
 | ----------------------------------------------------- | ---- |
 | Jest unitaire (`npm test`) — 17 tests, 5 suites, vert | ✅   |
-| Vitest côté client — 182 tests, 32 fichiers, vert     | ✅   |
+| Vitest côté client — 208 tests, 37 fichiers, vert     | ✅   |
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
@@ -164,13 +164,14 @@ terminé.
 
 ---
 
-## 5. Front — 71 %
+## 5. Front — 80 %
 
-`██████████████░░░░░░`
+`████████████████░░░░`
 
-Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **huit
-écrans réels** ont été écrits par-dessus. 182 tests côté client, `npm run verify` vert,
-et chaque écran vérifié dans un vrai navigateur avant d'être commité.
+Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **dix
+écrans réels** ont été écrits par-dessus. 208 tests côté client, `npm run verify` vert,
+et chaque écran vérifié dans un vrai navigateur avant d'être commité — c'est là que se
+sont trouvés la plupart des défauts corrigés en chemin.
 
 ### Le socle
 
@@ -199,8 +200,8 @@ et chaque écran vérifié dans un vrai navigateur avant d'être commité.
 | 7   | Panneau — accueil      | ✅   | `routes/panneau/accueil.tsx` + `app/panneau/`         |
 | 8   | Panneau — recettes     | ✅   | `routes/panneau/recettes.tsx` + `app/panneau/`        |
 | 9   | Panneau — éditeur      | ✅   | `routes/panneau/editeur-recette.tsx` + `app/panneau/` |
-| 10  | Panneau — utilisateurs | ❌   | `routes/panneau/utilisateurs.tsx`                     |
-| 11  | Panneau — catégories   | ❌   | `routes/panneau/categories.tsx`                       |
+| 10  | Panneau — utilisateurs | ✅   | `routes/panneau/utilisateurs.tsx`                     |
+| 11  | Panneau — catégories   | ✅   | `routes/panneau/categories.tsx`                       |
 | 12  | 404                    | ✅   | `routes/introuvable.tsx`                              |
 | 13  | 403 · 14. Erreur       | ✅   | `ErrorBoundary` de segment, pas des destinations      |
 
@@ -215,6 +216,12 @@ Le back-office ne montre **aucune statistique venant d'une route interdite au r�
 un modérateur ne demande pas `GET /utilisateurs`, il ne voit simplement pas la tuile.
 La liste de gestion donne un `useFetcher` par ligne — « Suppression… » puis, en cas
 d'échec, un message sur SA ligne, sans recharger la page ni toucher aux autres.
+
+Le back-office **ne promet rien que l'API ne tienne** : pas de recherche sur les
+comptes ni de compteurs par rôle (`GET /utilisateurs` ne prend que `page` et `limite`),
+pas de « recettes rattachées » sur une catégorie. Les refus métier — dernier
+administrateur, auto-rétrogradation, catégorie encore utilisée — s'affichent à
+l'endroit de l'action, avec leur chemin de sortie quand il en existe un.
 
 L'éditeur est **un seul formulaire pour créer et modifier** : toute sa logique vit dans
 `brouillon-recette.ts` (brouillon → corps de requête), testable sans rendu. Le numéro
@@ -236,9 +243,10 @@ par « trouver ou créer »), et le téléversement d'image (l'API attend une UR
 - **L'URL est la source de vérité des critères de liste** (`acces-api/criteres-url.ts`) :
   aucun état de filtre en mémoire, changer un filtre ramène page 1.
 
-### Reste à faire — deux écrans
+### Reste à faire — l'habillage de l'accueil
 
-Les utilisateurs et les catégories. Puis l'habillage de l'accueil.
+L'accueil affiche une liste réelle et ses trois états, mais pas la mise en forme de la
+maquette (bandeau d'ouverture, mise en avant). C'est le dernier écran à reprendre.
 
 Chaque écran apporte son module d'accès API et ses composants propres : la règle tenue
 tout au long est qu'un fichier naît **avec son premier consommateur**, jamais avant —
