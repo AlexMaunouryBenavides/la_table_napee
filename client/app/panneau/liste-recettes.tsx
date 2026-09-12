@@ -11,6 +11,7 @@ import { ModaleConfirmation } from '../composants/modale-confirmation';
 import { Pagination } from '../composants/pagination';
 import { RechercheDebattue } from '../composants/recherche-debattue';
 import { Squelette } from '../composants/squelette';
+import { Tableau } from '../composants/tableau';
 import { LIBELLES_DIFFICULTE, LIBELLES_TYPE } from '../libelles';
 
 import { CREATION_RECETTE } from './raccourcis';
@@ -285,24 +286,9 @@ function TableauRecettes({
   chargement: boolean;
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-base">
-        {/* Les en-têtes restent lisibles pendant le chargement : la structure du
-            tableau est connue avant les données. */}
-        <thead className="text-xs tracking-etiquette text-encre-70 uppercase">
-          <tr>
-            {COLONNES.map((colonne) => (
-              <th key={colonne} scope="col" className="pb-2 pr-4">
-                {colonne}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <CorpsDuTableau resultats={resultats} chargement={chargement} />
-        </tbody>
-      </table>
-    </div>
+    <Tableau colonnes={COLONNES}>
+      <CorpsDuTableau resultats={resultats} chargement={chargement} />
+    </Tableau>
   );
 }
 

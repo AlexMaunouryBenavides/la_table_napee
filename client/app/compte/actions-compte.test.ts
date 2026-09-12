@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { donneesDeFormulaire } from '../../test/formulaire';
 import {
   changerMotDePasse,
   modifierProfil,
@@ -10,16 +11,6 @@ import { ErreurApi } from '../acces-api/erreur-api';
 import { executerActionCompte } from './actions-compte';
 
 vi.mock('../acces-api/compte');
-
-function formulaire(champs: Record<string, string>): FormData {
-  const donnees = new FormData();
-
-  for (const [cle, valeur] of Object.entries(champs)) {
-    donnees.set(cle, valeur);
-  }
-
-  return donnees;
-}
 
 const PROFIL = { intention: 'profil', email: 'camille@test.fr' };
 const MOT_DE_PASSE = {
@@ -39,7 +30,9 @@ describe('executerActionCompte — aiguillage des trois zones', () => {
   it('n’appelle que la route de son intention', async () => {
     // Trois formulaires sur une seule page : sans intention, enregistrer son pseudo
     // changerait aussi le mot de passe.
-    await executerActionCompte(formulaire({ ...PROFIL, pseudo: 'Camille' }));
+    await executerActionCompte(
+      donneesDeFormulaire({ ...PROFIL, pseudo: 'Camille' }),
+    );
 
     expect(modifierProfil).toHaveBeenCalledWith({
       email: 'camille@test.fr',
@@ -52,7 +45,9 @@ describe('executerActionCompte — aiguillage des trois zones', () => {
   it('omet le pseudo laissé vide au lieu d’envoyer une chaîne vide', async () => {
     // L'API exige 3 caractères : `''` serait un 400. Un champ vide veut donc dire
     // « je n'y touche pas » — l'API n'offre aucun moyen d'effacer un pseudo.
-    await executerActionCompte(formulaire({ ...PROFIL, pseudo: '   ' }));
+    await executerActionCompte(
+      donneesDeFormulaire({ ...PROFIL, pseudo: '   ' }),
+    );
 
     expect(modifierProfil).toHaveBeenCalledWith({ email: 'camille@test.fr' });
   });
@@ -61,7 +56,10 @@ describe('executerActionCompte — aiguillage des trois zones', () => {
 describe('executerActionCompte — mot de passe', () => {
   it('refuse une confirmation qui diffère sans appeler l’API', async () => {
     const resultat = await executerActionCompte(
-      formulaire({ ...MOT_DE_PASSE, confirmation: 'nouveau-mot-de-pass' }),
+      donneesDeFormulaire({
+        ...MOT_DE_PASSE,
+        confirmation: 'nouveau-mot-de-pass',
+      }),
     );
 
     expect(changerMotDePasse).not.toHaveBeenCalled();
@@ -75,7 +73,9 @@ describe('executerActionCompte — mot de passe', () => {
       new ErreurApi(400, 'L’ancien mot de passe est incorrect'),
     );
 
-    const resultat = await executerActionCompte(formulaire(MOT_DE_PASSE));
+    const resultat = await executerActionCompte(
+      donneesDeFormulaire(MOT_DE_PASSE),
+    );
 
     expect(resultat.champs?.ancienMotDePasse).toMatch(/incorrect/i);
     expect(resultat.message).toBeUndefined();
@@ -88,7 +88,9 @@ describe('executerActionCompte — mot de passe', () => {
       ]),
     );
 
-    const resultat = await executerActionCompte(formulaire(MOT_DE_PASSE));
+    const resultat = await executerActionCompte(
+      donneesDeFormulaire(MOT_DE_PASSE),
+    );
 
     expect(resultat.champs?.nouveauMotDePasse).toMatch(/12/);
     expect(resultat.champs?.ancienMotDePasse).toBeUndefined();
@@ -101,7 +103,7 @@ describe('executerActionCompte — mot de passe', () => {
     );
 
     const resultat = await executerActionCompte(
-      formulaire({
+      donneesDeFormulaire({
         ...MOT_DE_PASSE,
         ancienMotDePasse: 'secret-ancien-1234',
         nouveauMotDePasse: 'secret-nouveau-1234',
@@ -119,7 +121,9 @@ describe('executerActionCompte — portée d’un échec', () => {
       new ErreurApi(500, 'Le service est indisponible.'),
     );
 
-    const resultat = await executerActionCompte(formulaire(MOT_DE_PASSE));
+    const resultat = await executerActionCompte(
+      donneesDeFormulaire(MOT_DE_PASSE),
+    );
 
     expect(resultat.zone).toBe('mot-de-passe');
     expect(resultat.message).toMatch(/indisponible/i);
@@ -131,7 +135,7 @@ describe('executerActionCompte — portée d’un échec', () => {
     );
 
     const resultat = await executerActionCompte(
-      formulaire({ ...PROFIL, pseudo: 'Camille' }),
+      donneesDeFormulaire({ ...PROFIL, pseudo: 'Camille' }),
     );
 
     expect(resultat.saisie).toEqual({
@@ -148,7 +152,7 @@ describe('executerActionCompte — suppression', () => {
     );
 
     const resultat = await executerActionCompte(
-      formulaire({ intention: 'suppression' }),
+      donneesDeFormulaire({ intention: 'suppression' }),
     );
 
     expect(resultat.succes).toBe(false);
@@ -157,7 +161,7 @@ describe('executerActionCompte — suppression', () => {
 
   it('annonce le succès, qui déclenche l’écran d’adieu', async () => {
     const resultat = await executerActionCompte(
-      formulaire({ intention: 'suppression' }),
+      donneesDeFormulaire({ intention: 'suppression' }),
     );
 
     expect(resultat).toEqual({ zone: 'suppression', succes: true });

@@ -1,4 +1,4 @@
-import type { Page, Utilisateur } from '@recipe/types';
+import type { Page, RoleUtilisateur, Utilisateur } from '@recipe/types';
 
 import { appelerApi } from './appeler-api';
 
@@ -14,4 +14,23 @@ export function listerUtilisateurs(
   return appelerApi<Page<Utilisateur>>(
     requete === '' ? '/utilisateurs' : `/utilisateurs?${requete}`,
   );
+}
+
+/**
+ * Le rôle a sa PROPRE URL, ce n'est pas un champ de profil : c'est l'opération la plus
+ * dangereuse de l'API — elle distribue le pouvoir (`design/routes-api.md` § 3.5).
+ */
+export function changerRole(
+  id: string,
+  role: RoleUtilisateur,
+): Promise<Utilisateur> {
+  return appelerApi<Utilisateur>(`/utilisateurs/${id}/role`, {
+    methode: 'PATCH',
+    corps: { role },
+  });
+}
+
+/** Les avis du compte survivent, privés de leur auteur (`ON DELETE SET NULL`). */
+export function supprimerUtilisateur(id: string): Promise<void> {
+  return appelerApi<void>(`/utilisateurs/${id}`, { methode: 'DELETE' });
 }
