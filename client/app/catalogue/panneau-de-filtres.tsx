@@ -2,11 +2,11 @@ import { DIFFICULTES, TYPES_RECETTE } from '@recipe/types';
 import { useSearchParams } from 'react-router';
 
 import { avecCritere } from '../acces-api/criteres-url';
+import { RechercheDebattue } from '../composants/recherche-debattue';
 import { LIBELLES_DIFFICULTE, LIBELLES_TYPE } from '../libelles';
 
 import type { Referentiels } from './filtres-actifs';
 import { GroupeFiltre } from './groupe-filtre';
-import { RechercheDebattue } from './recherche-debattue';
 
 function enOptions(
   categories: { id: number; nom: string }[],
@@ -89,7 +89,10 @@ export function PanneauDeFiltres({
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <RechercheDebattue />
+      <RechercheDebattue
+        libelle="Rechercher dans le catalogue"
+        invite="Un titre, un mot…"
+      />
 
       <GroupeFiltre
         legende="Type de plat"

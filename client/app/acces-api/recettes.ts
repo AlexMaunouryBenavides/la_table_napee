@@ -20,3 +20,9 @@ export function listerRecettes(
 export function obtenirRecette(id: number): Promise<Recette> {
   return appelerApi<Recette>(`/recettes/${String(id)}`);
 }
+
+/** UC-13 — la recette part avec ses ingrédients, ses étapes et ses avis : ceux-ci
+ *  n'existent pas sans elle (`ON DELETE CASCADE`). */
+export function supprimerRecette(id: number): Promise<void> {
+  return appelerApi<void>(`/recettes/${String(id)}`, { methode: 'DELETE' });
+}

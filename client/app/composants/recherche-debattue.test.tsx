@@ -15,7 +15,11 @@ function rendreRecherche() {
 
   render(
     <MemoryRouter initialEntries={['/recettes?page=4']}>
-      <RechercheDebattue delaiMs={DELAI_DE_TEST_MS} />
+      <RechercheDebattue
+        libelle="Rechercher dans le catalogue"
+        invite="Un titre, un mot…"
+        delaiMs={DELAI_DE_TEST_MS}
+      />
       <SondeUrl journal={journal} />
     </MemoryRouter>,
   );

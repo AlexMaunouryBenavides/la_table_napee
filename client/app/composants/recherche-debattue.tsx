@@ -13,8 +13,12 @@ const DELAI_PAR_DEFAUT_MS = 300;
  * résultats qui ne correspondent pas à ce qu'il lit dans le champ.
  */
 export function RechercheDebattue({
+  libelle,
+  invite,
   delaiMs = DELAI_PAR_DEFAUT_MS,
 }: {
+  libelle: string;
+  invite: string;
   delaiMs?: number;
 }) {
   const [parametres, setParametres] = useSearchParams();
@@ -42,8 +46,8 @@ export function RechercheDebattue({
       onChange={(evenement) => {
         setSaisie(evenement.target.value);
       }}
-      aria-label="Rechercher dans le catalogue"
-      placeholder="Un titre, un mot…"
+      aria-label={libelle}
+      placeholder={invite}
       className="h-11 w-full rounded-pilule border border-trait-fort bg-craie px-4"
     />
   );
