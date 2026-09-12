@@ -1,11 +1,8 @@
 import type { RecetteResume } from '@recipe/types';
-import { Link } from 'react-router';
 
 import { ErreurApi } from '../acces-api/erreur-api';
 import { listerRecettes } from '../acces-api/recettes';
-import { Bandeau } from '../composants/bandeau';
-import { CarteRecette } from '../composants/carte-recette';
-import { EtatVide } from '../composants/etat-vide';
+import { Vitrine } from '../accueil/vitrine';
 
 import type { Route } from './+types/accueil';
 
@@ -13,12 +10,17 @@ const RECETTES_MISES_EN_AVANT = 3;
 
 type DonneesAccueil = {
   recettes: RecetteResume[];
+  /** `null` = l'API n'a pas répondu. Ce n'est pas zéro. */
+  total: number | null;
   echec: string | null;
 };
 
 /**
  * La liste est chargée indépendamment du reste : son échec affiche un bandeau et
  * laisse la vitrine debout, il ne fait pas tomber la page.
+ *
+ * Le tri par défaut est `-dateCreation` : l'API n'accepte pas de tri par note, la
+ * vitrine montre donc les dernières publiées.
  */
 export async function clientLoader(): Promise<DonneesAccueil> {
   try {
@@ -26,10 +28,11 @@ export async function clientLoader(): Promise<DonneesAccueil> {
       new URLSearchParams({ limite: String(RECETTES_MISES_EN_AVANT) }),
     );
 
-    return { recettes: page.donnees, echec: null };
+    return { recettes: page.donnees, total: page.total, echec: null };
   } catch (erreur) {
     return {
       recettes: [],
+      total: null,
       echec:
         erreur instanceof ErreurApi
           ? erreur.message
@@ -39,41 +42,11 @@ export async function clientLoader(): Promise<DonneesAccueil> {
 }
 
 export default function Accueil({ loaderData }: Route.ComponentProps) {
-  const { recettes, echec } = loaderData;
-
   return (
-    <section className="mx-auto max-w-250">
-      <h1 className="font-titre text-5xl">
-        Des recettes choisies,{' '}
-        <em className="text-ardoise">présentées comme elles le méritent</em>.
-      </h1>
-
-      <h2 className="mt-12 text-3xl">Les dernières publiées</h2>
-
-      {echec !== null && (
-        <Bandeau ton="erreur" message={echec} className="mt-6" />
-      )}
-
-      {echec === null && recettes.length === 0 && (
-        <EtatVide
-          titre="Le catalogue ouvre bientôt"
-          explication="Aucune recette n’a encore été publiée."
-          action={
-            <Link to="/recettes" className="underline">
-              Parcourir le catalogue
-            </Link>
-          }
-          glyphe="✦"
-        />
-      )}
-
-      {recettes.length > 0 && (
-        <ul className="mt-6 grid gap-6 md:grid-cols-3">
-          {recettes.map((recette) => (
-            <CarteRecette key={recette.id} recette={recette} />
-          ))}
-        </ul>
-      )}
-    </section>
+    <Vitrine
+      recettes={loaderData.recettes}
+      total={loaderData.total}
+      echec={loaderData.echec}
+    />
   );
 }
