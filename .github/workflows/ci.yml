@@ -24,5 +24,58 @@ jobs:
       # Exactement la commande locale : format:check + lint + typecheck + knip + jscpd.
       - run: npm run verify
 
-      # Tests de chaque package qui en définit (api : Jest).
+      # Tests de chaque package qui en définit (api : Jest, client : Vitest).
       - run: npm test --workspaces --if-present
+
+  e2e:
+    # Après `verify` : inutile de monter une base pour du code qui ne compile pas.
+    needs: verify
+    runs-on: ubuntu-latest
+
+    # Même image que le docker-compose de dev. Le conteneur ne crée QUE la base de
+    # test : DB_DATABASE doit exister pour la validation d'environnement, mais le
+    # garde-fou e2e bascule sur DB_DATABASE_TEST et n'y touche jamais.
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root
+          MYSQL_DATABASE: recipe_test
+          MYSQL_USER: recipe
+          MYSQL_PASSWORD: ci-recipe
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pci-root"
+          --health-interval=5s
+          --health-retries=20
+
+    # Mots de passe d'un conteneur jetable, détruit en fin de job : pas des secrets.
+    env:
+      FRONT_ORIGIN: http://localhost:5173
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: recipe
+      DB_PASSWORD: ci-recipe
+      DB_DATABASE: recipe
+      DB_DATABASE_TEST: recipe_test
+      NODE_ENV: test
+      LOG_LEVEL: warn
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # Le JWT_SECRET, lui, n'est écrit nulle part : tiré au hasard à chaque exécution.
+      - name: Générer un JWT_SECRET éphémère
+        run: echo "JWT_SECRET=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
+
+      - run: npm run migration:run:test --workspace api
+
+      - run: npm run test:e2e --workspace api

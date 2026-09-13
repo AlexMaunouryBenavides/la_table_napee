@@ -1,1 +1,7 @@
 node_modules
+
+# Bibliothèque de règles : dépôt git séparé (kit-ia), simplement posé ici.
+eng-kit
+
+# Handoff de maquettes : référence de conception locale, pas du code du projet.
+design_handoff_la_table_nappee

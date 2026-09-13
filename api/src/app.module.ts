@@ -2,12 +2,20 @@ import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { RolesGuard } from './auth/roles.guard';
+import { AvisModule } from './avis/avis.module';
+import { CategoriesModule } from './categories/categories.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { optionsBaseDeDonnees } from './config/data-source';
 import { validateEnv } from './config/env.validation';
+import { IngredientsModule } from './ingredients/ingredients.module';
+import { RecettesModule } from './recettes/recettes.module';
+import { UtilisateursModule } from './utilisateurs/utilisateurs.module';
 
 const ENV_PRODUCTION = 'production';
 
@@ -19,8 +27,12 @@ const ENV_PRODUCTION = 'production';
       validate: validateEnv,
     }),
 
-    // Anti-bruteforce : limites lues de la config (généreuses en global).
-    // La limite stricte du login sera décorée côté change auth.
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) =>
+        optionsBaseDeDonnees((cle) => String(config.getOrThrow(cle))),
+    }),
+
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => [
@@ -31,7 +43,6 @@ const ENV_PRODUCTION = 'production';
       ],
     }),
 
-    // Logs structurés (pino) ; en dev, sortie lisible via pino-pretty.
     LoggerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -44,15 +55,27 @@ const ENV_PRODUCTION = 'production';
         },
       }),
     }),
+
+    CategoriesModule,
+
+    IngredientsModule,
+
+    UtilisateursModule,
+
+    RecettesModule,
+
+    AvisModule,
+
+    AuthModule,
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
-    // Throttler appliqué globalement à toutes les routes.
+    // L'ORDRE COMPTE (`nest-authz.r2`) : on limite le débit, puis on identifie,
+    // puis seulement on autorise — le garde de rôles lit `request.user`, qui doit
+    // déjà être peuplé. Fermé par défaut : `@Public()` est la seule ouverture.
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    // Erreurs au format unique, partout.
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
-    // Sérialisation de sortie : applique les @Exclude des entités (à venir).
     { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
   ],
 })

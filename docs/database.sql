@@ -6,6 +6,12 @@
 -- Sert de source à la migration n°1 (modèle bootstrap → code-first).
 --
 -- Ordre des CREATE = ordre des dépendances de clés étrangères.
+--
+-- ⚠️ ARCHIVE DE GENÈSE — ne plus modifier. Depuis la migration n°1, la source
+-- vivante du schéma est constituée par les entités TypeORM (api/src/**/entities).
+-- Écarts assumés côté migration : UUID en VARCHAR(36), DATETIME(6), et CASCADE
+-- des deux côtés des 3 jonctions nues (TypeORM ne sait pas y mettre RESTRICT ;
+-- la protection est assurée par le service, en 409).
 
 -- ── Entités de référence (partagées : jamais supprimées en cascade) ──────────
 

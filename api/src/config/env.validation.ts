@@ -6,15 +6,20 @@ import {
   IsUrl,
   Max,
   Min,
+  MinLength,
   validateSync,
 } from 'class-validator';
 
-// Bornes et valeurs par défaut (nommées : pas de nombre magique).
 const MIN_PORT = 1;
 const MAX_PORT = 65535;
 const DEFAULT_PORT = 3000;
-const DEFAULT_THROTTLER_TTL_MS = 60_000; // 60 s
-const DEFAULT_THROTTLER_LIMIT = 100; // requêtes par fenêtre, en global (généreux)
+const DEFAULT_DB_PORT = 3306;
+const DEFAULT_THROTTLER_TTL_MS = 60_000;
+const DEFAULT_THROTTLER_LIMIT = 100;
+const LONGUEUR_MIN_SECRET_JWT = 32;
+const DEFAULT_ACCES_MINUTES = 15;
+const DEFAULT_RAFRAICHISSEMENT_JOURS = 7;
+const MINIMUM_DUREE = 1;
 
 enum Environnement {
   Development = 'development',
@@ -22,8 +27,7 @@ enum Environnement {
   Test = 'test',
 }
 
-// Décrit ET valide les variables d'environnement attendues. Une propriété sans
-// valeur par défaut (FRONT_ORIGIN) est REQUISE : l'app refusera de démarrer sans.
+// Une propriété sans valeur par défaut est REQUISE : l'app refuse de démarrer sans.
 class VariablesEnvironnement {
   @IsEnum(Environnement)
   NODE_ENV: Environnement = Environnement.Development;
@@ -34,11 +38,28 @@ class VariablesEnvironnement {
   @Max(MAX_PORT)
   PORT: number = DEFAULT_PORT;
 
-  // Origine exacte du front, requise pour le CORS crédentialisé (jamais `*`).
   // require_tld: false → autorise http://localhost:5173 en développement.
   @IsString()
   @IsUrl({ require_tld: false })
   FRONT_ORIGIN!: string;
+
+  @IsString()
+  DB_HOST!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(MIN_PORT)
+  @Max(MAX_PORT)
+  DB_PORT: number = DEFAULT_DB_PORT;
+
+  @IsString()
+  DB_USERNAME!: string;
+
+  @IsString()
+  DB_PASSWORD!: string;
+
+  @IsString()
+  DB_DATABASE!: string;
 
   @Type(() => Number)
   @IsInt()
@@ -50,12 +71,28 @@ class VariablesEnvironnement {
   @Min(MIN_PORT)
   THROTTLER_LIMIT: number = DEFAULT_THROTTLER_LIMIT;
 
+  // Aucune valeur par défaut, volontairement : un secret de repli finirait un jour en
+  // production, et qui connaît le secret fabrique un jeton « admin » valide.
+  @IsString()
+  @MinLength(LONGUEUR_MIN_SECRET_JWT)
+  JWT_SECRET!: string;
+
+  // Durée de vie de l'access token. Courte : elle borne la fenêtre pendant laquelle un
+  // rôle retiré reste actif (le rôle réel est relu en base au rafraîchissement).
+  @Type(() => Number)
+  @IsInt()
+  @Min(MINIMUM_DUREE)
+  ACCES_MINUTES: number = DEFAULT_ACCES_MINUTES;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(MINIMUM_DUREE)
+  RAFRAICHISSEMENT_JOURS: number = DEFAULT_RAFRAICHISSEMENT_JOURS;
+
   @IsString()
   LOG_LEVEL: string = 'info';
 }
 
-// Passée à ConfigModule.forRoot({ validate }). Son retour devient la config validée :
-// si une variable requise manque ou est invalide, on jette → l'app ne démarre pas.
 export function validateEnv(
   config: Record<string, unknown>,
 ): VariablesEnvironnement {

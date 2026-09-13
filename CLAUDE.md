@@ -5,17 +5,31 @@
 > (les RÈGLES, lues à la demande) et `docs/guides/` (les EXPLICATIONS). Voir l'index
 > en bas.
 
-## Posture : tu es un mentor, pas un sous-traitant
+## Posture : tu codes, je supervise
 
-Je suis développeur fullstack junior. Mon objectif n'est PAS de livrer vite : c'est
-de **devenir meilleur**. Donc, par défaut :
+Projet **personnel**, pas un livrable client : la priorité est que ça marche,
+simplement. Aucun but pédagogique — pas d'explication de cours, pas de justification
+de chaque ligne.
 
-- Pour toute demande non triviale, propose d'ABORD une approche et les options, avec
-  le « pourquoi », et laisse-moi décider ou essayer. **Ne déverse pas la solution
-  complète d'emblée.**
-- Quand tu repères un problème, n'le corrige pas en silence : explique le PRINCIPE
-  sous-jacent et ce que j'aurais dû voir.
-- Si je m'apprête à faire une erreur, dis-le franchement. La critique m'aide.
+- **Sois court.** Une décision se présente en 3 à 5 lignes, jamais en document.
+  N'écris un fichier de doc que si je le demande explicitement.
+- **Tu exécutes.** Pas de question à chaque bout de code : tu prends les décisions
+  d'implémentation, je supervise le résultat. Une question seulement si la réponse
+  change vraiment le travail à faire.
+- Donne **ta recommandation**, pas un catalogue d'options.
+- Quand tu repères un problème : le principe en une phrase, puis tu corriges.
+- **Pas de sur-ingénierie.** Le besoin d'aujourd'hui, rien de plus. Pas d'abstraction
+  « au cas où », pas d'option de configuration non demandée.
+- Si je m'apprête à faire une erreur, dis-le franchement.
+
+## Méthode : TDD, avec ma validation sur les tests
+
+Le seul point de contrôle avant le code, c'est la liste des tests.
+
+1. Tu me **proposes les tests** à écrire (nom + comportement vérifié, en liste courte).
+2. Je les **valide** (ou je les corrige).
+3. Tu les écris, tu les vois **échouer**, puis tu écris le code qui les fait passer.
+4. Tu ne déclares rien « terminé » sans la sortie de `npm test` et `npm run verify`.
 
 ## Stack
 
@@ -35,22 +49,35 @@ types, code mort, duplication). Dev : `npm run start:dev` (dans `api`).
 par jugement) : formatage, style, ordre des imports, types stricts, promesses
 oubliées, nombres magiques, fonctions trop longues/complexes, code mort, copier-collé
 littéral. La revue par jugement se concentre donc **uniquement** sur ce qui se juge
-(voir priorités + `docs/conventions/`).
+(voir priorités + les règles du kit).
 
-## Les 4 priorités (résumé — détail dans `docs/conventions/`)
+## Les règles : `eng-kit/` fait foi
+
+Les règles d'ingénierie ne vivent plus dans ce dépôt : elles sont dans **`eng-kit/`**
+(dépôt séparé, non versionné ici), indexé par frontmatter. Mode d'emploi :
+`eng-kit/AGENTS.kit.md`.
+
+- Sélection : un fichier s'applique s'il est `status: active` **et** que sa `tech` est
+  dans la stack **et** que sa `layer` existe ici. Ne lis que `## Rules` /
+  `## Requirements` — **jamais** `## Reference` par défaut.
+- `guardrail` = non négociable. `preference` = la convention du projet gagne.
+- Une violation se cite par son id (`validation.r4`), pas par une paraphrase.
+- Décisions déjà prises ici et qui priment sur les `preference` du kit : monorepo
+  **npm** (pas pnpm), config Prettier/ESLint du projet, forme d'erreur figée par
+  `design/routes-api.md`, pas de versionnement d'URL, pas de HATEOAS.
+
+## Les 4 priorités (résumé)
 
 1. **Architecture au service de la clarté.** Ne génère pas toute la structure d'un
-   coup ; aide-moi à décider où va une logique (« dépend-elle du framework web ? »).
-   On devine le contenu d'un dossier à son nom. → `docs/conventions/nest.md`,
-   `client.md`.
+   coup ; décide où va une logique (« dépend-elle du framework web ? »). On devine le
+   contenu d'un dossier à son nom.
 2. **Sécurité (3 réflexes).** Jamais confiance à une entrée client (tout est validé) ;
    aucun secret en dur (variables d'environnement) ; aucune requête SQL par
-   concaténation (requêtes paramétrées / ORM). → `docs/conventions/rest.md`, `nest.md`.
+   concaténation (requêtes paramétrées / ORM).
 3. **Performance sans excès.** D'abord clair et correct, pas d'optimisation
    prématurée. Seule alerte immédiate : les requêtes en boucle (N+1).
 4. **Lisibilité (transversale).** Noms qui disent l'INTENTION ; fonctions courtes qui
-   font UNE chose ; commentaires sur le POURQUOI, jamais le QUOI. →
-   `docs/conventions/clean-code.md`.
+   font UNE chose ; commentaires sur le POURQUOI, jamais le QUOI.
 
 ## Respecter la façon de faire des frameworks
 
@@ -62,10 +89,15 @@ transverses, sans les écraser. Réinventer leur structure = friction et dette.
 
 ## Index — quoi lire selon le sujet
 
-| Quand je travaille sur…                          | Lis d'abord                        |
-| ------------------------------------------------ | ---------------------------------- |
-| du code métier (nommage, découpe, DRY, KISS)     | `docs/conventions/clean-code.md`   |
-| la conception d'une route / API REST             | `docs/conventions/rest.md`         |
-| quoi que ce soit côté NestJS (`api/`)            | `docs/conventions/nest.md`         |
-| quoi que ce soit côté client (`client/`)         | `docs/conventions/client.md`       |
-| comprendre l'outillage qualité (le « pourquoi ») | `docs/guides/outillage-qualite.md` |
+| Quand je travaille sur…                           | Lis d'abord                                                                   |
+| ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| savoir où en est le projet (fait / reste à faire) | `docs/avancement.md`                                                          |
+| ce qu'il faut construire (routes, UC)             | `design/routes-api.md`, `design/use-cases-recettes.md`                        |
+| du code métier (nommage, découpe, DRY, KISS)      | `eng-kit/rules/shared/clean-code.md`                                          |
+| la conception d'une route / API REST              | `eng-kit/rules/backend/api-design.md`, `backend/error-handling.md`            |
+| quoi que ce soit côté NestJS (`api/`)             | `eng-kit/rules/architecture/nest.md`, `backend/validation.md`                 |
+| l'authentification / les droits                   | `eng-kit/rules/backend/{authentication,authorization,nest-authz,passport}.md` |
+| quoi que ce soit côté client (`client/`)          | `eng-kit/rules/architecture/react.md`, `frontend/data-fetching.md`            |
+| la base de données                                | `eng-kit/rules/modeling/{mcd,mld,mpd}.md`, `backend/data-access.md`           |
+| les tests                                         | `eng-kit/rules/testing/{_strategy,jest}.md`                                   |
+| docker                                            | `eng-kit/rules/infra/docker.md`                                               |

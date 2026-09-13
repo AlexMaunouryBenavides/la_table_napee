@@ -1,0 +1,29 @@
+# MySQL de développement. Placé dans `api/` pour lire directement `api/.env`
+# (Docker Compose lit le `.env` situé à côté du fichier compose).
+#
+#   docker compose up -d      démarrer
+#   docker compose down       arrêter (les données restent dans le volume)
+#   docker compose down -v    arrêter ET tout effacer
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    volumes:
+      - db-data:/var/lib/mysql
+      # Ne s'exécute qu'au tout premier démarrage (volume vierge).
+      - ./docker/init-base-de-test.sh:/docker-entrypoint-initdb.d/init-base-de-test.sh:ro
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-p${DB_PASSWORD}']
+      interval: 5s
+      retries: 10
+
+volumes:
+  db-data:

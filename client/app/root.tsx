@@ -8,24 +8,17 @@ import {
 } from 'react-router';
 
 import type { Route } from './+types/root';
-import './app.css';
+import { chargerSession } from './acces-api/session';
+import { ErreurInattendue } from './composants/erreur-inattendue';
+import { Squelette } from './composants/squelette';
+import Introuvable from './routes/introuvable';
+import type { EtatSession } from './session-courante';
 
-export const links: Route.LinksFunction = () => [
-  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-  {
-    rel: 'preconnect',
-    href: 'https://fonts.gstatic.com',
-    crossOrigin: 'anonymous',
-  },
-  {
-    rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap',
-  },
-];
+import './app.css';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -41,37 +34,47 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Un seul appel à `GET /utilisateurs/moi` pour toute l'application.
+ *
+ * Une panne de cet appel ne fait PAS tomber le site : le catalogue se lit sans être
+ * connecté, et la vitrine doit survivre à une session indisponible. On distingue donc
+ * « visiteur » (l'API a répondu 401) de « on ne sait pas » (l'API n'a pas répondu).
+ */
+export async function clientLoader(): Promise<EtatSession> {
+  try {
+    return { session: await chargerSession(), sessionIndisponible: false };
+  } catch {
+    return { session: null, sessionIndisponible: true };
+  }
+}
+
+/**
+ * Affiché pendant que la session se charge : jamais un écran blanc, et surtout jamais
+ * un écran protégé ni un 403 tant qu'on ne sait pas qui est là.
+ */
+export function HydrateFallback() {
+  return (
+    <div className="min-h-dvh bg-nappe px-10 py-6">
+      <Squelette lignes={2} hauteur={11} className="max-w-160" />
+    </div>
+  );
+}
+
 export default function App() {
   return <Outlet />;
 }
 
-const HTTP_STATUS_NOT_FOUND = 404;
+const INTROUVABLE = 404;
 
+/**
+ * Dernier filet : une erreur qu'aucun segment n'a rattrapée. Les segments enfants ont
+ * leurs propres `ErrorBoundary`, si bien qu'une panne locale ne blanchit pas tout.
+ */
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!';
-  let details = 'An unexpected error occurred.';
-  let stack: string | undefined;
-
-  if (isRouteErrorResponse(error)) {
-    const estIntrouvable = error.status === HTTP_STATUS_NOT_FOUND;
-    message = estIntrouvable ? '404' : 'Error';
-    details = estIntrouvable
-      ? 'The requested page could not be found.'
-      : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
+  if (isRouteErrorResponse(error) && error.status === INTROUVABLE) {
+    return <Introuvable />;
   }
 
-  return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
-  );
+  return <ErreurInattendue />;
 }
