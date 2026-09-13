@@ -27,8 +27,8 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
 - [x] **Coquille du panneau** : logo sur une ligne ; section « Site » avec « Voir le site
       public » ; bloc du bas pseudo + e-mail + étiquette du rôle + « Se déconnecter ».
 
-> ⚠️ Côté public, « Se déconnecter » a quitté l'en-tête (la maquette n'y met que
-> l'avatar) : il revient dans le menu latéral de « Mon compte », au lot 2.
+> Côté public, « Se déconnecter » a quitté l'en-tête (la maquette n'y met que
+> l'avatar) : il vit dans le menu latéral de « Mon compte » (lot 2, fait).
 
 ## Lot 2 — écrans publics
 
@@ -55,7 +55,7 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
       « Un compte, pour _donner votre avis_ » + liste à puces + note « Nous ne
       demandons ni nom… ».
   - [ ] **Reste, avec tests** (04 et 05) : bouton « Afficher » dans le mot de passe.
-- [ ] **06 Mon compte** : menu latéral (Profil, Mot de passe, Supprimer mon compte, Se
+- [x] **06 Mon compte** : menu latéral (Profil, Mot de passe, Supprimer mon compte, Se
       déconnecter) ; sur-titre « Compte utilisateur » ; « Bonjour, _pseudo_ » + étiquette
       de rôle à droite ; profil en deux colonnes ; ligne Rôle · Compte créé le ·
       Identifiant ; zone de suppression en fond erreur.
