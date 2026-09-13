@@ -9,7 +9,6 @@ import { AvecRequetes } from '../test/requetes';
 
 import { clientRequetes } from './requetes/client-requetes';
 import { requeteSession } from './requetes/session';
-import { clientAction } from './routes/connexion';
 import { useDeconnexion, useSession } from './session-courante';
 
 const MOI: Utilisateur = {
@@ -33,17 +32,13 @@ function BoutonDeconnexion() {
   return <button onClick={useDeconnexion()}>Se déconnecter</button>;
 }
 
-/** Une API qui se souvient si on est connecté : la session suit connexion et déconnexion. */
+/** Une API qui se souvient si on est connecté : la session suit la déconnexion. */
 function apiAvecSession(connecteAuDepart: boolean) {
   let connecte = connecteAuDepart;
 
   return simulerApi({
     '/utilisateurs/moi': () => (connecte ? json(200, MOI) : NON_CONNECTE()),
     '/auth/rafraichissement': NON_CONNECTE,
-    '/auth/connexion': () => {
-      connecte = true;
-      return json(200, MOI);
-    },
     '/auth/deconnexion': () => {
       connecte = false;
       return new Response(null, { status: 204 });
@@ -127,7 +122,8 @@ describe('useSession', () => {
   });
 });
 
-describe('la session suit la connexion et la déconnexion', () => {
+// La connexion, elle, est éprouvée par son écran : `auth/connexion-inscription.test.tsx`.
+describe('la session suit la déconnexion', () => {
   it('passe au visiteur après une déconnexion, sans recharger la page', async () => {
     apiAvecSession(true);
     render(
@@ -145,27 +141,5 @@ describe('la session suit la connexion et la déconnexion', () => {
     );
 
     expect(await screen.findByText('visiteur')).toBeInTheDocument();
-  });
-
-  it('montre l’utilisateur après une connexion, sans recharger la page', async () => {
-    apiAvecSession(false);
-    render(
-      <AvecRequetes>
-        <Pseudo />
-      </AvecRequetes>,
-    );
-    await screen.findByText('visiteur');
-
-    const formulaire = new FormData();
-    formulaire.set('email', MOI.email);
-    formulaire.set('motDePasse', 'Password123!');
-    await clientAction({
-      request: new Request('http://localhost/connexion', {
-        method: 'POST',
-        body: formulaire,
-      }),
-    } as unknown as Parameters<typeof clientAction>[0]);
-
-    expect(await screen.findByText('Camille')).toBeInTheDocument();
   });
 });

@@ -24,7 +24,6 @@ export function ChampEmail({
       autoComplete="email"
       required
       disabled={envoiEnCours}
-      defaultValue={echec?.saisie?.email ?? ''}
       aide={aide}
       erreur={erreurDeChamp(echec, 'email')}
     />

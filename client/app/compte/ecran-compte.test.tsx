@@ -1,11 +1,11 @@
 import type { Utilisateur } from '@recipe/types';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createMemoryRouter, RouterProvider } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { MemoryRouter } from 'react-router';
+import { describe, expect, it, vi } from 'vitest';
 
-import type { ResultatCompte } from './actions-compte';
 import { EcranCompte } from './ecran-compte';
+import type { EnvoiCompte, ResultatCompte } from './mutations-compte';
 
 const CAMILLE: Utilisateur = {
   id: 'a',
@@ -15,44 +15,38 @@ const CAMILLE: Utilisateur = {
   dateCreation: '2026-01-12T12:00:00.000Z',
 };
 
-/** Rend l'écran et RETOURNE le journal des envois : c'est ainsi qu'un test affirme
- *  que rien n'est parti. */
+/** L'état d'un formulaire au repos, ou avec le retour qu'on veut éprouver. */
+function envoi(
+  resultat: ResultatCompte | null = null,
+  surEnvoi: EnvoiCompte['surEnvoi'] = vi.fn(),
+): EnvoiCompte {
+  return { resultat, envoiEnCours: false, surEnvoi };
+}
+
 function rendre({
   session = CAMILLE,
   sessionIndisponible = false,
-  resultat = null,
-  envoiEnCours = false,
+  profil = envoi(),
+  motDePasse = envoi(),
+  suppression = envoi(),
 }: {
   session?: Utilisateur | null;
   sessionIndisponible?: boolean;
-  resultat?: ResultatCompte | null;
-  envoiEnCours?: boolean;
-} = {}): string[] {
-  const envois: string[] = [];
-
-  const routeur = createMemoryRouter([
-    {
-      path: '/',
-      element: (
-        <EcranCompte
-          session={session}
-          sessionIndisponible={sessionIndisponible}
-          resultat={resultat}
-          envoiEnCours={envoiEnCours}
-        />
-      ),
-      action: async ({ request }) => {
-        const intention = (await request.formData()).get('intention');
-        envois.push(typeof intention === 'string' ? intention : '');
-
-        return null;
-      },
-    },
-  ]);
-
-  render(<RouterProvider router={routeur} />);
-
-  return envois;
+  profil?: EnvoiCompte;
+  motDePasse?: EnvoiCompte;
+  suppression?: EnvoiCompte;
+} = {}) {
+  render(
+    <MemoryRouter>
+      <EcranCompte
+        session={session}
+        sessionIndisponible={sessionIndisponible}
+        profil={profil}
+        motDePasse={motDePasse}
+        suppression={suppression}
+      />
+    </MemoryRouter>,
+  );
 }
 
 describe('EcranCompte — identité', () => {
@@ -101,7 +95,7 @@ describe('EcranCompte — sans session', () => {
 
 describe('EcranCompte — retours d’action', () => {
   it('confirme l’enregistrement du profil en gardant les trois zones', () => {
-    rendre({ resultat: { zone: 'profil', succes: true } });
+    rendre({ profil: envoi({ succes: true }) });
 
     expect(screen.getByRole('status')).toHaveTextContent(/enregistr/i);
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(3);
@@ -110,7 +104,7 @@ describe('EcranCompte — retours d’action', () => {
   it('dit que les autres appareils sont déconnectés, et qu’on reste connecté ici', () => {
     // L'API révoque toutes les sessions puis en rouvre une ici : le dire évite de
     // croire à une panne quand l'autre appareil demande de se reconnecter.
-    rendre({ resultat: { zone: 'mot-de-passe', succes: true } });
+    rendre({ motDePasse: envoi({ succes: true }) });
 
     const statut = screen.getByRole('status');
     expect(statut).toHaveTextContent(/autres appareils sont déconnectés/i);
@@ -120,14 +114,15 @@ describe('EcranCompte — retours d’action', () => {
 
 describe('EcranCompte — suppression', () => {
   it('n’envoie rien tant que la modale n’a pas confirmé', async () => {
-    const envois = rendre();
+    const surSuppression = vi.fn();
+    rendre({ suppression: envoi(null, surSuppression) });
 
     await userEvent.click(
       screen.getByRole('button', { name: /supprimer mon compte/i }),
     );
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(envois).toEqual([]);
+    expect(surSuppression).not.toHaveBeenCalled();
   });
 
   it('redit le sort des avis dans la modale, pas seulement dans la zone', async () => {
@@ -145,7 +140,7 @@ describe('EcranCompte — suppression', () => {
   it('fait ses adieux au lieu de renvoyer brutalement à l’accueil', () => {
     rendre({
       session: null,
-      resultat: { zone: 'suppression', succes: true },
+      suppression: envoi({ succes: true }),
     });
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(

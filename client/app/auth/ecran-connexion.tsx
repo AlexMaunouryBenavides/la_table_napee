@@ -1,8 +1,12 @@
 import type { Utilisateur } from '@recipe/types';
-import { Form, Link, useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { ChampSecret } from '../composants/champ-secret';
+import {
+  envoyerSansRecharger,
+  type EnvoiFormulaire,
+} from '../composants/envoi-formulaire';
 
 import { ChampEmail, EnTeteAuth, PiedDeFormulaire } from './champs-communs';
 
@@ -11,8 +15,6 @@ export type EchecAuth = {
   message: string;
   /** Les erreurs de validation, champ par champ, renvoyées par l'API. */
   details?: string[];
-  /** Ce qui était saisi, pour ne pas le faire retaper. Jamais le mot de passe. */
-  saisie?: { email?: string; pseudo?: string };
 };
 
 const REQUETE_INVALIDE = 400;
@@ -92,10 +94,12 @@ export function EcranConnexion({
   session,
   echec,
   envoiEnCours,
+  surEnvoi,
 }: {
   session: Utilisateur | null;
   echec: EchecAuth | null;
   envoiEnCours: boolean;
+  surEnvoi: EnvoiFormulaire;
 }) {
   const [parametres] = useSearchParams();
 
@@ -107,7 +111,7 @@ export function EcranConnexion({
   const compteCree = parametres.get('inscrit') === '1';
 
   return (
-    <Form method="post">
+    <form onSubmit={envoyerSansRecharger(surEnvoi)}>
       <EnTeteAuth
         titre="Se"
         emphase="connecter"
@@ -138,6 +142,6 @@ export function EcranConnexion({
         envoiEnCours={envoiEnCours}
         note="Mot de passe oublié ? Contactez l’équipe — la réinitialisation en libre-service n’existe pas encore côté API."
       />
-    </Form>
+    </form>
   );
 }

@@ -1,3 +1,5 @@
+import { useMutation } from '@tanstack/react-query';
+
 import {
   changerMotDePasse,
   modifierProfil,
@@ -5,21 +7,24 @@ import {
   supprimerCompte,
 } from '../acces-api/compte';
 import { ErreurApi } from '../acces-api/erreur-api';
+import type { EnvoiFormulaire } from '../composants/envoi-formulaire';
+import { sessionAChange } from '../requetes/session';
 
-/** Trois formulaires sur une page, donc trois actions : une erreur de mot de passe
- *  n'a aucune raison d'effacer la saisie du profil. */
-type ZoneCompte = 'profil' | 'mot-de-passe' | 'suppression';
-
+/** Trois formulaires sur une page, donc trois envois indépendants : une erreur de mot
+ *  de passe n'a aucune raison de toucher au profil. */
 export type ResultatCompte = {
-  zone: ZoneCompte;
   succes: boolean;
   /** Ce qui n'appartient à aucun champ : panne, conflit, refus global. */
   message?: string;
   /** Les erreurs rattachées à un champ, quelle que soit leur origine. */
   champs?: Record<string, string>;
-  /** Jamais un mot de passe : ce résultat vit dans l'état du routeur, donc dans
-   *  l'historique de navigation. */
-  saisie?: { email?: string; pseudo?: string };
+};
+
+/** L'état d'UN formulaire du compte, tel que l'écran l'affiche. */
+export type EnvoiCompte = {
+  resultat: ResultatCompte | null;
+  envoiEnCours: boolean;
+  surEnvoi: EnvoiFormulaire;
 };
 
 const REQUETE_INVALIDE = 400;
@@ -39,7 +44,7 @@ function texte(donnees: FormData, champ: string): string {
 }
 
 function erreurApi(erreur: unknown): ErreurApi {
-  // Une panne de code n'est pas un échec d'écran : elle remonte à l'ErrorBoundary.
+  // Une panne de code n'est pas un échec d'écran : elle remonte telle quelle.
   if (!(erreur instanceof ErreurApi)) {
     throw erreur;
   }
@@ -64,56 +69,48 @@ function champsDepuisDetails(details?: string[]): Record<string, string> {
 }
 
 function enEchec(
-  zone: ZoneCompte,
   erreur: ErreurApi,
   champs: Record<string, string>,
 ): ResultatCompte {
   // Un message rattaché à un champ ne s'affiche pas AUSSI en bandeau : le lire deux
   // fois ne dit pas deux choses.
   return Object.keys(champs).length > 0
-    ? { zone, succes: false, champs }
-    : { zone, succes: false, message: erreur.message };
+    ? { succes: false, champs }
+    : { succes: false, message: erreur.message };
 }
 
-async function executerProfil(donnees: FormData): Promise<ResultatCompte> {
-  const email = texte(donnees, 'email');
+export async function executerProfil(
+  donnees: FormData,
+): Promise<ResultatCompte> {
   const pseudo = texte(donnees, 'pseudo');
   // Un pseudo vide veut dire « je n'y touche pas » : l'API en exige 3 caractères et
   // n'offre aucun moyen d'en effacer un.
   const corps: ProfilAModifier = {
-    email,
+    email: texte(donnees, 'email'),
     ...(pseudo === '' ? {} : { pseudo }),
   };
 
   try {
     await modifierProfil(corps);
-
-    return { zone: 'profil', succes: true };
+    return { succes: true };
   } catch (leve) {
     const erreur = erreurApi(leve);
-
-    return {
-      ...enEchec('profil', erreur, champsDepuisDetails(erreur.details)),
-      saisie: { email, pseudo },
-    };
+    return enEchec(erreur, champsDepuisDetails(erreur.details));
   }
 }
 
-async function executerMotDePasse(donnees: FormData): Promise<ResultatCompte> {
+export async function executerMotDePasse(
+  donnees: FormData,
+): Promise<ResultatCompte> {
   const nouveau = brut(donnees, 'nouveauMotDePasse');
 
   if (nouveau !== brut(donnees, 'confirmation')) {
-    return {
-      zone: 'mot-de-passe',
-      succes: false,
-      champs: { confirmation: CONFIRMATION_DIFFERENTE },
-    };
+    return { succes: false, champs: { confirmation: CONFIRMATION_DIFFERENTE } };
   }
 
   try {
     await changerMotDePasse(brut(donnees, 'ancienMotDePasse'), nouveau);
-
-    return { zone: 'mot-de-passe', succes: true };
+    return { succes: true };
   } catch (leve) {
     const erreur = erreurApi(leve);
     const champs = champsDepuisDetails(erreur.details);
@@ -128,33 +125,40 @@ async function executerMotDePasse(donnees: FormData): Promise<ResultatCompte> {
       champs.ancienMotDePasse = erreur.message;
     }
 
-    return enEchec('mot-de-passe', erreur, champs);
+    return enEchec(erreur, champs);
   }
 }
 
-async function executerSuppression(): Promise<ResultatCompte> {
+export async function executerSuppression(): Promise<ResultatCompte> {
   try {
     await supprimerCompte();
-
-    return { zone: 'suppression', succes: true };
+    return { succes: true };
   } catch (leve) {
-    const erreur = erreurApi(leve);
-
-    return enEchec('suppression', erreur, {});
+    return enEchec(erreurApi(leve), {});
   }
 }
 
-/** Le seul point d'entrée de l'écran : c'est `intention` qui dit quel formulaire a
- *  été envoyé. */
-export function executerActionCompte(
-  donnees: FormData,
-): Promise<ResultatCompte> {
-  switch (texte(donnees, 'intention')) {
-    case 'profil':
-      return executerProfil(donnees);
-    case 'mot-de-passe':
-      return executerMotDePasse(donnees);
-    default:
-      return executerSuppression();
-  }
+/**
+ * Un succès relit la session : l'en-tête connaît le nouveau pseudo — ou la fin de la
+ * session après une suppression — sans qu'on le recopie.
+ */
+export function useEnvoiCompte(
+  executer: (donnees: FormData) => Promise<ResultatCompte>,
+): EnvoiCompte {
+  const mutation = useMutation({
+    mutationFn: executer,
+    onSuccess: async (resultat) => {
+      if (resultat.succes) {
+        await sessionAChange();
+      }
+    },
+  });
+
+  return {
+    resultat: mutation.data ?? null,
+    envoiEnCours: mutation.isPending,
+    surEnvoi: (donnees) => {
+      mutation.mutate(donnees);
+    },
+  };
 }

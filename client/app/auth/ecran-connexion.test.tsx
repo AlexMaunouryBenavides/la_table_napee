@@ -1,7 +1,7 @@
 import type { Utilisateur } from '@recipe/types';
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EcranConnexion, type EchecAuth } from './ecran-connexion';
 
@@ -30,6 +30,7 @@ function rendre({
           session={session}
           echec={echec}
           envoiEnCours={envoiEnCours}
+          surEnvoi={vi.fn()}
         />
       ),
     },
@@ -98,21 +99,6 @@ describe('EcranConnexion — envoi et session', () => {
     ).toBeDisabled();
   });
 
-  it('conserve l’adresse après une panne, mais jamais le mot de passe', () => {
-    rendre({
-      echec: {
-        statut: 500,
-        message: 'Le service est indisponible.',
-        saisie: { email: 'camille@test.fr' },
-      },
-    });
-
-    expect(screen.getByLabelText(/adresse e-mail/i)).toHaveValue(
-      'camille@test.fr',
-    );
-    expect(screen.getByLabelText(/mot de passe/i)).toHaveValue('');
-  });
-
   it('dit à une personne déjà connectée qu’elle l’est, sans la rediriger', () => {
     rendre({ session: CAMILLE });
 
@@ -140,7 +126,12 @@ describe('EcranConnexion — après une inscription', () => {
         {
           path: '/connexion',
           element: (
-            <EcranConnexion session={null} echec={null} envoiEnCours={false} />
+            <EcranConnexion
+              session={null}
+              echec={null}
+              envoiEnCours={false}
+              surEnvoi={vi.fn()}
+            />
           ),
         },
       ],

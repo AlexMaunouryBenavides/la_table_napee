@@ -1,16 +1,17 @@
 import type { Utilisateur } from '@recipe/types';
 import { useState } from 'react';
-import { Form, Link, useLocation, useSubmit } from 'react-router';
+import { Link, useLocation } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
 import { Champ } from '../composants/champ';
+import { envoyerSansRecharger } from '../composants/envoi-formulaire';
 import { EtiquetteRole } from '../composants/etiquette-role';
 import { ModaleConfirmation } from '../composants/modale-confirmation';
 import { ZoneReglage } from '../composants/zone-reglage';
 import { useDeconnexion } from '../session-courante';
 
-import type { ResultatCompte } from './actions-compte';
+import type { EnvoiCompte, ResultatCompte } from './mutations-compte';
 
 const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
 const LONGUEUR_MIN_PSEUDO = 3;
@@ -21,11 +22,6 @@ const MOT_DE_CONFIRMATION = 'SUPPRIMER';
 // importante de l'écran : elle doit survivre au fait de ne lire que la modale.
 const SORT_DES_AVIS =
   'Vos avis restent publiés sur les recettes mais deviennent anonymes : plus aucun lien avec vous, et vous ne pourrez plus les modifier ni les supprimer.';
-
-type RetourDeZone = {
-  resultat: ResultatCompte | null;
-  envoiEnCours: boolean;
-};
 
 /** Un message rattaché à un champ ne s'affiche pas AUSSI en bandeau : le lire deux
  *  fois ne dit pas deux choses. */
@@ -83,19 +79,6 @@ function Salutation({ session }: { session: Utilisateur }) {
       )}
     </header>
   );
-}
-
-/** Ce qui s'affiche dans les champs : la saisie refusée d'abord, le compte ensuite. */
-function valeursDuProfil(
-  session: Utilisateur,
-  resultat: ResultatCompte | null,
-) {
-  const saisie = resultat?.saisie;
-
-  return {
-    pseudo: saisie?.pseudo ?? session.pseudo ?? '',
-    email: saisie?.email ?? session.email,
-  };
 }
 
 /** Ce que l'utilisateur ne modifie pas ici : lu, jamais saisi. */
@@ -160,10 +143,12 @@ function ChampsDuProfil({
 
 function ZoneProfil({
   session,
-  resultat,
-  envoiEnCours,
-}: RetourDeZone & { session: Utilisateur }) {
-  const valeurs = valeursDuProfil(session, resultat);
+  envoi: { resultat, envoiEnCours, surEnvoi },
+}: {
+  session: Utilisateur;
+  envoi: EnvoiCompte;
+}) {
+  const valeurs = { pseudo: session.pseudo ?? '', email: session.email };
 
   return (
     <ZoneReglage
@@ -176,9 +161,7 @@ function ZoneProfil({
         succes="Vos informations sont enregistrées."
       />
 
-      <Form method="post" className="grid gap-4.5">
-        <input type="hidden" name="intention" value="profil" />
-
+      <form onSubmit={envoyerSansRecharger(surEnvoi)} className="grid gap-4.5">
         <ChampsDuProfil
           valeurs={valeurs}
           champs={resultat?.champs}
@@ -196,7 +179,7 @@ function ZoneProfil({
             Annuler
           </button>
         </div>
-      </Form>
+      </form>
     </ZoneReglage>
   );
 }
@@ -249,7 +232,11 @@ function ChampsDeMotDePasse({
   );
 }
 
-function ZoneMotDePasse({ resultat, envoiEnCours }: RetourDeZone) {
+function ZoneMotDePasse({
+  envoi: { resultat, envoiEnCours, surEnvoi },
+}: {
+  envoi: EnvoiCompte;
+}) {
   return (
     <ZoneReglage
       id="mot-de-passe"
@@ -261,9 +248,7 @@ function ZoneMotDePasse({ resultat, envoiEnCours }: RetourDeZone) {
         succes="Mot de passe changé. Vos autres appareils sont déconnectés ; vous restez connecté ici."
       />
 
-      <Form method="post" className="grid gap-4.5">
-        <input type="hidden" name="intention" value="mot-de-passe" />
-
+      <form onSubmit={envoyerSansRecharger(surEnvoi)} className="grid gap-4.5">
         <ChampsDeMotDePasse
           champs={resultat?.champs}
           envoiEnCours={envoiEnCours}
@@ -274,14 +259,17 @@ function ZoneMotDePasse({ resultat, envoiEnCours }: RetourDeZone) {
             Changer le mot de passe
           </Bouton>
         </div>
-      </Form>
+      </form>
     </ZoneReglage>
   );
 }
 
-function ZoneSuppression({ resultat, envoiEnCours }: RetourDeZone) {
+function ZoneSuppression({
+  envoi: { resultat, envoiEnCours, surEnvoi },
+}: {
+  envoi: EnvoiCompte;
+}) {
   const [modaleOuverte, setModaleOuverte] = useState(false);
-  const envoyer = useSubmit();
 
   return (
     <ZoneReglage
@@ -315,7 +303,8 @@ function ZoneSuppression({ resultat, envoiEnCours }: RetourDeZone) {
             setModaleOuverte(false);
           }}
           surConfirmation={() => {
-            void envoyer({ intention: 'suppression' }, { method: 'post' });
+            setModaleOuverte(false);
+            surEnvoi(new FormData());
           }}
         />
       )}
@@ -417,29 +406,30 @@ function MenuCompte() {
   );
 }
 
-type ProprietesEcran = RetourDeZone & {
+type ProprietesEcran = {
   session: Utilisateur | null;
   sessionIndisponible: boolean;
+  profil: EnvoiCompte;
+  motDePasse: EnvoiCompte;
+  suppression: EnvoiCompte;
 };
 
 function Contenu({
   session,
   sessionIndisponible,
-  resultat,
-  envoiEnCours,
+  profil,
+  motDePasse,
+  suppression,
 }: ProprietesEcran) {
-  if (resultat?.zone === 'suppression' && resultat.succes) {
+  // Avant le test de session : une fois le compte supprimé, la session est close, et
+  // c'est l'adieu qu'on doit lire, pas l'invitation à se connecter.
+  if (suppression.resultat?.succes === true) {
     return <Adieu />;
   }
 
   if (session === null) {
     return <SansSession indisponible={sessionIndisponible} />;
   }
-
-  // Chaque zone ne voit QUE son propre retour : un échec sur le mot de passe ne
-  // doit rien changer à l'affichage du profil.
-  const pour = (zone: ResultatCompte['zone']): ResultatCompte | null =>
-    resultat?.zone === zone ? resultat : null;
 
   return (
     <div className="md:flex md:items-start md:gap-10">
@@ -448,19 +438,9 @@ function Contenu({
       <div className="md:flex-1">
         <Salutation session={session} />
         <div className="flex flex-col gap-6">
-          <ZoneProfil
-            session={session}
-            resultat={pour('profil')}
-            envoiEnCours={envoiEnCours}
-          />
-          <ZoneMotDePasse
-            resultat={pour('mot-de-passe')}
-            envoiEnCours={envoiEnCours}
-          />
-          <ZoneSuppression
-            resultat={pour('suppression')}
-            envoiEnCours={envoiEnCours}
-          />
+          <ZoneProfil session={session} envoi={profil} />
+          <ZoneMotDePasse envoi={motDePasse} />
+          <ZoneSuppression envoi={suppression} />
         </div>
       </div>
     </div>

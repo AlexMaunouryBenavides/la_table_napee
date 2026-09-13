@@ -1,10 +1,13 @@
 import type { Utilisateur } from '@recipe/types';
-import { useState } from 'react';
-import { Form } from 'react-router';
+import { useState, type FormEvent } from 'react';
 
 import { Bandeau } from '../composants/bandeau';
 import { Champ } from '../composants/champ';
 import { ChampSecret } from '../composants/champ-secret';
+import {
+  envoyerSansRecharger,
+  type EnvoiFormulaire,
+} from '../composants/envoi-formulaire';
 
 import { ChampEmail, EnTeteAuth, PiedDeFormulaire } from './champs-communs';
 import {
@@ -98,23 +101,41 @@ function ChampsDInscription({
         aide="Affiché sur vos avis. Sans pseudo, ils apparaissent comme « Utilisateur anonyme »."
         autoComplete="nickname"
         disabled={envoiEnCours}
-        defaultValue={echec?.saisie?.pseudo ?? ''}
         erreur={erreurDeChamp(echec, 'pseudo')}
       />
     </div>
   );
 }
 
+/** La seule règle que le client double : elle est triviale, et elle évite un
+ *  aller-retour dont la réponse est connue d'avance. */
+function envoiSiAssezLong(
+  motDePasse: string,
+  signalerTropCourt: (tropCourt: boolean) => void,
+  surEnvoi: EnvoiFormulaire,
+) {
+  if (motDePasse.length >= LONGUEUR_MINIMALE) {
+    return envoyerSansRecharger(surEnvoi);
+  }
+
+  return (evenement: FormEvent<HTMLFormElement>) => {
+    evenement.preventDefault();
+    signalerTropCourt(true);
+  };
+}
+
 type ProprietesEcran = {
   session: Utilisateur | null;
   echec: EchecAuth | null;
   envoiEnCours: boolean;
+  surEnvoi: EnvoiFormulaire;
 };
 
 export function EcranInscription({
   session,
   echec,
   envoiEnCours,
+  surEnvoi,
 }: ProprietesEcran) {
   const [motDePasse, setMotDePasse] = useState('');
   const [tropCourt, setTropCourt] = useState(false);
@@ -126,17 +147,7 @@ export function EcranInscription({
   const global = echecGlobal(echec);
 
   return (
-    <Form
-      method="post"
-      onSubmit={(evenement) => {
-        // La seule règle que le client double : elle est triviale, et elle évite un
-        // aller-retour dont la réponse est connue d'avance.
-        if (motDePasse.length < LONGUEUR_MINIMALE) {
-          evenement.preventDefault();
-          setTropCourt(true);
-        }
-      }}
-    >
+    <form onSubmit={envoiSiAssezLong(motDePasse, setTropCourt, surEnvoi)}>
       <EnTeteAuth
         titre="Créer un"
         emphase="compte"
@@ -165,6 +176,6 @@ export function EcranInscription({
         envoiEnCours={envoiEnCours}
         note="Votre compte est de rôle utilisateur : la publication de recettes est réservée à l’équipe."
       />
-    </Form>
+    </form>
   );
 }

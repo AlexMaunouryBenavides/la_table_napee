@@ -214,7 +214,7 @@ Le catalogue porte **huit filtres**, tous dans l'URL (recherche débattue compri
 lien de résultats se partage et le retour arrière fonctionne. Le détail d'une recette
 inclut le dépôt d'un avis et sa modération, droits calculés côté client à partir de la
 session — la vérité restant, elle, côté API. « Mon compte » porte **trois formulaires
-indépendants** (profil, mot de passe, suppression) aiguillés par un champ `intention` :
+indépendants** (profil, mot de passe, suppression), une mutation TanStack Query chacun :
 un échec sur l'un n'efface pas la saisie des deux autres.
 
 Le back-office ne montre **aucune statistique venant d'une route interdite au rôle** :
