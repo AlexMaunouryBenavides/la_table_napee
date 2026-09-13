@@ -37,3 +37,24 @@ export function sectionsPour(role: RoleUtilisateur): SectionPanneau[] {
 
   return [];
 }
+
+const ONGLETS_GESTION: EntreePanneau[] = [
+  { libelle: 'Bord', vers: '/panneau' },
+  { libelle: 'Recettes', vers: '/panneau/recettes' },
+];
+
+/**
+ * Les onglets du bas, sur petit écran : les destinations QUOTIDIENNES du rôle. Même
+ * règle que le menu — rien vers une route interdite — mais trois places au plus : les
+ * catégories restent dans le tiroir.
+ */
+export function ongletsPanneau(role: RoleUtilisateur): EntreePanneau[] {
+  if (role === 'admin') {
+    return [
+      ...ONGLETS_GESTION,
+      { libelle: 'Comptes', vers: '/panneau/utilisateurs' },
+    ];
+  }
+
+  return role === 'moderateur' ? ONGLETS_GESTION : [];
+}

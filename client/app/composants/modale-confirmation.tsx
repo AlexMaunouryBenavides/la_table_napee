@@ -74,10 +74,18 @@ export function useClavierDeModale(
   panneau: React.RefObject<HTMLDivElement | null>,
   surAnnulation: () => void,
 ) {
+  // Le rappel change souvent d'identité (fonction recréée à chaque rendu) : le garder
+  // dans une ref évite de réabonner l'écouteur — et de rejouer les effets voisins.
+  const annulation = useRef(surAnnulation);
+
+  useEffect(() => {
+    annulation.current = surAnnulation;
+  });
+
   useEffect(() => {
     function surTouche(evenement: KeyboardEvent) {
       if (evenement.key === 'Escape') {
-        surAnnulation();
+        annulation.current();
       } else if (evenement.key === 'Tab') {
         piegerTabulation(evenement, panneau.current);
       }
@@ -88,7 +96,7 @@ export function useClavierDeModale(
     return () => {
       document.removeEventListener('keydown', surTouche);
     };
-  }, [panneau, surAnnulation]);
+  }, [panneau]);
 }
 
 function EnTeteDeModale({

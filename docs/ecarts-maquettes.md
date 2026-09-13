@@ -108,9 +108,9 @@ Chaque écran réel émulé à 390 px, comparé à la planche mobile de sa maque
 - [x] **Catalogue — tiroir de filtres** (8 tests) : bouton « Filtres · N », tiroir plein écran,
       choix accumulés sans requête, « Voir les N recettes » ; aujourd'hui les filtres
       occupent ~1 700 px avant la première recette.
-- [ ] **Panneau — en-tête ardoise et tiroir de navigation** (burger, fermeture, Échap,
-      focus) + **barre d'onglets basse** Bord · Recettes · Comptes/Réglages selon le rôle.
-- [ ] **Site public — barre d'onglets basse** Accueil · Catalogue · Compte.
+- [x] **Panneau — en-tête ardoise et tiroir de navigation** (9 tests) (burger, fermeture, Échap,
+      focus) + **barre d'onglets basse** Bord · Recettes · Comptes selon le rôle.
+- [x] **Site public — barre d'onglets basse** (4 tests) Accueil · Catalogue · Compte.
 - [ ] **Détail d'une recette — onglets ancrés** Ingrédients · Étapes · Avis.
 - [ ] **Mon compte — onglets** Profil · Mot de passe · Suppression.
 - [ ] **Éditeur — sections en accordéon** et réordonnancement des étapes dédié.

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router';
 
@@ -58,24 +58,14 @@ function useClavierDuTiroir(
   panneau: React.RefObject<HTMLDivElement | null>,
   surFermeture: () => void,
 ) {
-  // Le rappel change à chaque rendu : le garder dans une ref évite de rejouer les
-  // effets — dont celui qui ramènerait le focus sur « Fermer » à chaque coche.
-  const fermeture = useRef(surFermeture);
-
-  useEffect(() => {
-    fermeture.current = surFermeture;
-  });
-
-  const fermerStable = useCallback(() => {
-    fermeture.current();
-  }, []);
-
+  // Dépendance stable : l'effet ne se rejoue pas, le focus ne revient donc pas sur
+  // « Fermer » à chaque coche.
   useEffect(() => {
     panneau.current?.querySelector<HTMLElement>('button')?.focus();
   }, [panneau]);
 
   // `Échap` et `Tab` : la même règle que la modale de confirmation, pas une copie.
-  useClavierDeModale(panneau, fermerStable);
+  useClavierDeModale(panneau, surFermeture);
 }
 
 /** Tout effacer, sauf le tri : trier n'est pas filtrer. */
