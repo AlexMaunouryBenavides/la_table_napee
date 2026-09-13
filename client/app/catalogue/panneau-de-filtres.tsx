@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router';
 import { avecCritere } from '../acces-api/criteres-url';
 import { RechercheDebattue } from '../composants/recherche-debattue';
 
+import { CurseurTemps } from './curseur-temps';
 import type { Referentiels } from './filtres-actifs';
 import { GroupeFiltre } from './groupe-filtre';
 
@@ -47,33 +48,6 @@ function ChampTitre() {
           className="rounded-sm"
         />
       </div>
-    </Bloc>
-  );
-}
-
-function TempsMaximum() {
-  const [parametres, setParametres] = useSearchParams();
-
-  return (
-    <Bloc>
-      <label htmlFor="tempsMax" className={INTITULE}>
-        Temps total maximum
-      </label>
-      <input
-        id="tempsMax"
-        type="number"
-        min={1}
-        inputMode="numeric"
-        placeholder="en minutes"
-        value={parametres.get('tempsMax') ?? ''}
-        onChange={(evenement) => {
-          setParametres(
-            avecCritere(parametres, 'tempsMax', evenement.target.value),
-          );
-        }}
-        className={CONTROLE}
-      />
-      <p className="mt-2 text-sm text-encre-55">préparation + cuisson</p>
     </Bloc>
   );
 }
@@ -127,7 +101,9 @@ function CriteresDeRecette() {
           options={enumEnOptions(DIFFICULTES)}
         />
       </Bloc>
-      <TempsMaximum />
+      <Bloc>
+        <CurseurTemps />
+      </Bloc>
     </>
   );
 }

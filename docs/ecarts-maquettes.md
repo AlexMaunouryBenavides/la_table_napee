@@ -41,8 +41,9 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
       encadrée avec résumé à droite (composant partagé).
   - [x] Sélecteur de tri (5 tests) : les quatre tris que l'API accepte, défaut
         « Plus récentes », tri inconnu dans l'URL ramené au défaut.
-  - [ ] **Reste, avec tests** : curseur de temps 10–180 min ; titre composé des filtres
-        (« Plats _végans_ »).
+  - [x] Curseur de temps 10–180 min par pas de 5 (6 tests) : au maximum, pas de
+        filtre ; valeur hors bornes dans l'URL ramenée au maximum.
+  - [ ] **Reste, avec tests** : titre composé des filtres (« Plats _végans_ »).
 - [x] **03 Détail** : fil d'Ariane ; sur-titre « TYPE · NATIONALITÉ » ; ligne « Par X ·
       publiée le … » ; rangée de méta séparée par des filets verticaux (valeur en
       Cormorant) ; nationalité parmi les chips ; titres « Étapes » (pas
