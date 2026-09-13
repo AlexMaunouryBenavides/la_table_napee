@@ -13,6 +13,7 @@ import { CatalogueVide } from '../catalogue/catalogue-vide';
 import { filtresActifs, type Referentiels } from '../catalogue/filtres-actifs';
 import { PanneauDeFiltres } from '../catalogue/panneau-de-filtres';
 import { RangeeFiltresActifs } from '../catalogue/rangee-filtres-actifs';
+import { SelecteurTri } from '../catalogue/selecteur-tri';
 import { Bandeau } from '../composants/bandeau';
 import { CarteRecette } from '../composants/carte-recette';
 import { Pagination } from '../composants/pagination';
@@ -105,15 +106,18 @@ function EnTeteCatalogue({
   aDesFiltres: boolean;
 }) {
   return (
-    <header className="mb-5 border-b border-trait pb-4">
-      {/* Avec des filtres, `total` compte les RÉSULTATS, pas le catalogue :
+    <header className="mb-5 flex flex-wrap items-end justify-between gap-6 border-b border-trait pb-4">
+      <div>
+        {/* Avec des filtres, `total` compte les RÉSULTATS, pas le catalogue :
           l'annoncer comme la taille du catalogue serait faux. */}
-      {total !== null && !aDesFiltres && (
-        <p className="text-xs font-medium tracking-bouton text-ardoise uppercase">
-          {total} recettes au catalogue
-        </p>
-      )}
-      <h1 className="mt-2 text-3xl leading-none">Le catalogue</h1>
+        {total !== null && !aDesFiltres && (
+          <p className="text-xs font-medium tracking-bouton text-ardoise uppercase">
+            {total} recettes au catalogue
+          </p>
+        )}
+        <h1 className="mt-2 text-3xl leading-none">Le catalogue</h1>
+      </div>
+      <SelecteurTri />
     </header>
   );
 }
