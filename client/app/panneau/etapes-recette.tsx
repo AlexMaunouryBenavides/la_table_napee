@@ -1,10 +1,12 @@
-import { Bouton } from '../composants/bouton';
+import { BoutonIcone } from '../composants/bouton-icone';
 
 type ActionsDEtape = {
   surDeplacement: (index: number, sens: -1 | 1) => void;
   surRetrait: (index: number) => void;
 };
 
+/** Le glisser seul n'est pas accessible : monter, descendre et retirer sont des
+ *  boutons, atteignables au clavier. */
 function BoutonsDeplacement({
   index,
   dernier,
@@ -14,37 +16,37 @@ function BoutonsDeplacement({
   dernier: boolean;
   actions: ActionsDEtape;
 }) {
+  const numero = index + 1;
+
   return (
-    <div className="flex shrink-0 flex-col">
-      <Bouton
-        variante="texte"
-        taille="sm"
+    <div className="flex shrink-0 gap-1">
+      <BoutonIcone
+        libelle={`Monter l’étape ${String(numero)}`}
         disabled={index === 0}
         onClick={() => {
           actions.surDeplacement(index, -1);
         }}
       >
-        Monter l’étape {index + 1}
-      </Bouton>
-      <Bouton
-        variante="texte"
-        taille="sm"
+        ▲
+      </BoutonIcone>
+      <BoutonIcone
+        libelle={`Descendre l’étape ${String(numero)}`}
         disabled={dernier}
         onClick={() => {
           actions.surDeplacement(index, 1);
         }}
       >
-        Descendre l’étape {index + 1}
-      </Bouton>
-      <Bouton
-        variante="texte"
-        taille="sm"
+        ▼
+      </BoutonIcone>
+      <BoutonIcone
+        libelle={`Retirer l’étape ${String(numero)}`}
+        danger
         onClick={() => {
           actions.surRetrait(index);
         }}
       >
-        Retirer l’étape {index + 1}
-      </Bouton>
+        ×
+      </BoutonIcone>
     </div>
   );
 }
@@ -68,7 +70,7 @@ function LigneEtape({
           le ferait annoncer deux fois. */}
       <span
         aria-hidden="true"
-        className="mt-2 w-6 shrink-0 text-right font-titre text-xl"
+        className="mt-1 grid size-9 shrink-0 place-items-center rounded-full bg-lavande font-titre text-lg font-semibold text-ardoise-fonce"
       >
         {index + 1}
       </span>
@@ -83,7 +85,7 @@ function LigneEtape({
         onChange={(evenement) => {
           surChangement(index, evenement.target.value);
         }}
-        className="flex-1 rounded-sm border border-trait-fort bg-craie px-3 py-2"
+        className="min-w-0 flex-1 rounded-sm border border-trait-fort bg-craie px-3.5 py-2.5 text-sm leading-relaxed"
       />
 
       <BoutonsDeplacement index={index} dernier={dernier} actions={actions} />
@@ -115,7 +117,7 @@ export function EtapesRecette({
         </p>
       )}
 
-      <ol className="flex flex-col gap-3">
+      <ol className="flex flex-col gap-3.5">
         {etapes.map((etape, index) => (
           <LigneEtape
             // Une étape non enregistrée n'a pas d'identité propre : sa position EST

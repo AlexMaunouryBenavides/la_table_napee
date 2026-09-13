@@ -30,7 +30,7 @@ function Liste({
     <div>
       <label
         htmlFor={nom}
-        className="block text-xs tracking-etiquette text-encre-70 uppercase"
+        className="block text-xs font-medium tracking-bouton text-encre-70 uppercase"
       >
         {libelle}
       </label>
@@ -40,7 +40,7 @@ function Liste({
         onChange={(evenement) => {
           surChangement(evenement.target.value);
         }}
-        className="mt-1 h-11 w-full rounded-sm border border-trait-fort bg-craie px-3"
+        className="mt-2 h-12 w-full rounded-sm border border-trait-fort bg-craie px-3.5 text-sm"
       >
         {/* La liste peut encore être vide : le formulaire reste saisissable pendant
             que les référentiels arrivent. */}
@@ -89,7 +89,7 @@ function Identite({ brouillon, champs, modifier }: SectionProprietes) {
       <div>
         <label
           htmlFor="description"
-          className="block text-xs tracking-etiquette text-encre-70 uppercase"
+          className="block text-xs font-medium tracking-bouton text-encre-70 uppercase"
         >
           Description
         </label>
@@ -100,7 +100,7 @@ function Identite({ brouillon, champs, modifier }: SectionProprietes) {
           onChange={(evenement) => {
             modifier({ description: evenement.target.value });
           }}
-          className="mt-1 w-full rounded-sm border border-trait-fort bg-craie px-3 py-2"
+          className="mt-2 w-full rounded-sm border border-trait-fort bg-craie px-3.5 py-3 text-sm leading-relaxed"
         />
       </div>
     </>

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { chercherIngredients } from '../acces-api/ingredients';
 import { Bouton } from '../composants/bouton';
+import { BoutonIcone } from '../composants/bouton-icone';
 
 import type { LigneIngredient } from './brouillon-recette';
 
@@ -121,7 +122,7 @@ type ChampsProprietes = {
 
 function ChampNom({ ligne, rang, idNom, surChangement }: ChampsProprietes) {
   return (
-    <div className="min-w-60 flex-1">
+    <div className="min-w-48 flex-1">
       <label htmlFor={idNom} className="sr-only">
         Ingrédient {rang}
       </label>
@@ -132,7 +133,7 @@ function ChampNom({ ligne, rang, idNom, surChangement }: ChampsProprietes) {
         onChange={(evenement) => {
           surChangement({ ...ligne, nom: evenement.target.value });
         }}
-        className="h-11 w-full rounded-sm border border-trait-fort bg-craie px-3"
+        className="h-11 w-full rounded-sm border border-trait-fort bg-craie px-3.5 text-sm"
       />
     </div>
   );
@@ -161,7 +162,7 @@ function ChampQuantite({
         onChange={(evenement) => {
           surChangement({ ...ligne, quantite: evenement.target.value });
         }}
-        className="h-11 w-28 rounded-sm border border-trait-fort bg-craie px-3"
+        className="h-11 w-24 rounded-sm border border-trait-fort bg-craie px-3.5 text-sm"
       />
     </div>
   );
@@ -182,7 +183,7 @@ function ChampUnite({ ligne, rang, idNom, surChangement }: ChampsProprietes) {
             unite: evenement.target.value as LigneIngredient['unite'],
           });
         }}
-        className="h-11 rounded-sm border border-trait-fort bg-craie px-2"
+        className="h-11 w-42 rounded-sm border border-trait-fort bg-craie px-3 text-sm"
       >
         {UNITES.map((unite) => (
           <option key={unite} value={unite}>
@@ -217,15 +218,19 @@ export function LigneIngredientSaisie({
   };
 
   return (
-    <div className="border-t border-trait py-3">
-      <div className="flex flex-wrap items-end gap-3">
+    <div className="py-2">
+      <div className="flex flex-wrap items-center gap-2.5">
         <ChampNom {...champs} />
         <ChampQuantite {...champs} />
         <ChampUnite {...champs} />
 
-        <Bouton variante="texte" taille="sm" onClick={surRetrait}>
-          Retirer l’ingrédient {rang}
-        </Bouton>
+        <BoutonIcone
+          libelle={`Retirer l’ingrédient ${String(rang)}`}
+          danger
+          onClick={surRetrait}
+        >
+          ×
+        </BoutonIcone>
       </div>
 
       {erreur !== undefined && (

@@ -68,7 +68,7 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
 - [x] **08 Recettes** : fil d'Ariane ; barre d'outils (recherche, selects encadrés,
       compteur) ; tableau encadré, vignettes, colonne auteur ; boutons « Modifier » et
       « Suppr. » ; pagination avec résumé.
-- [ ] **09 Éditeur** : fil d'Ariane + date de création ; colonne principale en
+- [x] **09 Éditeur** : fil d'Ariane + date de création ; colonne principale en
       `fieldset` titrés + aside collante (Image, Récapitulatif, Publication) ; unité
       « min » dans les champs de temps ; catégories en chips.
 - [x] **10 Utilisateurs** : fil d'Ariane ; tableau encadré, pastille d'initiale, étiquette
