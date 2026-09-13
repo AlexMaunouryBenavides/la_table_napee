@@ -32,7 +32,7 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
 
 ## Lot 2 — écrans publics
 
-- [ ] **01 Accueil** : héros deux colonnes avec assiette ronde lavande ; titre sur deux
+- [x] **01 Accueil** : héros deux colonnes avec assiette ronde lavande ; titre sur deux
       lignes sans point final ; bande lavande « Six familles de recettes » + bouton
       « Explorer » au lieu des pastilles.
 - [ ] **02 Catalogue** : en-tête « N recettes au catalogue » + titre composé des filtres ;
