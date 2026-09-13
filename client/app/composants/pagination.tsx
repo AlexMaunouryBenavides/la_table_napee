@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
 import { avecPage } from '../acces-api/criteres-url';
@@ -11,7 +12,13 @@ type ProprietesPagination = {
   total: number;
   page: number;
   limite: number;
+  /** Ce qu'on compte : affiche le résumé à droite. Les deux formes sont données, car
+   *  retirer un « s » ne marche pas en français (« avis »). */
+  elements?: { singulier: string; pluriel: string };
 };
+
+const CASE =
+  'flex h-11 min-w-11 items-center justify-center rounded-sm border px-3 text-sm';
 
 /**
  * Les pages à afficher : la première, la dernière, la courante et ses voisines.
@@ -41,14 +48,24 @@ function pagesVisibles(page: number, nombrePages: number): (number | null)[] {
   });
 }
 
+/** La flèche se voit, le mot s'entend : « ‹ » seul ne dit rien à un lecteur d'écran. */
+function Fleche({ glyphe, mot }: { glyphe: string; mot: string }) {
+  return (
+    <>
+      <span aria-hidden="true">{glyphe}</span>
+      <span className="sr-only">{mot}</span>
+    </>
+  );
+}
+
 function LienDePage({
   numero,
   courante,
-  libelle,
+  children,
 }: {
   numero: number;
   courante: boolean;
-  libelle?: string;
+  children?: ReactNode;
 }) {
   const [parametres] = useSearchParams();
 
@@ -56,37 +73,49 @@ function LienDePage({
     <Link
       to={{ search: avecPage(parametres, numero).toString() }}
       aria-current={courante ? 'page' : undefined}
-      className={`flex h-11 min-w-11 items-center justify-center rounded-sm px-3 ${
-        courante ? 'bg-ardoise text-nappe' : 'text-ardoise'
+      className={`${CASE} hover:no-underline ${
+        courante
+          ? 'border-ardoise bg-ardoise font-medium text-nappe hover:text-nappe'
+          : 'border-trait-fort bg-craie text-encre-70'
       }`}
     >
-      {libelle ?? numero}
+      {children ?? numero}
     </Link>
   );
 }
 
 /** Flèche inerte : rendue, mais désactivée. La retirer ferait sauter la hauteur. */
-function FlecheInerte({ libelle }: { libelle: string }) {
+function FlecheInerte({ glyphe, mot }: { glyphe: string; mot: string }) {
   return (
     <button
       type="button"
       disabled
-      className="flex h-11 min-w-11 items-center justify-center rounded-sm px-3 text-encre-35"
+      className={`${CASE} cursor-not-allowed border-trait-fort bg-nappe text-encre-35`}
     >
-      {libelle}
+      <Fleche glyphe={glyphe} mot={mot} />
     </button>
   );
 }
 
-export function Pagination({ total, page, limite }: ProprietesPagination) {
+export function Pagination({
+  total,
+  page,
+  limite,
+  elements,
+}: ProprietesPagination) {
   const nombrePages = Math.max(PREMIERE_PAGE, Math.ceil(total / limite));
 
   return (
-    <nav aria-label="Pagination" className="flex items-center gap-1">
+    <nav
+      aria-label="Pagination"
+      className="flex w-full flex-wrap items-center gap-2"
+    >
       {page > PREMIERE_PAGE ? (
-        <LienDePage numero={page - 1} courante={false} libelle="‹ Précédent" />
+        <LienDePage numero={page - 1} courante={false}>
+          <Fleche glyphe="‹" mot="Précédent" />
+        </LienDePage>
       ) : (
-        <FlecheInerte libelle="‹ Précédent" />
+        <FlecheInerte glyphe="‹" mot="Précédent" />
       )}
 
       {pagesVisibles(page, nombrePages).map((numero, index) =>
@@ -105,9 +134,18 @@ export function Pagination({ total, page, limite }: ProprietesPagination) {
       )}
 
       {page < nombrePages ? (
-        <LienDePage numero={page + 1} courante={false} libelle="Suivant ›" />
+        <LienDePage numero={page + 1} courante={false}>
+          <Fleche glyphe="›" mot="Suivant" />
+        </LienDePage>
       ) : (
-        <FlecheInerte libelle="Suivant ›" />
+        <FlecheInerte glyphe="›" mot="Suivant" />
+      )}
+
+      {elements !== undefined && (
+        <p className="ml-auto text-sm text-encre-55">
+          {total} {total > 1 ? elements.pluriel : elements.singulier} · page{' '}
+          {page} sur {nombrePages} · {limite} par page
+        </p>
       )}
     </nav>
   );

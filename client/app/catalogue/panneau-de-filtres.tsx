@@ -1,12 +1,17 @@
 import { DIFFICULTES, TYPES_RECETTE } from '@recipe/types';
-import { useSearchParams } from 'react-router';
+import type { ReactNode } from 'react';
+import { Link, useSearchParams } from 'react-router';
 
 import { avecCritere } from '../acces-api/criteres-url';
 import { RechercheDebattue } from '../composants/recherche-debattue';
-import { LIBELLES_DIFFICULTE, LIBELLES_TYPE } from '../libelles';
 
 import type { Referentiels } from './filtres-actifs';
 import { GroupeFiltre } from './groupe-filtre';
+
+const INTITULE =
+  'block text-xs font-medium tracking-bouton text-encre-70 uppercase';
+const CONTROLE =
+  'mt-3 h-11 w-full rounded-sm border border-trait-fort bg-craie px-3.5 text-sm';
 
 function enOptions(
   categories: { id: number; nom: string }[],
@@ -17,35 +22,32 @@ function enOptions(
   }));
 }
 
-function ChoixNationalite({ referentiels }: { referentiels: Referentiels }) {
-  const [parametres, setParametres] = useSearchParams();
+/** Les valeurs d'énumération s'affichent telles que l'API les renvoie. */
+function enumEnOptions(
+  valeurs: readonly string[],
+): { valeur: string; libelle: string }[] {
+  return valeurs.map((valeur) => ({ valeur, libelle: valeur }));
+}
 
+/** Un groupe du panneau, séparé du suivant par un filet. */
+function Bloc({ children }: { children: ReactNode }) {
+  return <div className="py-5 first:pt-0 last:pb-0">{children}</div>;
+}
+
+function ChampTitre() {
   return (
-    <div>
-      <label
-        htmlFor="nationalite"
-        className="block text-xs tracking-etiquette text-encre-70 uppercase"
-      >
-        Nationalité
-      </label>
-      <select
-        id="nationalite"
-        value={parametres.get('nationalite') ?? ''}
-        onChange={(evenement) => {
-          setParametres(
-            avecCritere(parametres, 'nationalite', evenement.target.value),
-          );
-        }}
-        className="mt-1 h-11 w-full rounded-sm border border-trait-fort bg-craie px-3"
-      >
-        <option value="">Toutes</option>
-        {referentiels.nationalites.map((nationalite) => (
-          <option key={nationalite.id} value={nationalite.id}>
-            {nationalite.nom}
-          </option>
-        ))}
-      </select>
-    </div>
+    <Bloc>
+      <p aria-hidden="true" className={INTITULE}>
+        Titre
+      </p>
+      <div className="mt-3">
+        <RechercheDebattue
+          libelle="Rechercher dans le catalogue"
+          invite="Un titre, un mot…"
+          className="rounded-sm"
+        />
+      </div>
+    </Bloc>
   );
 }
 
@@ -53,11 +55,8 @@ function TempsMaximum() {
   const [parametres, setParametres] = useSearchParams();
 
   return (
-    <div>
-      <label
-        htmlFor="tempsMax"
-        className="block text-xs tracking-etiquette text-encre-70 uppercase"
-      >
+    <Bloc>
+      <label htmlFor="tempsMax" className={INTITULE}>
         Temps total maximum
       </label>
       <input
@@ -72,9 +71,100 @@ function TempsMaximum() {
             avecCritere(parametres, 'tempsMax', evenement.target.value),
           );
         }}
-        className="mt-1 h-11 w-full rounded-sm border border-trait-fort bg-craie px-3"
+        className={CONTROLE}
       />
-    </div>
+      <p className="mt-2 text-sm text-encre-55">préparation + cuisson</p>
+    </Bloc>
+  );
+}
+
+function ChoixNationalite({ referentiels }: { referentiels: Referentiels }) {
+  const [parametres, setParametres] = useSearchParams();
+
+  return (
+    <Bloc>
+      <label htmlFor="nationalite" className={INTITULE}>
+        Nationalité
+      </label>
+      <select
+        id="nationalite"
+        value={parametres.get('nationalite') ?? ''}
+        onChange={(evenement) => {
+          setParametres(
+            avecCritere(parametres, 'nationalite', evenement.target.value),
+          );
+        }}
+        className={CONTROLE}
+      >
+        <option value="">Toutes les nationalités</option>
+        {referentiels.nationalites.map((nationalite) => (
+          <option key={nationalite.id} value={nationalite.id}>
+            {nationalite.nom}
+          </option>
+        ))}
+      </select>
+    </Bloc>
+  );
+}
+
+/** Les critères portés par la recette elle-même : énumérations et durée. */
+function CriteresDeRecette() {
+  return (
+    <>
+      <Bloc>
+        <GroupeFiltre
+          legende="Type de recette"
+          cle="type"
+          choixUnique
+          options={enumEnOptions(TYPES_RECETTE)}
+        />
+      </Bloc>
+      <Bloc>
+        <GroupeFiltre
+          legende="Difficulté"
+          cle="difficulte"
+          choixUnique
+          options={enumEnOptions(DIFFICULTES)}
+        />
+      </Bloc>
+      <TempsMaximum />
+    </>
+  );
+}
+
+/** Les critères issus des référentiels : ils arrivent de l'API, ou restent vides. */
+function CriteresDeCategories({
+  referentiels,
+}: {
+  referentiels: Referentiels;
+}) {
+  return (
+    <>
+      <Bloc>
+        <GroupeFiltre
+          legende="Régimes"
+          cle="regime"
+          apparence="cases"
+          options={enOptions(referentiels.regimes)}
+        />
+      </Bloc>
+      <Bloc>
+        <GroupeFiltre
+          legende="Critères santé"
+          cle="critereSante"
+          apparence="cases"
+          options={enOptions(referentiels.criteresSante)}
+        />
+      </Bloc>
+      <Bloc>
+        <GroupeFiltre
+          legende="Types d’aliment"
+          cle="typeAliment"
+          options={enOptions(referentiels.typesAliment)}
+        />
+      </Bloc>
+      <ChoixNationalite referentiels={referentiels} />
+    </>
   );
 }
 
@@ -88,50 +178,19 @@ export function PanneauDeFiltres({
   referentiels: Referentiels;
 }) {
   return (
-    <div className="flex flex-col gap-6">
-      <RechercheDebattue
-        libelle="Rechercher dans le catalogue"
-        invite="Un titre, un mot…"
-      />
+    <div>
+      <div className="mb-5 flex items-baseline justify-between">
+        <h2 className="text-2xl">Filtres</h2>
+        <Link to="/recettes" className="text-xs tracking-section uppercase">
+          Tout effacer
+        </Link>
+      </div>
 
-      <GroupeFiltre
-        legende="Type de plat"
-        cle="type"
-        choixUnique
-        options={TYPES_RECETTE.map((type) => ({
-          valeur: type,
-          libelle: LIBELLES_TYPE[type],
-        }))}
-      />
-
-      <GroupeFiltre
-        legende="Difficulté"
-        cle="difficulte"
-        choixUnique
-        options={DIFFICULTES.map((difficulte) => ({
-          valeur: difficulte,
-          libelle: LIBELLES_DIFFICULTE[difficulte],
-        }))}
-      />
-
-      <TempsMaximum />
-      <ChoixNationalite referentiels={referentiels} />
-
-      <GroupeFiltre
-        legende="Régimes"
-        cle="regime"
-        options={enOptions(referentiels.regimes)}
-      />
-      <GroupeFiltre
-        legende="Critères de santé"
-        cle="critereSante"
-        options={enOptions(referentiels.criteresSante)}
-      />
-      <GroupeFiltre
-        legende="Types d’aliment"
-        cle="typeAliment"
-        options={enOptions(referentiels.typesAliment)}
-      />
+      <div className="flex flex-col divide-y divide-trait">
+        <ChampTitre />
+        <CriteresDeRecette />
+        <CriteresDeCategories referentiels={referentiels} />
+      </div>
     </div>
   );
 }

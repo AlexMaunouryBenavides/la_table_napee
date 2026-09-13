@@ -32,36 +32,74 @@ function avecValeurBasculee(
   return suivants;
 }
 
-function Pastille({
-  actif,
-  choixUnique,
-  libelle,
-  nom,
-  surChoix,
-}: {
+type ProprietesChoix = {
   actif: boolean;
   choixUnique: boolean;
   libelle: string;
   nom: string;
   surChoix: () => void;
-}) {
+};
+
+// Le vrai contrôle est masqué : son focus se reporte sur ce qu'on voit, sinon la
+// navigation au clavier devient aveugle.
+const FOCUS_REPORTE =
+  'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ardoise';
+
+function ControleMasque({
+  actif,
+  choixUnique,
+  nom,
+  surChoix,
+}: Omit<ProprietesChoix, 'libelle'>) {
+  return (
+    <input
+      // Radio quand l'API n'accepte qu'une valeur, case quand elle les cumule :
+      // la forme du contrôle dit la vérité sur ce qui est possible.
+      type={choixUnique ? 'radio' : 'checkbox'}
+      name={nom}
+      checked={actif}
+      onChange={surChoix}
+      className="sr-only"
+    />
+  );
+}
+
+function Pastille({ libelle, ...controle }: ProprietesChoix) {
   return (
     <label
-      className={`flex min-h-11 cursor-pointer items-center rounded-pilule px-4 text-sm md:min-h-8 ${
-        actif
-          ? 'bg-ardoise text-nappe'
-          : 'border border-trait-fort text-encre-70'
+      className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-pilule border px-3.5 text-sm md:min-h-8 ${FOCUS_REPORTE} ${
+        controle.actif
+          ? 'border-ardoise bg-ardoise text-nappe'
+          : 'border-trait-fort bg-craie text-encre-70'
       }`}
     >
-      <input
-        // Radio quand l'API n'accepte qu'une valeur, case quand elle les cumule :
-        // la forme du contrôle dit la vérité sur ce qui est possible.
-        type={choixUnique ? 'radio' : 'checkbox'}
-        name={nom}
-        checked={actif}
-        onChange={surChoix}
-        className="sr-only"
-      />
+      <ControleMasque {...controle} />
+      {libelle}
+      {controle.actif && !controle.choixUnique && (
+        <span aria-hidden="true" className="opacity-70">
+          ×
+        </span>
+      )}
+    </label>
+  );
+}
+
+function Case({ libelle, ...controle }: ProprietesChoix) {
+  return (
+    <label
+      className={`flex min-h-6 cursor-pointer items-center gap-2.5 rounded-xs text-sm ${FOCUS_REPORTE}`}
+    >
+      <ControleMasque {...controle} />
+      <span
+        aria-hidden="true"
+        className={`grid size-4.5 shrink-0 place-items-center rounded-xs border text-xs ${
+          controle.actif
+            ? 'border-ardoise bg-ardoise text-nappe'
+            : 'border-trait-fort bg-craie'
+        }`}
+      >
+        {controle.actif && '✓'}
+      </span>
       {libelle}
     </label>
   );
@@ -72,22 +110,27 @@ function Pastille({
  * validés par `@IsIn` côté API, sans `each`. Deux valeurs dans l'URL, et la réponse
  * est un 400. L'interface ne doit pas laisser construire une requête qu'elle sait
  * invalide.
+ *
+ * `apparence`, lui, EST un détail de présentation : pastilles ou cases, le contrat
+ * reste le même.
  */
 type ProprietesGroupe = {
   legende: string;
   cle: string;
   options: Option[];
   choixUnique?: boolean;
+  apparence?: 'pastilles' | 'cases';
 };
 
-export function GroupeFiltre({
-  legende,
+function ListeDeChoix({
   cle,
   options,
-  choixUnique = false,
-}: ProprietesGroupe) {
+  choixUnique,
+  apparence,
+}: Required<Omit<ProprietesGroupe, 'legende'>>) {
   const [parametres, setParametres] = useSearchParams();
   const actives = parametres.getAll(cle);
+  const Choix = apparence === 'cases' ? Case : Pastille;
 
   function choisir(valeur: string) {
     setParametres(
@@ -98,39 +141,57 @@ export function GroupeFiltre({
   }
 
   return (
+    <div
+      className={
+        apparence === 'cases' ? 'mt-3 grid gap-2' : 'mt-3 flex flex-wrap gap-2'
+      }
+    >
+      {choixUnique && (
+        // Un groupe de radios ne se décoche pas : sans cette sortie, un critère
+        // choisi par erreur ne se retire plus depuis le panneau.
+        <Choix
+          actif={actives.length === 0}
+          choixUnique
+          libelle="Peu importe"
+          nom={cle}
+          surChoix={() => {
+            choisir('');
+          }}
+        />
+      )}
+
+      {options.map((option) => (
+        <Choix
+          key={option.valeur}
+          actif={actives.includes(option.valeur)}
+          choixUnique={choixUnique}
+          libelle={option.libelle}
+          nom={cle}
+          surChoix={() => {
+            choisir(option.valeur);
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function GroupeFiltre({
+  legende,
+  choixUnique = false,
+  apparence = 'pastilles',
+  ...reste
+}: ProprietesGroupe) {
+  return (
     <fieldset className="border-0 p-0">
-      <legend className="text-xs tracking-etiquette text-encre-70 uppercase">
+      <legend className="text-xs font-medium tracking-bouton text-encre-70 uppercase">
         {legende}
       </legend>
-
-      <div className="mt-2 flex flex-wrap gap-2">
-        {choixUnique && (
-          // Un groupe de radios ne se décoche pas : sans cette sortie, un critère
-          // choisi par erreur ne se retire plus depuis le panneau.
-          <Pastille
-            actif={actives.length === 0}
-            choixUnique
-            libelle="Peu importe"
-            nom={cle}
-            surChoix={() => {
-              choisir('');
-            }}
-          />
-        )}
-
-        {options.map((option) => (
-          <Pastille
-            key={option.valeur}
-            actif={actives.includes(option.valeur)}
-            choixUnique={choixUnique}
-            libelle={option.libelle}
-            nom={cle}
-            surChoix={() => {
-              choisir(option.valeur);
-            }}
-          />
-        ))}
-      </div>
+      <ListeDeChoix
+        {...reste}
+        choixUnique={choixUnique}
+        apparence={apparence}
+      />
     </fieldset>
   );
 }

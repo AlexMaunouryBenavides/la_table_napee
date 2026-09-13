@@ -35,10 +35,12 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
 - [x] **01 Accueil** : héros deux colonnes avec assiette ronde lavande ; titre sur deux
       lignes sans point final ; bande lavande « Six familles de recettes » + bouton
       « Explorer » au lieu des pastilles.
-- [ ] **02 Catalogue** : en-tête « N recettes au catalogue » + titre composé des filtres ;
-      sélecteur de tri ; rangée « Actifs » de chips retirables + « Tout effacer » +
-      compteur ; panneau « Filtres / Tout effacer » ; curseur de temps 10–180 min ;
-      régimes et critères santé en cases à cocher ; pagination avec résumé à droite.
+- [x] **02 Catalogue** (visuel) : en-tête « N recettes au catalogue » ; rangée « Actifs »
+      de chips retirables + « Tout effacer » + compteur ; panneau « Filtres / Tout
+      effacer » à filets ; régimes et critères santé en cases à cocher ; pagination
+      encadrée avec résumé à droite (composant partagé).
+  - [ ] **Reste, avec tests** (nouveaux comportements) : sélecteur de tri ; curseur de
+        temps 10–180 min ; titre composé des filtres (« Plats _végans_ »).
 - [ ] **03 Détail** : fil d'Ariane ; sur-titre « TYPE · NATIONALITÉ » ; ligne « Par X ·
       publiée le … » ; rangée de méta séparée par des filets verticaux (valeur en
       Cormorant) ; nationalité parmi les chips ; titres « Étapes » (pas

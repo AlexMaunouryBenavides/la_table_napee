@@ -16,10 +16,13 @@ export function RechercheDebattue({
   libelle,
   invite,
   delaiMs = DELAI_PAR_DEFAUT_MS,
+  className = 'rounded-pilule',
 }: {
   libelle: string;
   invite: string;
   delaiMs?: number;
+  /** La forme du champ : pilule dans une barre d'outils, rectangle dans un panneau. */
+  className?: string;
 }) {
   const [parametres, setParametres] = useSearchParams();
   const [saisie, setSaisie] = useState(parametres.get('recherche') ?? '');
@@ -48,7 +51,7 @@ export function RechercheDebattue({
       }}
       aria-label={libelle}
       placeholder={invite}
-      className="h-11 w-full rounded-pilule border border-trait-fort bg-craie px-4"
+      className={`h-11 w-full border border-trait-fort bg-craie px-4 text-sm ${className}`}
     />
   );
 }
