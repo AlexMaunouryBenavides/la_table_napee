@@ -5,26 +5,34 @@ import { type Session } from '../acces-api/session';
 import { AccesRefuse } from '../composants/acces-refuse';
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
+import { EtiquetteRole } from '../composants/etiquette-role';
 import { useDeconnexion, useSession } from '../session-courante';
 
 import { peutAcceder, roleExigePour } from './acces-panneau';
 import { sectionsPour, type SectionPanneau } from './entrees-panneau';
 
+// Hors de `sectionsPour` : le site public est ouvert à tous, cette section ne dépend
+// d'aucun rôle.
+const SITE: SectionPanneau = {
+  titre: 'Site',
+  entrees: [{ libelle: 'Voir le site public', vers: '/' }],
+};
+
 function Section({ section }: { section: SectionPanneau }) {
   return (
-    <div className="mb-6">
-      <p className="px-3 text-xs tracking-section text-nappe/55 uppercase">
+    <div>
+      <p className="px-3 pb-1.5 text-xs tracking-section text-nappe/55 uppercase">
         {section.titre}
       </p>
-      <ul className="mt-2">
+      <ul className="grid gap-1">
         {section.entrees.map((entree) => (
           <li key={entree.vers}>
             <NavLink
               to={entree.vers}
               end
               className={({ isActive }) =>
-                `flex min-h-11 items-center rounded-sm px-3 text-nappe/82 ${
-                  isActive ? 'bg-nappe/15 text-nappe' : ''
+                `flex min-h-10 items-center rounded-sm px-3 text-sm hover:text-nappe hover:no-underline ${
+                  isActive ? 'bg-nappe/15 text-nappe' : 'text-nappe/82'
                 }`
               }
             >
@@ -37,48 +45,55 @@ function Section({ section }: { section: SectionPanneau }) {
   );
 }
 
-function NavigationLaterale({
-  sections,
-  connecte,
-}: {
-  sections: SectionPanneau[];
-  connecte: boolean;
-}) {
+function CompteConnecte({ session }: { session: NonNullable<Session> }) {
   const seDeconnecterEtRevalider = useDeconnexion();
 
   return (
+    <div className="mt-auto grid justify-items-start gap-1 border-t border-nappe/20 px-3 pt-4 text-sm text-nappe/70">
+      {session.pseudo !== null && <span>{session.pseudo}</span>}
+      <span className="break-all">{session.email}</span>
+      {/* Liseré clair : l'étiquette « admin » est ardoise, comme la barre. */}
+      <span className="mt-1.5 inline-flex rounded-pilule ring-1 ring-nappe/40">
+        <EtiquetteRole role={session.role} />
+      </span>
+      <button
+        type="button"
+        className="py-1.5 text-nappe underline"
+        onClick={seDeconnecterEtRevalider}
+      >
+        Se déconnecter
+      </button>
+    </div>
+  );
+}
+
+function NavigationLaterale({
+  sections,
+  session,
+}: {
+  sections: SectionPanneau[];
+  session: Session;
+}) {
+  return (
     <nav
       aria-label="Navigation du panneau"
-      className="flex h-full w-59 shrink-0 flex-col bg-ardoise p-4"
+      className="flex h-full w-59 shrink-0 flex-col gap-6 bg-ardoise px-4 py-6"
     >
       <Link
         to="/panneau"
-        className="mb-8 px-3 font-signature text-3xl text-nappe"
+        aria-label="La Table Nappée"
+        className="px-3 font-signature text-2xl whitespace-nowrap text-nappe hover:text-nappe hover:no-underline"
       >
         La Table Nappée
       </Link>
 
-      {sections.map((section) => (
+      {[...sections, SITE].map((section) => (
         <Section key={section.titre} section={section} />
       ))}
 
-      <div className="mt-auto border-t border-nappe/20 px-3 pt-4 text-sm">
-        <Link to="/" className="block py-2 text-nappe/82">
-          Voir le site public
-        </Link>
-        {/* Proposer de se déconnecter à qui n'est pas connecté n'a pas de sens, et
-            laisse croire qu'une session existe. */}
-        {connecte && (
-          <Bouton
-            variante="texte"
-            taille="sm"
-            className="!px-0 text-nappe"
-            onClick={seDeconnecterEtRevalider}
-          >
-            Se déconnecter
-          </Bouton>
-        )}
-      </div>
+      {/* Proposer de se déconnecter à qui n'est pas connecté n'a pas de sens, et
+          laisse croire qu'une session existe. */}
+      {session !== null && <CompteConnecte session={session} />}
     </nav>
   );
 }
@@ -137,7 +152,7 @@ export default function CoquilleBackOffice() {
           tiroirOuvert ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <NavigationLaterale sections={sections} connecte={session !== null} />
+        <NavigationLaterale sections={sections} session={session} />
       </div>
 
       <div className="flex-1">

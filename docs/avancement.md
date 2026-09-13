@@ -9,9 +9,10 @@
 > exhaustive de ce qu'il faut construire), `design/ecrans.md` (la liste exhaustive des
 > écrans), `docs/etapes-general.md` (le plan global).
 >
-> **Dernière vérification : 2026-09-12** — branche `setup-authentification`, socle du
-> front archivé (`setup-front`, 57/57) et **les 14 écrans terminés** : les cinq écrans
-> publics, les cinq du back-office et les trois écrans système.
+> **Dernière vérification : 2026-09-13** — branche `setup-authentification` poussée,
+> PR #3 ouverte, CI verte (`verify` + e2e). Les 14 écrans **fonctionnent** mais l'audit
+> contre les maquettes a montré qu'**aucun n'est conforme** : reprise visuelle en cours,
+> suivie dans `docs/ecarts-maquettes.md`.
 >
 > Les RÈGLES d'ingénierie vivent maintenant dans `eng-kit/` (dépôt séparé, ignoré ici) :
 > `docs/conventions/` et `docs/guides/` ont été supprimés.
@@ -21,7 +22,7 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   ███████████████████░   93 %
+GLOBAL   ██████████████████░░   90 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
@@ -29,15 +30,15 @@ GLOBAL   ███████████████████░   93 %
 | 1. Conception                              |  10 % |      100 % | `████████████████████` |
 | 2. Mise en place (socle)                   |  30 % |      100 % | `████████████████████` |
 | 3. Features API (les 37 routes du contrat) |  25 % |      100 % | `████████████████████` |
-| 4. Tests                                   |  10 % |       75 % | `███████████████░░░░░` |
-| 5. Front                                   |  20 % |      100 % | `████████████████████` |
+| 4. Tests                                   |  10 % |       95 % | `███████████████████░` |
+| 5. Front                                   |  20 % |       80 % | `████████████████░░░░` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
 
 Les poids sont un jugement, pas une science : ils disent seulement que le front pèse
 autant qu'un quart du back. Le global en découle (somme pondérée).
 
-**En une phrase** : le back et le front sont **terminés** ; il reste les e2e dans la
-CI, puis le déploiement — qui n'a pas commencé.
+**En une phrase** : le back est terminé et testé en CI ; le front fonctionne mais doit
+être remis en conformité avec les maquettes ; le déploiement n'a pas commencé.
 
 ---
 
@@ -70,18 +71,19 @@ au moment d'écrire l'écran ou la feature concernée.
 
 `████████████████████`
 
-| Étape                                    | État | Preuve                                                |
-| ---------------------------------------- | ---- | ----------------------------------------------------- |
-| Monorepo npm (workspaces)                | ✅   | `package.json`                                        |
-| Outillage qualité (`npm run verify`)     | ✅   | change archivé `setup-outillage-qualite`              |
-| Fondations transverses API               | ✅   | change archivé `setup-fondations-api`                 |
-| Base MySQL + docker                      | ✅   | `api/docker-compose.yml`, `api/src/config/`           |
-| CI GitHub Actions                        | 🟡   | `.github/workflows/ci.yml` (les e2e n'y tournent pas) |
-| Entités TypeORM                          | ✅   | `api/src/*/entities/`                                 |
-| Migration initiale (DDL → migration n°1) | ✅   | `api/src/migrations/1786718528873-SchemaInitial.ts`   |
-| Seeds de RÉFÉRENCE                       | ✅   | `api/src/seeds/donnees-reference.ts`                  |
-| Seeds d'EXEMPLE (volume)                 | ✅   | `npm run seed:exemples` (faker, idempotent)           |
-| Authentification & rôles                 | ✅   | `api/src/auth/` — détail ci-dessous                   |
+| Étape                                    | État | Preuve                                              |
+| ---------------------------------------- | ---- | --------------------------------------------------- |
+| Monorepo npm (workspaces)                | ✅   | `package.json`                                      |
+| Outillage qualité (`npm run verify`)     | ✅   | change archivé `setup-outillage-qualite`            |
+| Fondations transverses API               | ✅   | change archivé `setup-fondations-api`               |
+| Base MySQL + docker                      | ✅   | `api/docker-compose.yml`, `api/src/config/`         |
+| CI GitHub Actions                        | ✅   | `.github/workflows/ci.yml` (verify, tests, e2e)     |
+| Entités TypeORM                          | ✅   | `api/src/*/entities/`                               |
+| Migration initiale (DDL → migration n°1) | ✅   | `api/src/migrations/1786718528873-SchemaInitial.ts` |
+| Seeds de RÉFÉRENCE                       | ✅   | `api/src/seeds/donnees-reference.ts`                |
+| Seeds d'EXEMPLE (volume)                 | ✅   | `npm run seed:exemples` (faker, idempotent)         |
+| Comptes d'exemple (un par rôle)          | ✅   | `admin@exemple.test` etc., mdp `Password123!`       |
+| Authentification & rôles                 | ✅   | `api/src/auth/` — détail ci-dessous                 |
 
 ### 2.a Authentification — 37/37, change archivé
 
@@ -133,9 +135,9 @@ terminé.
 
 ---
 
-## 4. Tests — 75 %
+## 4. Tests — 95 %
 
-`███████████████░░░░░`
+`███████████████████░`
 
 | Élément                                               | État |
 | ----------------------------------------------------- | ---- |
@@ -144,27 +146,30 @@ terminé.
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
-| 14 fichiers e2e — 111 tests, vert (sérialisés)        | ✅   |
+| 15 fichiers e2e — 117 tests, vert (sérialisés)        | ✅   |
 | Factories / fixtures (`test/fixtures.ts`)             | ✅   |
 | Tests sur toutes les features API                     | ✅   |
+| e2e dans la CI (job `e2e`, MySQL jetable)             | ✅   |
 | Guide de tests (`setup-tests` 1.1 / 1.2)              | ❌   |
-| e2e dans la CI (`setup-tests` 6.1 / 6.2)              | ❌   |
 
-`setup-tests` est à **14/18** : il ne reste que ces deux sujets.
+**e2e dans la CI** (2026-09-13) : job `e2e` après `verify`, MySQL 8.4 en service,
+`JWT_SECRET` tiré au hasard à chaque exécution. Pas de protection de branche GitHub
+(6.2) : décision de tenir la barrière **avant chaque push** (verify + tests + e2e en
+local). Au passage, `verify` lance désormais `typecheck` avant `lint` : sans les types
+générés par `react-router typegen`, le lint échouait en CI alors qu'il passait en local.
 
-**Reste à faire — et comment**
-
-- **e2e dans la CI** : le workflow ne lance que `npm test`. Ajouter un service MySQL au
-  job, `npm run migration:run:test`, puis `npm run test:e2e --workspace api`, et
-  vérifier que le merge est bloqué si un test échoue.
-- **Guide de tests** : optionnel maintenant que l'infra existe et qu'elle s'imite par
-  l'exemple. À écrire seulement si le besoin se fait sentir.
+**Reste** : le guide de tests, optionnel — l'infra s'imite par l'exemple.
 
 ---
 
-## 5. Front — 100 %
+## 5. Front — 80 %
 
-`████████████████████`
+`████████████████░░░░`
+
+> **Conformité aux maquettes : à reprendre.** Les 14 écrans fonctionnent et sont testés,
+> mais l'audit du 2026-09-13 (chaque écran comparé à sa planche) les montre tous
+> simplifiés : en-tête, cartes, barres d'outils, tableaux. Liste écran par écran et
+> suivi : **`docs/ecarts-maquettes.md`**. Les 20 % restants du lot, c'est ce travail.
 
 Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **onze
 écrans réels** ont été écrits par-dessus. 214 tests côté client, `npm run verify` vert,
@@ -241,10 +246,11 @@ par « trouver ou créer »), et le téléversement d'image (l'API attend une UR
 - **L'URL est la source de vérité des critères de liste** (`acces-api/criteres-url.ts`) :
   aucun état de filtre en mémoire, changer un filtre ramène page 1.
 
-### Reste à faire — rien sur le front
+### Reste à faire
 
-Les 14 écrans sont écrits, testés et vérifiés dans un navigateur. Ce qui reste au
-projet est ailleurs : les e2e dans la CI (lot 4) et le déploiement (lot 6).
+La mise en conformité visuelle, en trois lots (composants partagés, écrans publics,
+panneau et erreurs) — voir `docs/ecarts-maquettes.md`. Travail purement visuel : pas de
+nouveaux tests, les existants restent verts.
 
 Chaque écran apporte son module d'accès API et ses composants propres : la règle tenue
 tout au long est qu'un fichier naît **avec son premier consommateur**, jamais avant —
@@ -267,7 +273,7 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 
 | Point                                          | Quoi en faire                                                                                                                                                                                                                 |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| e2e absents de la CI                           | voir le lot 4                                                                                                                                                                                                                 |
+| Écrans non conformes aux maquettes             | voir `docs/ecarts-maquettes.md`                                                                                                                                                                                               |
 | Rien ne garde `@recipe/types` aligné sur l'API | un e2e affirmant la forme de `GET /recettes/:id` ; la dérive découverte le 2026-09-11 n'avait été révélée par rien                                                                                                            |
 | Changement de mot de passe : doc ≠ code        | `routes-api.md` § 3.4 annonce que les sessions en cours sont invalidées ; `utilisateurs.service.ts` ne révoque rien. L'écran 6 dit « votre session reste active » (le code fait foi). Trancher : révoquer, ou corriger la doc |
 
@@ -277,7 +283,7 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
 | Anti-bruteforce **par compte** (`authentication.r2`)               | le throttler par IP couvre partiellement ; demande une colonne en base |
 | `code` stable + `requestId` dans les erreurs (`error-handling.r7`) | la forme d'erreur est figée par `routes-api.md`, changement à assumer  |
-| e2e dans la CI, et tout le CD                                      | priorité au développement local                                        |
+| Protection de branche GitHub, et tout le CD                        | vérification locale avant chaque push ; déploiement en dernier         |
 | Versionnement d'URL, HATEOAS (`api-design.r11`, `r12`)             | sur-ingénierie pour un projet personnel                                |
 | Favoris                                                            | reporté par le design, purement additif                                |
 
