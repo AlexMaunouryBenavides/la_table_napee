@@ -1,6 +1,6 @@
 import type { Categorie } from '@recipe/types';
 import { type ReactNode, useState } from 'react';
-import { Link, useSubmit } from 'react-router';
+import { Link } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
@@ -9,11 +9,13 @@ import { ZoneReglage } from '../composants/zone-reglage';
 
 import {
   type BrouillonRecette,
+  type CorpsRecette,
   corpsDepuis,
   deplacerEtape,
   type LigneIngredient,
   ligneVide,
 } from './brouillon-recette';
+import { cleBrouillon, useBrouillons } from './brouillons';
 import { EtapesRecette } from './etapes-recette';
 import { InformationsRecette } from './informations-recette';
 import { LigneIngredientSaisie } from './ligne-ingredient';
@@ -25,8 +27,8 @@ export type Referentiels = {
   typesAliment: Categorie[];
 };
 
-/** Ce que l'action renvoie à l'écran. En création la réponse est une redirection —
- *  l'URL change — donc seule la MODIFICATION a besoin d'annoncer son succès. */
+/** Ce que l'enregistrement renvoie à l'écran. En création l'URL change aussitôt,
+ *  donc seule la MODIFICATION a besoin d'annoncer son succès. */
 export type RetourEnregistrement =
   | { succes: true }
   | { succes: false; message: string; champs?: Record<string, string> };
@@ -374,6 +376,8 @@ function Publication({
   recetteId: number | null;
   surEnregistrement: () => void;
 }) {
+  const oublier = useBrouillons((etat) => etat.oublier);
+
   return (
     <BlocLateral titre="Publication">
       <p className="text-sm leading-relaxed text-encre-55">
@@ -389,7 +393,14 @@ function Publication({
         Enregistrer
       </Bouton>
       <div className="flex flex-wrap gap-4 text-sm">
-        <Link to="/panneau/recettes" className="underline">
+        {/* Annuler, c'est renoncer à la saisie : le brouillon ne reviendra pas. */}
+        <Link
+          to="/panneau/recettes"
+          onClick={() => {
+            oublier(cleBrouillon(recetteId));
+          }}
+          className="underline"
+        >
           Annuler
         </Link>
         {/* Seulement en modification : une recette qui n'existe pas encore n'a pas
@@ -437,19 +448,29 @@ function ColonneLaterale({
 }
 
 /**
- * Le brouillon vit ICI, en un seul état. Les erreurs affichées mêlent celles trouvées
- * avant l'envoi et celles renvoyées par l'API — les secondes gagnent, elles sont plus
- * récentes.
+ * Le brouillon vit dans le store `useBrouillons`, sous la clé de SA recette : il
+ * survit à un départ de l'éditeur. Tant qu'on n'a rien saisi, c'est la recette
+ * enregistrée qui s'affiche. Les erreurs affichées mêlent celles trouvées avant
+ * l'envoi et celles renvoyées par l'API — les secondes gagnent, plus récentes.
  */
-function useBrouillon(
-  brouillonInitial: BrouillonRecette,
-  retour: RetourEnregistrement | null,
-) {
-  const [brouillon, setBrouillon] = useState(brouillonInitial);
+function useBrouillon({
+  recetteId,
+  brouillonInitial,
+  retour,
+  surEnvoi,
+}: {
+  recetteId: number | null;
+  brouillonInitial: BrouillonRecette;
+  retour: RetourEnregistrement | null;
+  surEnvoi: (corps: CorpsRecette) => void;
+}) {
+  const cle = cleBrouillon(recetteId);
+  const brouillon =
+    useBrouillons((etat) => etat.brouillons[cle]) ?? brouillonInitial;
+  const modifier = useBrouillons((etat) => etat.modifier);
   const [erreursLocales, setErreursLocales] = useState<Record<string, string>>(
     {},
   );
-  const envoyer = useSubmit();
 
   return {
     brouillon,
@@ -458,7 +479,7 @@ function useBrouillon(
       ...(retour !== null && !retour.succes ? retour.champs : {}),
     },
     modifier: (valeurs: Partial<BrouillonRecette>) => {
-      setBrouillon((precedent) => ({ ...precedent, ...valeurs }));
+      modifier(cle, brouillonInitial, valeurs);
     },
     enregistrer: () => {
       const { corps, erreurs } = corpsDepuis(brouillon);
@@ -466,7 +487,7 @@ function useBrouillon(
 
       // Un seul envoi, jamais partiel : soit tout part, soit rien.
       if (corps !== null) {
-        void envoyer(corps, { method: 'post', encType: 'application/json' });
+        surEnvoi(corps);
       }
     },
   };
@@ -478,6 +499,7 @@ export function EcranEditeurRecette({
   retour,
   envoiEnCours,
   recetteId,
+  surEnvoi,
 }: {
   brouillonInitial: BrouillonRecette;
   referentiels: Referentiels;
@@ -485,11 +507,14 @@ export function EcranEditeurRecette({
   envoiEnCours: boolean;
   /** `null` en création : c'est la seule différence entre les deux usages. */
   recetteId: number | null;
+  surEnvoi: (corps: CorpsRecette) => void;
 }) {
-  const { brouillon, champs, modifier, enregistrer } = useBrouillon(
+  const { brouillon, champs, modifier, enregistrer } = useBrouillon({
+    recetteId,
     brouillonInitial,
     retour,
-  );
+    surEnvoi,
+  });
   const sections = { brouillon, champs, modifier };
 
   return (

@@ -1,10 +1,4 @@
-import type {
-  Categorie,
-  CritereSante,
-  Nationalite,
-  Regime,
-  TypeAliment,
-} from '@recipe/types';
+import type { Categorie } from '@recipe/types';
 
 import { appelerApi } from './appeler-api';
 
@@ -50,20 +44,4 @@ export function supprimerCategorie(
   return appelerApi<void>(`/${ressource}/${String(id)}`, {
     methode: 'DELETE',
   });
-}
-
-export function listerRegimes(): Promise<Regime[]> {
-  return listerCategories('regimes');
-}
-
-export function listerCriteresSante(): Promise<CritereSante[]> {
-  return listerCategories('criteres-sante');
-}
-
-export function listerTypesAliment(): Promise<TypeAliment[]> {
-  return listerCategories('types-aliment');
-}
-
-export function listerNationalites(): Promise<Nationalite[]> {
-  return listerCategories('nationalites');
 }

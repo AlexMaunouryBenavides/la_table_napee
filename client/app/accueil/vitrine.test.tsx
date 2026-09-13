@@ -1,7 +1,7 @@
 import type { RecetteResume } from '@recipe/types';
 import { render, screen, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Vitrine } from './vitrine';
 
@@ -38,7 +38,14 @@ function rendre({
   const routeur = createMemoryRouter([
     {
       path: '/',
-      element: <Vitrine recettes={recettes} total={total} echec={echec} />,
+      element: (
+        <Vitrine
+          recettes={recettes}
+          total={total}
+          echec={echec}
+          surReessai={vi.fn()}
+        />
+      ),
     },
   ]);
 

@@ -143,11 +143,11 @@ terminé.
 | Élément                                               | État |
 | ----------------------------------------------------- | ---- |
 | Jest unitaire (`npm test`) — 17 tests, 5 suites, vert | ✅   |
-| Vitest côté client — 214 tests, 38 fichiers, vert     | ✅   |
+| Vitest côté client — 316 tests, 58 fichiers, vert     | ✅   |
 | Jest e2e (`npm run test:e2e`) + supertest             | ✅   |
 | Base de test isolée + garde-fou anti-écrasement       | ✅   |
 | Helpers (`test/app-de-test.ts`, `test/aide-auth.ts`)  | ✅   |
-| 15 fichiers e2e — 117 tests, vert (sérialisés)        | ✅   |
+| 15 fichiers e2e — 122 tests, vert (sérialisés)        | ✅   |
 | Factories / fixtures (`test/fixtures.ts`)             | ✅   |
 | Tests sur toutes les features API                     | ✅   |
 | e2e dans la CI (job `e2e`, MySQL jetable)             | ✅   |
@@ -174,7 +174,7 @@ générés par `react-router typegen`, le lint échouait en CI alors qu'il passa
 > **`docs/ecarts-maquettes.md`**. Les cinq comportements dessinés ont suivi, en TDD.
 
 Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **onze
-écrans réels** ont été écrits par-dessus. 214 tests côté client, `npm run verify` vert,
+écrans réels** ont été écrits par-dessus. 316 tests côté client, `npm run verify` vert,
 et chaque écran vérifié dans un vrai navigateur avant d'être commité — c'est là que se
 sont trouvés la plupart des défauts corrigés en chemin.
 
@@ -240,8 +240,12 @@ par « trouver ou créer »), et le téléversement d'image (l'API attend une UR
 - **SPA (`ssr: false`)** : l'auth passe par cookie `httpOnly` sur une autre origine.
   Dans le navigateur, `credentials: 'include'` suffit ; en SSR il aurait fallu relayer
   chaque `Set-Cookie`, rotation comprise. Le SEO se rattrapera par `prerender`.
-- **Passage à TanStack Query + Zustand décidé (2026-09-13)** : jusqu'ici les
-  `clientLoader` tenaient l'état serveur ; migration à faire (voir « Reste à faire »).
+- **TanStack Query pour l'état serveur, Zustand pour l'état client (2026-09-13)** :
+  un seul `QueryClient` (`app/requetes/client-requetes.ts`) ; les `clientLoader` ne
+  font que précharger le cache, les écrans le lisent (`useQuery`), toutes les
+  écritures sont des `useMutation` qui invalident ce qu'elles changent. Plus aucune
+  `clientAction` ni `useFetcher`. Zustand ne tient qu'une chose : le brouillon de
+  l'éditeur de recette (`panneau/brouillons.ts`, gardé en `sessionStorage`).
 - Le refresh vit dans `appeler-api.ts`, avec une **promesse partagée** : deux appels
   parallèles ne déclenchent qu'un seul rafraîchissement, sinon la rotation invalide la
   famille de jetons et déconnecte l'utilisateur.
@@ -258,7 +262,7 @@ en TDD — liste de tests validée d'abord, vus échouer, puis verts :
 - connexion et inscription : bouton « Afficher » le mot de passe (7) ;
 - 404 : suggestions de recettes tirées des mots de l'URL (9).
 
-248 tests côté client. Non vérifié : le rendu mobile, contrôlé jusqu'ici en desktop
+316 tests côté client. Non vérifié : le rendu mobile, contrôlé jusqu'ici en desktop
 seulement. Ce qui reste au projet est ailleurs : le déploiement (lot 6).
 
 Chaque écran apporte son module d'accès API et ses composants propres : la règle tenue
@@ -284,7 +288,6 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Écrans non conformes aux maquettes             | voir `docs/ecarts-maquettes.md`                                                                                    |
 | Rien ne garde `@recipe/types` aligné sur l'API | un e2e affirmant la forme de `GET /recettes/:id` ; la dérive découverte le 2026-09-11 n'avait été révélée par rien |
-| État serveur du front sans TanStack Query      | migrer les `clientLoader`/`clientAction` vers TanStack Query ; Zustand pour l'état client (décidé le 2026-09-13)   |
 | Pas de tests e2e du front                      | brancher **Cypress** sur les parcours principaux (front + API réelle), puis l'ajouter à la CI                      |
 
 ### Reporté sciemment (décidé, pas oublié)

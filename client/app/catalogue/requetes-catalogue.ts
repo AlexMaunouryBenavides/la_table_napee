@@ -2,13 +2,15 @@ import type { Page, RecetteResume } from '@recipe/types';
 import {
   keepPreviousData,
   queryOptions,
-  useQueries,
   useQuery,
 } from '@tanstack/react-query';
 
 import { ErreurApi } from '../acces-api/erreur-api';
 import { listerRecettes } from '../acces-api/recettes';
-import { requeteCategorie } from '../requetes/categories';
+import {
+  prechargerReferentiels,
+  useReferentiels,
+} from '../requetes/categories';
 import { clientRequetes } from '../requetes/client-requetes';
 
 import type { Referentiels } from './filtres-actifs';
@@ -28,26 +30,13 @@ function requeteRecettes(criteres: URLSearchParams) {
   });
 }
 
-/**
- * Quatre requêtes, pas une : elles échouent séparément. Un référentiel en panne
- * désactive son filtre, il ne fait pas tomber les trois autres.
- */
-const REQUETES_REFERENTIELS = [
-  requeteCategorie('regimes'),
-  requeteCategorie('criteres-sante'),
-  requeteCategorie('types-aliment'),
-  requeteCategorie('nationalites'),
-] as const;
-
 /** La liste et les référentiels partent ENSEMBLE : aucun n'attend l'autre. */
 export async function prechargerCatalogue(
   criteres: URLSearchParams,
 ): Promise<void> {
   await Promise.all([
     clientRequetes.prefetchQuery(requeteRecettes(criteres)),
-    ...REQUETES_REFERENTIELS.map((requete) =>
-      clientRequetes.prefetchQuery(requete),
-    ),
+    prechargerReferentiels(),
   ]);
 }
 
@@ -66,24 +55,12 @@ export function useCatalogue(criteres: URLSearchParams): DonneesCatalogue {
     ...requeteRecettes(criteres),
     placeholderData: keepPreviousData,
   });
-  const [regimes, criteresSante, typesAliment, nationalites] = useQueries({
-    queries: REQUETES_REFERENTIELS,
-  });
+  const { referentiels, echec } = useReferentiels();
 
   return {
     resultats: liste.data ?? null,
-    referentiels: {
-      regimes: regimes.data ?? [],
-      criteresSante: criteresSante.data ?? [],
-      typesAliment: typesAliment.data ?? [],
-      nationalites: nationalites.data ?? [],
-    },
+    referentiels,
     echecListe: liste.error === null ? null : echecDe(liste.error),
-    echecReferentiels: [
-      regimes,
-      criteresSante,
-      typesAliment,
-      nationalites,
-    ].some((requete) => requete.isError),
+    echecReferentiels: echec,
   };
 }

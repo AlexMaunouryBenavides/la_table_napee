@@ -13,7 +13,14 @@ export async function clientLoader(): Promise<null> {
 }
 
 export default function Accueil() {
-  const { recettes, total, echec } = useRecettesAccueil();
+  const { recettes, total, echec, reessayer } = useRecettesAccueil();
 
-  return <Vitrine recettes={recettes} total={total} echec={echec} />;
+  return (
+    <Vitrine
+      recettes={recettes}
+      total={total}
+      echec={echec}
+      surReessai={reessayer}
+    />
+  );
 }

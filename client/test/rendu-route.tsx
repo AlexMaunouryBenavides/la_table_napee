@@ -16,7 +16,7 @@ export async function rendreRoutes(
   routes: Record<string, ReactElement>,
 ) {
   await clientRequetes.prefetchQuery(requeteSession);
-  render(
+  return render(
     <MemoryRouter initialEntries={[url]}>
       <AvecRequetes>
         <Routes>

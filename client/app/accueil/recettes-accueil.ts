@@ -27,10 +27,15 @@ export function useRecettesAccueil(): {
   /** `null` = l'API n'a pas répondu. Ce n'est pas zéro. */
   total: number | null;
   echec: string | null;
+  /** Redemande vraiment la liste : un échec vient d'être affiché. */
+  reessayer: () => void;
 } {
-  const { data, error } = useQuery(requeteRecettesAccueil);
+  const { data, error, refetch } = useQuery(requeteRecettesAccueil);
 
   return {
+    reessayer: () => {
+      void refetch();
+    },
     recettes: data?.donnees ?? [],
     total: data?.total ?? null,
     echec:

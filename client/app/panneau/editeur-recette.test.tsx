@@ -1,9 +1,10 @@
 import type { Categorie, Ingredient } from '@recipe/types';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import '../../test/brouillons';
 import { chercherIngredients } from '../acces-api/ingredients';
 
 import { brouillonVide, type BrouillonRecette } from './brouillon-recette';
@@ -56,26 +57,18 @@ function rendre({
   referentiels?: Referentiels;
   retour?: RetourEnregistrement | null;
 } = {}) {
-  const routeur = createMemoryRouter(
-    [
-      {
-        path: '/panneau/recettes/nouvelle',
-        element: (
-          <EcranEditeurRecette
-            brouillonInitial={brouillon}
-            referentiels={referentiels}
-            retour={retour}
-            envoiEnCours={false}
-            recetteId={null}
-          />
-        ),
-        action: () => null,
-      },
-    ],
-    { initialEntries: ['/panneau/recettes/nouvelle'] },
+  render(
+    <MemoryRouter initialEntries={['/panneau/recettes/nouvelle']}>
+      <EcranEditeurRecette
+        brouillonInitial={brouillon}
+        referentiels={referentiels}
+        retour={retour}
+        envoiEnCours={false}
+        recetteId={null}
+        surEnvoi={vi.fn()}
+      />
+    </MemoryRouter>,
   );
-
-  render(<RouterProvider router={routeur} />);
 }
 
 describe('EcranEditeurRecette — les étapes', () => {

@@ -1,6 +1,6 @@
 import { type RecetteResume, TYPES_RECETTE } from '@recipe/types';
 import { Fragment } from 'react';
-import { Link, useRevalidator } from 'react-router';
+import { Link } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
@@ -98,9 +98,13 @@ function Familles() {
   );
 }
 
-function EchecDeListe({ message }: { message: string }) {
-  const { revalidate } = useRevalidator();
-
+function EchecDeListe({
+  message,
+  surReessai,
+}: {
+  message: string;
+  surReessai: () => void;
+}) {
   return (
     <div>
       <Bandeau
@@ -109,12 +113,7 @@ function EchecDeListe({ message }: { message: string }) {
         details={['Le catalogue et la recherche restent accessibles.']}
       />
       <div className="mt-4">
-        <Bouton
-          variante="fantome"
-          onClick={() => {
-            void revalidate();
-          }}
-        >
+        <Bouton variante="fantome" onClick={surReessai}>
           Réessayer
         </Bouton>
       </div>
@@ -146,12 +145,14 @@ function DernieresRecettes({ recettes }: { recettes: RecetteResume[] }) {
 function Contenu({
   recettes,
   echec,
+  surReessai,
 }: {
   recettes: RecetteResume[];
   echec: string | null;
+  surReessai: () => void;
 }) {
   if (echec !== null) {
-    return <EchecDeListe message={echec} />;
+    return <EchecDeListe message={echec} surReessai={surReessai} />;
   }
 
   if (recettes.length === 0) {
@@ -183,16 +184,18 @@ export function Vitrine({
   recettes,
   total,
   echec,
+  surReessai,
 }: {
   recettes: RecetteResume[];
   total: number | null;
   echec: string | null;
+  surReessai: () => void;
 }) {
   return (
     <>
       <div className="mx-auto flex max-w-300 flex-col gap-14 pb-14">
         <Promesse total={total} image={recettes[0]?.image} />
-        <Contenu recettes={recettes} echec={echec} />
+        <Contenu recettes={recettes} echec={echec} surReessai={surReessai} />
       </div>
       <Familles />
     </>

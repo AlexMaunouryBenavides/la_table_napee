@@ -3,8 +3,8 @@ import { QueryClient } from '@tanstack/react-query';
 const UNE_MINUTE = 60_000;
 
 /**
- * Un seul cache pour toute l'application, au niveau du module : les `clientLoader` et
- * les `clientAction` de React Router le remplissent et l'invalident hors de tout rendu.
+ * Un seul cache pour toute l'application, au niveau du module : les `clientLoader` de
+ * React Router le remplissent et les mutations l'invalident, hors de tout rendu.
  */
 export const clientRequetes = new QueryClient({
   defaultOptions: {
