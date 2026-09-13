@@ -43,7 +43,8 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
         « Plus récentes », tri inconnu dans l'URL ramené au défaut.
   - [x] Curseur de temps 10–180 min par pas de 5 (6 tests) : au maximum, pas de
         filtre ; valeur hors bornes dans l'URL ramenée au maximum.
-  - [ ] **Reste, avec tests** : titre composé des filtres (« Plats _végans_ »).
+  - [x] Titre composé des filtres (7 tests) : « **Plats** _Végan · Sans gluten_ ». Les
+        régimes gardent leur nom en base — pas d'accord inventé (« végans »).
 - [x] **03 Détail** : fil d'Ariane ; sur-titre « TYPE · NATIONALITÉ » ; ligne « Par X ·
       publiée le … » ; rangée de méta séparée par des filets verticaux (valeur en
       Cormorant) ; nationalité parmi les chips ; titres « Étapes » (pas

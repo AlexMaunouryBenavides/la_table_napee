@@ -14,6 +14,7 @@ import { filtresActifs, type Referentiels } from '../catalogue/filtres-actifs';
 import { PanneauDeFiltres } from '../catalogue/panneau-de-filtres';
 import { RangeeFiltresActifs } from '../catalogue/rangee-filtres-actifs';
 import { SelecteurTri } from '../catalogue/selecteur-tri';
+import { TitreCatalogue } from '../catalogue/titre-catalogue';
 import { Bandeau } from '../composants/bandeau';
 import { CarteRecette } from '../composants/carte-recette';
 import { Pagination } from '../composants/pagination';
@@ -101,9 +102,11 @@ function Resultats({ resultats }: { resultats: Page<RecetteResume> }) {
 function EnTeteCatalogue({
   total,
   aDesFiltres,
+  referentiels,
 }: {
   total: number | null;
   aDesFiltres: boolean;
+  referentiels: Referentiels;
 }) {
   return (
     <header className="mb-5 flex flex-wrap items-end justify-between gap-6 border-b border-trait pb-4">
@@ -115,7 +118,7 @@ function EnTeteCatalogue({
             {total} recettes au catalogue
           </p>
         )}
-        <h1 className="mt-2 text-3xl leading-none">Le catalogue</h1>
+        <TitreCatalogue referentiels={referentiels} />
       </div>
       <SelecteurTri />
     </header>
@@ -165,7 +168,11 @@ export default function Catalogue({ loaderData }: Route.ComponentProps) {
       </aside>
 
       <section className="md:flex-1">
-        <EnTeteCatalogue total={total} aDesFiltres={aDesFiltres} />
+        <EnTeteCatalogue
+          total={total}
+          aDesFiltres={aDesFiltres}
+          referentiels={referentiels}
+        />
 
         {echecReferentiels && (
           <Bandeau
