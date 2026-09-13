@@ -41,7 +41,7 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
       encadrée avec résumé à droite (composant partagé).
   - [ ] **Reste, avec tests** (nouveaux comportements) : sélecteur de tri ; curseur de
         temps 10–180 min ; titre composé des filtres (« Plats _végans_ »).
-- [ ] **03 Détail** : fil d'Ariane ; sur-titre « TYPE · NATIONALITÉ » ; ligne « Par X ·
+- [x] **03 Détail** : fil d'Ariane ; sur-titre « TYPE · NATIONALITÉ » ; ligne « Par X ·
       publiée le … » ; rangée de méta séparée par des filets verticaux (valeur en
       Cormorant) ; nationalité parmi les chips ; titres « Étapes » (pas
       « Préparation »), « Avis · N » ; formulaire d'avis sur fond lavande ; avis en

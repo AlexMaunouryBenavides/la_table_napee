@@ -30,24 +30,32 @@ function ChampsDAvis({
 }) {
   return (
     <>
-      <div className="mt-4">
+      <div className="text-2xl">
         <Etoiles note={note} saisie nom="note" surChangement={surNote} />
       </div>
 
-      <label htmlFor="commentaire" className="sr-only">
-        Votre commentaire
-      </label>
-      <textarea
-        id="commentaire"
-        name="commentaire"
-        rows={3}
-        value={commentaire}
-        onChange={(evenement) => {
-          surCommentaire(evenement.target.value);
-        }}
-        placeholder="Un mot sur cette recette (facultatif)"
-        className="mt-4 w-full rounded-sm border border-trait-fort bg-craie p-3"
-      />
+      <div className="grid gap-2">
+        <label
+          htmlFor="commentaire"
+          className="text-xs font-medium tracking-bouton text-encre-70 uppercase"
+        >
+          Commentaire{' '}
+          <span className="tracking-normal text-encre-55 normal-case">
+            (optionnel)
+          </span>
+        </label>
+        <textarea
+          id="commentaire"
+          name="commentaire"
+          rows={3}
+          value={commentaire}
+          onChange={(evenement) => {
+            surCommentaire(evenement.target.value);
+          }}
+          placeholder="Ce que vous avez changé, ce qui a marché…"
+          className="w-full rounded-sm border border-trait-fort bg-craie p-3.5 text-sm"
+        />
+      </div>
     </>
   );
 }
@@ -60,16 +68,17 @@ function FormulaireAvis({ monAvis, echec }: ProprietesFormulaire) {
   const envoiEnCours = navigation.state === 'submitting';
 
   return (
-    <Form method="post" className="rounded-md bg-lavande p-6">
+    <Form
+      method="post"
+      className="grid gap-3.5 rounded-md bg-lavande px-6 py-5.5"
+    >
       <input
         type="hidden"
         name="intention"
         value={modification ? 'modifier' : 'deposer'}
       />
       {modification && <input type="hidden" name="avisId" value={monAvis.id} />}
-      <h3 className="font-titre text-xl">
-        {modification ? 'Votre avis' : 'Donnez votre avis'}
-      </h3>
+      <h3 className="text-2xl">Votre avis</h3>
 
       <ChampsDAvis
         note={note}
@@ -79,21 +88,20 @@ function FormulaireAvis({ monAvis, echec }: ProprietesFormulaire) {
       />
 
       {echec !== null && (
-        <div className="mt-4">
-          <Bandeau
-            ton="erreur"
-            message={echec.message}
-            details={echec.details}
-          />
-        </div>
+        <Bandeau ton="erreur" message={echec.message} details={echec.details} />
       )}
 
-      <div className="mt-4">
+      <div className="flex flex-wrap items-center gap-3">
         <Bouton variante="primaire" type="submit" chargement={envoiEnCours}>
           {/* Le libellé dit ce qui va se passer : redéposer un avis déjà donné
               vaudrait un 409. */}
           {modification ? 'Modifier mon avis' : 'Publier mon avis'}
         </Bouton>
+        {!modification && (
+          <p className="text-sm text-ardoise-fonce">
+            Un seul avis par recette — vous pourrez le modifier ensuite.
+          </p>
+        )}
       </div>
     </Form>
   );
@@ -188,14 +196,17 @@ export function ZoneAvis({
   }
 
   return (
-    <section aria-labelledby={`avis-${String(recetteId)}`} className="mt-16">
-      <h2 id={`avis-${String(recetteId)}`} className="font-titre text-3xl">
-        Les avis
+    <section aria-labelledby={`avis-${String(recetteId)}`} className="mt-12">
+      <h2
+        id={`avis-${String(recetteId)}`}
+        className="mb-4 border-b border-trait pb-3 text-3xl"
+      >
+        Avis <span className="text-sm text-encre-55">· {avis.length}</span>
       </h2>
 
-      <div className="mt-6">
+      <div>
         {session === null ? (
-          <p className="rounded-md bg-lavande p-6 text-base">
+          <p className="rounded-md bg-lavande px-6 py-5.5 text-base">
             <Link to="/connexion" className="underline">
               Connectez-vous
             </Link>{' '}

@@ -1,8 +1,9 @@
 import type { Composition, Recette } from '@recipe/types';
+import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 
 import { obtenirRecette } from '../acces-api/recettes';
 import { Etoiles } from '../composants/etoiles';
-import { LIBELLES_DIFFICULTE, LIBELLES_TYPE } from '../libelles';
 import { executerActionAvis, type EchecAvis } from '../recette/action-avis';
 import { Etapes, VideoDeLaRecette } from '../recette/preparation';
 import { formaterQuantite, libelleUnite } from '../recette/quantites';
@@ -10,6 +11,8 @@ import { ZoneAvis } from '../recette/zone-avis';
 import { useSession } from '../session-courante';
 
 import type { Route } from './+types/detail-recette';
+
+const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
 
 /**
  * Les avis arrivent DANS la réponse : `GET /recettes/:id` les porte déjà, avec leurs
@@ -34,53 +37,85 @@ export async function clientAction({
   return executerActionAvis(Number(params.id), await request.formData());
 }
 
-function Meta({ recette }: { recette: Recette }) {
-  const total = recette.tempsPreparation + recette.tempsCuisson;
-
+function TitreDeSection({ children }: { children: ReactNode }) {
   return (
-    <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3 border-y border-trait py-4 text-sm">
-      {[
-        ['Type', LIBELLES_TYPE[recette.typeRecette]],
-        ['Difficulté', LIBELLES_DIFFICULTE[recette.difficulte]],
-        ['Préparation', `${String(recette.tempsPreparation)} min`],
-        ['Cuisson', `${String(recette.tempsCuisson)} min`],
-        ['Total', `${String(total)} min`],
-        ['Portions', String(recette.portions)],
-        ['Origine', recette.nationalite.nom],
-      ].map(([intitule, valeur]) => (
-        <div key={intitule}>
-          <dt className="text-xs tracking-etiquette text-encre-55 uppercase">
-            {intitule}
-          </dt>
-          <dd className="mt-1 text-base">{valeur}</dd>
-        </div>
-      ))}
-    </dl>
+    <h2 className="mb-4 border-b border-trait pb-3 text-3xl">{children}</h2>
   );
 }
 
-function Ingredients({ compositions }: { compositions: Composition[] }) {
+function FilDAriane({ recette }: { recette: Recette }) {
   return (
-    <table className="w-full rounded-md bg-craie text-base">
-      <caption className="sr-only">Ingrédients de la recette</caption>
-      <tbody>
-        {compositions.map((composition) => (
-          <tr
-            key={composition.id}
-            className="border-b border-trait last:border-0"
-          >
-            <td className="px-4 py-3">{composition.ingredient.nom}</td>
-            {/* Alignée à droite : l'œil compare les quantités en colonne. */}
-            <td className="px-4 py-3 text-right whitespace-nowrap text-encre-70">
-              {formaterQuantite(composition.quantite)}{' '}
-              {composition.quantite === null
-                ? ''
-                : libelleUnite(composition.unite)}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <nav aria-label="Fil d’Ariane" className="mb-8 text-sm text-encre-55">
+      <Link to="/recettes" className="text-encre-55">
+        Catalogue
+      </Link>
+      {' · '}
+      <Link
+        to={`/recettes?type=${recette.typeRecette}`}
+        className="text-encre-55"
+      >
+        {recette.typeRecette}
+      </Link>
+      {' · '}
+      <span aria-current="page">{recette.titre}</span>
+    </nav>
+  );
+}
+
+function Note({ recette }: { recette: Recette }) {
+  return (
+    <div className="mt-3 flex items-center gap-2">
+      <Etoiles note={recette.noteMoyenne} nombreAvis={recette.avis.length} />
+      {/* Déjà dit par l'étiquette des étoiles : ici, seulement pour l'œil. */}
+      {recette.noteMoyenne !== null && (
+        <span aria-hidden="true" className="text-sm text-encre-70">
+          {recette.noteMoyenne.toFixed(1).replace('.', ',')} ·{' '}
+          {recette.avis.length} avis
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** Pas de trou dans la ligne quand l'auteur a disparu : la date reste. */
+function Auteur({ recette }: { recette: Recette }) {
+  const pseudo = recette.auteur?.pseudo ?? null;
+
+  return (
+    <p className="mt-4 text-sm text-encre-55">
+      {pseudo === null ? <em>auteur anonyme</em> : `Par ${pseudo}`} · publiée le{' '}
+      {FORMAT_DATE.format(new Date(recette.dateCreation))}
+    </p>
+  );
+}
+
+function Meta({ recette }: { recette: Recette }) {
+  const valeurs: [string, string][] = [
+    ['Préparation', `${String(recette.tempsPreparation)} min`],
+    [
+      'Cuisson',
+      recette.tempsCuisson === 0
+        ? 'sans'
+        : `${String(recette.tempsCuisson)} min`,
+    ],
+    ['Portions', String(recette.portions)],
+    ['Difficulté', recette.difficulte],
+  ];
+
+  return (
+    <dl className="mt-6 flex flex-wrap border-y border-trait">
+      {valeurs.map(([intitule, valeur]) => (
+        <div
+          key={intitule}
+          className="mr-5.5 grid gap-1 border-r border-trait py-3.5 pr-5.5 last:mr-0 last:border-r-0"
+        >
+          <dt className="text-xs tracking-bouton text-encre-55 uppercase">
+            {intitule}
+          </dt>
+          <dd className="font-titre text-xl font-medium">{valeur}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -89,18 +124,16 @@ function Categories({ recette }: { recette: Recette }) {
     ...recette.regimes,
     ...recette.criteresSante,
     ...recette.typesAliment,
+    recette.nationalite,
   ];
 
-  if (toutes.length === 0) {
-    return null;
-  }
-
   return (
-    <ul className="mt-4 flex flex-wrap gap-2">
-      {toutes.map((categorie) => (
+    <ul className="mt-5 flex flex-wrap gap-2">
+      {toutes.map((categorie, index) => (
         <li
-          key={`${categorie.id}-${categorie.nom}`}
-          className="rounded-pilule border border-trait-fort px-3 py-1 text-sm text-encre-70"
+          // Deux référentiels peuvent partager un id : la position départage.
+          key={`${String(index)}-${categorie.nom}`}
+          className="flex min-h-8 items-center rounded-pilule border border-trait-fort bg-craie px-3.5 text-sm text-encre-70"
         >
           {categorie.nom}
         </li>
@@ -111,25 +144,57 @@ function Categories({ recette }: { recette: Recette }) {
 
 function EnTeteRecette({ recette }: { recette: Recette }) {
   return (
-    <header className="md:flex md:gap-10">
-      <div className="md:flex-1">
-        <h1 className="font-titre text-4xl">{recette.titre}</h1>
-        <div className="mt-3">
-          <Etoiles
-            note={recette.noteMoyenne}
-            nombreAvis={recette.avis.length}
-          />
-        </div>
-        <p className="mt-4 text-lg text-encre-70">{recette.description}</p>
+    <header className="grid items-center gap-10 md:grid-cols-2">
+      <div>
+        <p className="text-xs font-medium tracking-bouton text-ardoise uppercase">
+          {recette.typeRecette} · {recette.nationalite.nom}
+        </p>
+        <h1 className="mt-2.5 text-4xl leading-none">{recette.titre}</h1>
+        <Note recette={recette} />
+        <p className="mt-4 text-base leading-relaxed text-encre-70">
+          {recette.description}
+        </p>
+        <Auteur recette={recette} />
+        <Meta recette={recette} />
         <Categories recette={recette} />
       </div>
 
-      {/* Aplat 4:3 en attendant les vraies photos : le ratio est tenu pour que
-          l'arrivée des images ne décale rien. */}
-      <div className="mt-6 flex aspect-4/3 items-center justify-center rounded-md bg-lavande text-sm text-ardoise-clair md:mt-0 md:w-100 md:shrink-0">
-        {LIBELLES_TYPE[recette.typeRecette]}
+      {/* Ratio 4:3 tenu par le cadre : l'arrivée de l'image ne décale rien. */}
+      <div className="aspect-4/3 overflow-hidden rounded-md bg-lavande shadow-3">
+        {recette.image !== '' && (
+          <img src={recette.image} alt="" className="size-full object-cover" />
+        )}
       </div>
     </header>
+  );
+}
+
+function Ingredients({ compositions }: { compositions: Composition[] }) {
+  return (
+    <div className="overflow-hidden rounded-md border border-trait bg-craie">
+      <table className="w-full text-sm">
+        <caption className="sr-only">Ingrédients de la recette</caption>
+        <tbody>
+          {compositions.map((composition) => (
+            <tr
+              key={composition.id}
+              className="border-b border-trait last:border-0"
+            >
+              <td className="px-4 py-3">{composition.ingredient.nom}</td>
+              {/* Alignée à droite : l'œil compare les quantités en colonne. */}
+              <td className="px-4 py-3 text-right whitespace-nowrap text-ardoise">
+                {formaterQuantite(composition.quantite)}{' '}
+                {composition.quantite !== null && (
+                  <span className="text-encre-55">
+                    {libelleUnite(composition.unite)}
+                  </span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -141,37 +206,36 @@ export default function DetailRecette({
   const { session } = useSession();
 
   return (
-    <article className="mx-auto max-w-250">
+    <article className="mx-auto max-w-300">
+      <FilDAriane recette={recette} />
       <EnTeteRecette recette={recette} />
 
-      <Meta recette={recette} />
+      <div className="mt-12 md:flex md:items-start md:gap-10">
+        {/* 330 px = w-82.5 sur l'échelle de 4 px : la colonne du handoff. */}
+        <aside className="md:w-82.5 md:shrink-0">
+          <TitreDeSection>Ingrédients</TitreDeSection>
+          <Ingredients compositions={recette.compositions} />
 
-      <div className="mt-10 md:flex md:gap-10">
-        <section className="md:w-82 md:shrink-0">
-          <h2 className="font-titre text-3xl">Ingrédients</h2>
-          <div className="mt-4">
-            <Ingredients compositions={recette.compositions} />
-          </div>
-        </section>
+          {recette.video !== null && (
+            <div className="mt-10">
+              <TitreDeSection>Vidéo</TitreDeSection>
+              <VideoDeLaRecette video={recette.video} />
+            </div>
+          )}
+        </aside>
 
-        <section className="mt-10 md:mt-0 md:flex-1">
-          <h2 className="font-titre text-3xl">Préparation</h2>
-          <div className="mt-4">
-            <Etapes etapes={recette.etapes} />
-          </div>
+        <div className="mt-10 md:mt-0 md:flex-1">
+          <TitreDeSection>Étapes</TitreDeSection>
+          <Etapes etapes={recette.etapes} />
 
-          <div className="mt-8">
-            <VideoDeLaRecette video={recette.video} />
-          </div>
-        </section>
+          <ZoneAvis
+            recetteId={recette.id}
+            avis={recette.avis}
+            session={session}
+            echec={actionData ?? null}
+          />
+        </div>
       </div>
-
-      <ZoneAvis
-        recetteId={recette.id}
-        avis={recette.avis}
-        session={session}
-        echec={actionData ?? null}
-      />
     </article>
   );
 }
