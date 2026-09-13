@@ -1,10 +1,11 @@
 import { DIFFICULTES, TYPES_RECETTE } from '@recipe/types';
-import type { ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { type ReactNode, useId } from 'react';
+import { Link } from 'react-router';
 
 import { avecCritere } from '../acces-api/criteres-url';
 import { RechercheDebattue } from '../composants/recherche-debattue';
 
+import { type ControleCriteres, useCriteres } from './criteres-controles';
 import { CurseurTemps } from './curseur-temps';
 import type { Referentiels } from './filtres-actifs';
 import { GroupeFiltre } from './groupe-filtre';
@@ -13,6 +14,8 @@ const INTITULE =
   'block text-xs font-medium tracking-bouton text-encre-70 uppercase';
 const CONTROLE =
   'mt-3 h-11 w-full rounded-sm border border-trait-fort bg-craie px-3.5 text-sm';
+
+type AvecControle = { controle?: ControleCriteres };
 
 function enOptions(
   categories: { id: number; nom: string }[],
@@ -52,16 +55,20 @@ function ChampTitre() {
   );
 }
 
-function ChoixNationalite({ referentiels }: { referentiels: Referentiels }) {
-  const [parametres, setParametres] = useSearchParams();
+function ChoixNationalite({
+  referentiels,
+  controle,
+}: AvecControle & { referentiels: Referentiels }) {
+  const [parametres, setParametres] = useCriteres(controle);
+  const id = useId();
 
   return (
     <Bloc>
-      <label htmlFor="nationalite" className={INTITULE}>
+      <label htmlFor={id} className={INTITULE}>
         Nationalité
       </label>
       <select
-        id="nationalite"
+        id={id}
         value={parametres.get('nationalite') ?? ''}
         onChange={(evenement) => {
           setParametres(
@@ -82,7 +89,7 @@ function ChoixNationalite({ referentiels }: { referentiels: Referentiels }) {
 }
 
 /** Les critères portés par la recette elle-même : énumérations et durée. */
-function CriteresDeRecette() {
+function CriteresDeRecette({ controle }: AvecControle) {
   return (
     <>
       <Bloc>
@@ -91,6 +98,7 @@ function CriteresDeRecette() {
           cle="type"
           choixUnique
           options={enumEnOptions(TYPES_RECETTE)}
+          controle={controle}
         />
       </Bloc>
       <Bloc>
@@ -99,10 +107,11 @@ function CriteresDeRecette() {
           cle="difficulte"
           choixUnique
           options={enumEnOptions(DIFFICULTES)}
+          controle={controle}
         />
       </Bloc>
       <Bloc>
-        <CurseurTemps />
+        <CurseurTemps controle={controle} />
       </Bloc>
     </>
   );
@@ -111,9 +120,8 @@ function CriteresDeRecette() {
 /** Les critères issus des référentiels : ils arrivent de l'API, ou restent vides. */
 function CriteresDeCategories({
   referentiels,
-}: {
-  referentiels: Referentiels;
-}) {
+  controle,
+}: AvecControle & { referentiels: Referentiels }) {
   return (
     <>
       <Bloc>
@@ -122,6 +130,7 @@ function CriteresDeCategories({
           cle="regime"
           apparence="cases"
           options={enOptions(referentiels.regimes)}
+          controle={controle}
         />
       </Bloc>
       <Bloc>
@@ -130,6 +139,7 @@ function CriteresDeCategories({
           cle="critereSante"
           apparence="cases"
           options={enOptions(referentiels.criteresSante)}
+          controle={controle}
         />
       </Bloc>
       <Bloc>
@@ -137,10 +147,28 @@ function CriteresDeCategories({
           legende="Types d’aliment"
           cle="typeAliment"
           options={enOptions(referentiels.typesAliment)}
+          controle={controle}
         />
       </Bloc>
-      <ChoixNationalite referentiels={referentiels} />
+      <ChoixNationalite referentiels={referentiels} controle={controle} />
     </>
+  );
+}
+
+/**
+ * Les critères de filtre, sans leur habillage. Le panneau de bureau les branche sur
+ * l'URL ; le tiroir mobile sur un brouillon, avec son propre titre et ses boutons.
+ * La recherche par titre reste hors du tiroir : elle vit dans la barre mobile.
+ */
+export function CriteresDeFiltre({
+  referentiels,
+  controle,
+}: AvecControle & { referentiels: Referentiels }) {
+  return (
+    <div className="flex flex-col divide-y divide-trait">
+      <CriteresDeRecette controle={controle} />
+      <CriteresDeCategories referentiels={referentiels} controle={controle} />
+    </div>
   );
 }
 
@@ -164,8 +192,9 @@ export function PanneauDeFiltres({
 
       <div className="flex flex-col divide-y divide-trait">
         <ChampTitre />
-        <CriteresDeRecette />
-        <CriteresDeCategories referentiels={referentiels} />
+        <div className="py-5 last:pb-0">
+          <CriteresDeFiltre referentiels={referentiels} />
+        </div>
       </div>
     </div>
   );

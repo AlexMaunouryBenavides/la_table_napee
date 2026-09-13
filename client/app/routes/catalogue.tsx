@@ -14,10 +14,13 @@ import { filtresActifs, type Referentiels } from '../catalogue/filtres-actifs';
 import { PanneauDeFiltres } from '../catalogue/panneau-de-filtres';
 import { RangeeFiltresActifs } from '../catalogue/rangee-filtres-actifs';
 import { SelecteurTri } from '../catalogue/selecteur-tri';
+import { TiroirFiltres } from '../catalogue/tiroir-filtres';
 import { TitreCatalogue } from '../catalogue/titre-catalogue';
 import { Bandeau } from '../composants/bandeau';
 import { CarteRecette } from '../composants/carte-recette';
 import { Pagination } from '../composants/pagination';
+import { RechercheDebattue } from '../composants/recherche-debattue';
+import { useEcranLarge } from '../composants/use-ecran-large';
 
 import type { Route } from './+types/catalogue';
 
@@ -153,6 +156,37 @@ function ListeOuEtat({
   );
 }
 
+/**
+ * Un seul des deux est MONTÉ, pas seulement affiché : les deux portent une recherche
+ * liée à l'URL, et deux champs vivants se renverraient la valeur l'un à l'autre.
+ */
+function ZoneFiltres({ referentiels }: { referentiels: Referentiels }) {
+  const large = useEcranLarge();
+
+  if (!large) {
+    return (
+      <div className="mb-5 flex flex-col gap-3">
+        <RechercheDebattue
+          libelle="Rechercher dans le catalogue"
+          invite="Un titre, un mot…"
+          className="rounded-sm"
+        />
+        <div>
+          <TiroirFiltres referentiels={referentiels} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    // 268 px = w-67 sur l'échelle de 4 px : le panneau du handoff, sans valeur
+    // arbitraire.
+    <aside className="lg:sticky lg:top-6 lg:w-67 lg:shrink-0 lg:self-start">
+      <PanneauDeFiltres referentiels={referentiels} />
+    </aside>
+  );
+}
+
 export default function Catalogue({ loaderData }: Route.ComponentProps) {
   const { resultats, referentiels, echecListe, echecReferentiels } = loaderData;
   const [parametres] = useSearchParams();
@@ -160,14 +194,10 @@ export default function Catalogue({ loaderData }: Route.ComponentProps) {
   const total = resultats?.total ?? null;
 
   return (
-    <div className="mx-auto max-w-300 md:flex md:gap-9">
-      {/* 268 px = w-67 sur l'échelle de 4 px : le panneau du handoff, sans valeur
-          arbitraire. */}
-      <aside className="mb-8 md:sticky md:top-6 md:mb-0 md:w-67 md:shrink-0 md:self-start">
-        <PanneauDeFiltres referentiels={referentiels} />
-      </aside>
+    <div className="mx-auto max-w-300 lg:flex lg:gap-9">
+      <ZoneFiltres referentiels={referentiels} />
 
-      <section className="md:flex-1">
+      <section className="lg:flex-1">
         <EnTeteCatalogue
           total={total}
           aDesFiltres={aDesFiltres}

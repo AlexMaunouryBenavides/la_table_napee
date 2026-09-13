@@ -1,6 +1,8 @@
-import { useSearchParams } from 'react-router';
+import { useId } from 'react';
 
 import { avecCritere } from '../acces-api/criteres-url';
+
+import { type ControleCriteres, useCriteres } from './criteres-controles';
 
 type Option = { valeur: string; libelle: string };
 
@@ -120,25 +122,45 @@ type ProprietesGroupe = {
   options: Option[];
   choixUnique?: boolean;
   apparence?: 'pastilles' | 'cases';
+  /** Sans contrôle, le groupe lit et écrit l'URL. */
+  controle?: ControleCriteres;
 };
+
+function useChoix(
+  cle: string,
+  choixUnique: boolean,
+  controle: ControleCriteres | undefined,
+) {
+  const [parametres, setParametres] = useCriteres(controle);
+  // Le même groupe peut vivre deux fois dans la page (panneau et tiroir) : un nom de
+  // radios partagé ferait qu'en cocher un décoche l'autre.
+  const nom = `${cle}-${useId()}`;
+
+  return {
+    nom,
+    actives: parametres.getAll(cle),
+    choisir: (valeur: string) => {
+      setParametres(
+        choixUnique
+          ? avecCritere(parametres, cle, valeur)
+          : avecValeurBasculee(parametres, cle, valeur),
+      );
+    },
+  };
+}
 
 function ListeDeChoix({
   cle,
   options,
   choixUnique,
   apparence,
-}: Required<Omit<ProprietesGroupe, 'legende'>>) {
-  const [parametres, setParametres] = useSearchParams();
-  const actives = parametres.getAll(cle);
+  controle,
+}: Omit<ProprietesGroupe, 'legende' | 'choixUnique' | 'apparence'> & {
+  choixUnique: boolean;
+  apparence: 'pastilles' | 'cases';
+}) {
+  const { nom, actives, choisir } = useChoix(cle, choixUnique, controle);
   const Choix = apparence === 'cases' ? Case : Pastille;
-
-  function choisir(valeur: string) {
-    setParametres(
-      choixUnique
-        ? avecCritere(parametres, cle, valeur)
-        : avecValeurBasculee(parametres, cle, valeur),
-    );
-  }
 
   return (
     <div
@@ -153,7 +175,7 @@ function ListeDeChoix({
           actif={actives.length === 0}
           choixUnique
           libelle="Peu importe"
-          nom={cle}
+          nom={nom}
           surChoix={() => {
             choisir('');
           }}
@@ -166,7 +188,7 @@ function ListeDeChoix({
           actif={actives.includes(option.valeur)}
           choixUnique={choixUnique}
           libelle={option.libelle}
-          nom={cle}
+          nom={nom}
           surChoix={() => {
             choisir(option.valeur);
           }}

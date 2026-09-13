@@ -70,7 +70,7 @@ function piegerTabulation(
  * fermer même si le focus a glissé ailleurs, et un gestionnaire posé sur un élément
  * non interactif serait de toute façon un contresens d'accessibilité.
  */
-function useClavierDeModale(
+export function useClavierDeModale(
   panneau: React.RefObject<HTMLDivElement | null>,
   surAnnulation: () => void,
 ) {

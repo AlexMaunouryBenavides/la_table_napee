@@ -105,7 +105,7 @@ Chaque écran réel émulé à 390 px, comparé à la planche mobile de sa maque
 
 ### Comportements (avec tests, liste à valider)
 
-- [ ] **Catalogue — tiroir de filtres** : bouton « Filtres · N », tiroir plein écran,
+- [x] **Catalogue — tiroir de filtres** (8 tests) : bouton « Filtres · N », tiroir plein écran,
       choix accumulés sans requête, « Voir les N recettes » ; aujourd'hui les filtres
       occupent ~1 700 px avant la première recette.
 - [ ] **Panneau — en-tête ardoise et tiroir de navigation** (burger, fermeture, Échap,

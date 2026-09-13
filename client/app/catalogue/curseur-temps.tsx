@@ -1,6 +1,8 @@
-import { useSearchParams } from 'react-router';
+import { useId } from 'react';
 
 import { avecCritere } from '../acces-api/criteres-url';
+
+import { type ControleCriteres, useCriteres } from './criteres-controles';
 
 const CLE = 'tempsMax';
 const MINUTES_MIN = 10;
@@ -20,15 +22,18 @@ function valeurCourante(parametres: URLSearchParams): number {
     : MINUTES_MAX;
 }
 
-export function CurseurTemps() {
-  const [parametres, setParametres] = useSearchParams();
+/** Sans contrôle, le curseur lit et écrit l'URL. */
+export function CurseurTemps({ controle }: { controle?: ControleCriteres }) {
+  const [parametres, setParametres] = useCriteres(controle);
+  // Unique : le curseur peut vivre deux fois dans la page (panneau et tiroir).
+  const id = useId();
   const valeur = valeurCourante(parametres);
 
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3">
         <label
-          htmlFor={CLE}
+          htmlFor={id}
           className="text-xs font-medium tracking-bouton text-encre-70 uppercase"
         >
           Temps total maximum
@@ -39,7 +44,7 @@ export function CurseurTemps() {
       </div>
 
       <input
-        id={CLE}
+        id={id}
         type="range"
         min={MINUTES_MIN}
         max={MINUTES_MAX}
