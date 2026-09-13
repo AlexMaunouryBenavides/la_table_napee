@@ -121,6 +121,16 @@ describe('EcranConnexion — envoi et session', () => {
   });
 });
 
+describe('EcranConnexion — le mot de passe', () => {
+  it('offre de l’afficher', () => {
+    rendre();
+
+    expect(
+      screen.getByRole('button', { name: /afficher le mot de passe/i }),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('EcranConnexion — après une inscription', () => {
   it('accueille le compte tout juste créé', () => {
     // L'API ne pose pas de cookie à l'inscription : créer un compte et ouvrir une

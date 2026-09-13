@@ -103,6 +103,14 @@ describe('EcranInscription', () => {
     expect(action).toHaveBeenCalled();
   });
 
+  it('offre d’afficher le mot de passe', () => {
+    rendre();
+
+    expect(
+      screen.getByRole('button', { name: /afficher le mot de passe/i }),
+    ).toBeInTheDocument();
+  });
+
   it('marque le pseudo comme facultatif', () => {
     rendre();
 

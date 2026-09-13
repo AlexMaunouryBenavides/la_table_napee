@@ -2,7 +2,7 @@ import type { Utilisateur } from '@recipe/types';
 import { Form, Link, useSearchParams } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
-import { Champ } from '../composants/champ';
+import { ChampSecret } from '../composants/champ-secret';
 
 import { ChampEmail, EnTeteAuth, PiedDeFormulaire } from './champs-communs';
 
@@ -76,9 +76,8 @@ function ChampsDeConnexion({
     <div className="mt-6 flex flex-col gap-5">
       <ChampEmail echec={echec} envoiEnCours={envoiEnCours} />
 
-      <Champ
+      <ChampSecret
         nom="motDePasse"
-        type="password"
         libelle="Mot de passe"
         autoComplete="current-password"
         required

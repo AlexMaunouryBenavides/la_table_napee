@@ -4,6 +4,7 @@ import { Form } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { Champ } from '../composants/champ';
+import { ChampSecret } from '../composants/champ-secret';
 
 import { ChampEmail, EnTeteAuth, PiedDeFormulaire } from './champs-communs';
 import {
@@ -44,9 +45,8 @@ function ChampMotDePasse({
 }) {
   return (
     <div>
-      <Champ
+      <ChampSecret
         nom="motDePasse"
-        type="password"
         libelle="Mot de passe"
         autoComplete="new-password"
         aide={`${String(LONGUEUR_MINIMALE)} caractères minimum. Une phrase entière vaut mieux qu’un mot compliqué.`}

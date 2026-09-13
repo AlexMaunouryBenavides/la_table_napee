@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef } from 'react';
+import type { ComponentPropsWithRef, ReactNode } from 'react';
 
 type ProprietesChamp = ComponentPropsWithRef<'input'> & {
   nom: string;
@@ -7,6 +7,8 @@ type ProprietesChamp = ComponentPropsWithRef<'input'> & {
   aide?: string;
   erreur?: string;
   optionnel?: boolean;
+  /** Un contrôle logé à droite DANS le champ (« Afficher » d'un mot de passe). */
+  accessoire?: ReactNode;
 };
 
 function Libelle({
@@ -47,12 +49,21 @@ function MessageDErreur({ id, erreur }: { id: string; erreur: string }) {
   );
 }
 
+/** La place réservée à droite évite que la saisie passe SOUS l'accessoire. */
+function classeDuControle(avecAccessoire: boolean, enErreur: boolean): string {
+  const place = avecAccessoire ? 'pr-28' : '';
+  const etat = enErreur ? 'border-erreur bg-erreur-fond' : 'border-trait-fort';
+
+  return `h-12 w-full rounded-sm border bg-craie px-3.5 text-sm ${place} ${etat}`;
+}
+
 export function Champ({
   nom,
   libelle,
   aide,
   erreur,
   optionnel = false,
+  accessoire,
   className = '',
   ...reste
 }: ProprietesChamp) {
@@ -73,16 +84,21 @@ export function Champ({
     <div className={className}>
       <Libelle nom={nom} libelle={libelle} optionnel={optionnel} />
 
-      <input
-        id={nom}
-        name={nom}
-        aria-invalid={enErreur ? true : undefined}
-        aria-describedby={descriptions === '' ? undefined : descriptions}
-        className={`mt-2 h-12 w-full rounded-sm border bg-craie px-3.5 text-sm ${
-          enErreur ? 'border-erreur bg-erreur-fond' : 'border-trait-fort'
-        }`}
-        {...reste}
-      />
+      <div className="relative mt-2">
+        <input
+          id={nom}
+          name={nom}
+          aria-invalid={enErreur ? true : undefined}
+          aria-describedby={descriptions === '' ? undefined : descriptions}
+          className={classeDuControle(accessoire !== undefined, enErreur)}
+          {...reste}
+        />
+        {accessoire !== undefined && (
+          <div className="absolute inset-y-0 right-3.5 flex items-center">
+            {accessoire}
+          </div>
+        )}
+      </div>
 
       {aide !== undefined && (
         <p id={idAide} className="mt-2 text-sm text-encre-55">

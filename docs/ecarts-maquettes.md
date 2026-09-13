@@ -58,7 +58,8 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
       sous le titre ; aides d'e-mail et de pseudo ; note sur le rôle ; colonne verte :
       « Un compte, pour _donner votre avis_ » + liste à puces + note « Nous ne
       demandons ni nom… ».
-  - [ ] **Reste, avec tests** (04 et 05) : bouton « Afficher » dans le mot de passe.
+  - [x] Bouton « Afficher » dans le mot de passe (04 et 05, 7 tests) : `ChampSecret`,
+        `aria-pressed`, jamais d'envoi du formulaire.
 - [x] **06 Mon compte** : menu latéral (Profil, Mot de passe, Supprimer mon compte, Se
       déconnecter) ; sur-titre « Compte utilisateur » ; « Bonjour, _pseudo_ » + étiquette
       de rôle à droite ; profil en deux colonnes ; ligne Rôle · Compte créé le ·
