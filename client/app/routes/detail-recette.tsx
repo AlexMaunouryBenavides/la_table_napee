@@ -3,14 +3,9 @@ import { data, Link } from 'react-router';
 
 import { ErreurApi } from '../acces-api/erreur-api';
 import { Etoiles } from '../composants/etoiles';
-import { executerActionAvis, type EchecAvis } from '../recette/action-avis';
 import { Etapes, VideoDeLaRecette } from '../recette/preparation';
 import { formaterQuantite, libelleUnite } from '../recette/quantites';
-import {
-  recettesOntChange,
-  requeteRecette,
-  useRecette,
-} from '../recette/requete-recette';
+import { requeteRecette, useRecette } from '../recette/requete-recette';
 import { SectionsRecette, TitreDeSection } from '../recette/sections-recette';
 import { ZoneAvis } from '../recette/zone-avis';
 import { clientRequetes } from '../requetes/client-requetes';
@@ -39,24 +34,6 @@ export async function clientLoader({
     throw erreur;
   }
   return null;
-}
-
-/**
- * Dépôt, modification et suppression d'un avis. Après un succès, les recettes en
- * cache sont relues : la note moyenne se rafraîchit sans recopier l'état à la main.
- */
-export async function clientAction({
-  params,
-  request,
-}: Route.ClientActionArgs): Promise<EchecAvis | null> {
-  const echec = await executerActionAvis(
-    Number(params.id),
-    await request.formData(),
-  );
-  if (echec === null) {
-    await recettesOntChange();
-  }
-  return echec;
 }
 
 function FilDAriane({ recette }: { recette: Recette }) {
@@ -214,10 +191,7 @@ function Ingredients({ compositions }: { compositions: Composition[] }) {
   );
 }
 
-export default function DetailRecette({
-  params,
-  actionData,
-}: Route.ComponentProps) {
+export default function DetailRecette({ params }: Route.ComponentProps) {
   const recette = useRecette(Number(params.id));
   const { session } = useSession();
 
@@ -245,7 +219,6 @@ export default function DetailRecette({
             recetteId={recette.id}
             avis={recette.avis}
             session={session}
-            echec={actionData ?? null}
           />
         }
       />

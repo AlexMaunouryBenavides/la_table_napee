@@ -20,18 +20,22 @@ export function json(statut: number, corps?: unknown): Response {
 }
 
 /** Chemin d'API (`/utilisateurs/moi`, `/recettes?limite=3`…) → réponse, rejouée à
- *  chaque appel. Un chemin non prévu répond 404 : un appel inattendu se voit. */
-export type ReponsesSimulees = Record<string, () => Response>;
+ *  chaque appel. Le gestionnaire reçoit la requête (méthode, corps) et peut répondre
+ *  plus tard. Un chemin non prévu répond 404 : un appel inattendu se voit. */
+export type ReponsesSimulees = Record<
+  string,
+  (requete?: RequestInit) => Response | Promise<Response>
+>;
 
 export function simulerApi(reponses: ReponsesSimulees) {
-  const faux = vi.fn<typeof fetch>((entree) => {
+  const faux = vi.fn<typeof fetch>((entree, requete) => {
     const chemin = (entree as string).replace(URL_API, '');
     const reponse = reponses[chemin];
 
     return Promise.resolve(
       reponse === undefined
         ? json(INTROUVABLE, { statusCode: INTROUVABLE, message: 'Introuvable' })
-        : reponse(),
+        : reponse(requete),
     );
   });
   vi.stubGlobal('fetch', faux);
