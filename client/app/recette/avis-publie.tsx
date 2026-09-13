@@ -2,6 +2,7 @@ import type { Avis, Utilisateur } from '@recipe/types';
 import type { ReactNode } from 'react';
 
 import { Etoiles } from '../composants/etoiles';
+import { PastilleInitiale } from '../composants/pastille-initiale';
 
 const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
 
@@ -12,19 +13,6 @@ const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
  */
 function pseudoAffichable(auteur: Utilisateur | null): string | null {
   return auteur?.pseudo ?? null;
-}
-
-function Pastille({ pseudo }: { pseudo: string | null }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`grid size-8 shrink-0 place-items-center rounded-full font-titre text-sm font-semibold ${
-        pseudo === null ? 'bg-trait text-encre-55' : 'bg-lavande text-ardoise'
-      }`}
-    >
-      {pseudo === null ? '?' : pseudo.charAt(0).toUpperCase()}
-    </span>
-  );
 }
 
 function Commentaire({ avis }: { avis: Avis }) {
@@ -61,7 +49,7 @@ export function AvisPublie({
       }`}
     >
       <header className="flex flex-wrap items-center gap-3">
-        <Pastille pseudo={pseudo} />
+        <PastilleInitiale pseudo={pseudo} />
         <p className="text-sm">
           {pseudo ?? <em className="text-encre-55">Utilisateur anonyme</em>}
           {estLeMien && <span className="ml-2 text-encre-55">(vous)</span>}

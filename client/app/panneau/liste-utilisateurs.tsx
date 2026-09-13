@@ -9,9 +9,11 @@ import { useFetcher } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
+import { EnTetePanneau } from '../composants/en-tete-panneau';
 import { EtatVide } from '../composants/etat-vide';
 import { ModaleConfirmation } from '../composants/modale-confirmation';
 import { Pagination } from '../composants/pagination';
+import { PastilleInitiale } from '../composants/pastille-initiale';
 import { Tableau } from '../composants/tableau';
 
 import type { ResultatAdministration } from './administration-utilisateurs';
@@ -19,6 +21,7 @@ import type { ResultatAdministration } from './administration-utilisateurs';
 const COLONNES = ['Compte', 'E-mail', 'Rôle', 'Inscription', 'Actions'];
 const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
 const MOT_DE_CONFIRMATION = 'SUPPRIMER';
+const CELLULE = 'px-4 py-3.5';
 
 const LIBELLES_ROLE: Record<RoleUtilisateur, string> = {
   admin: 'Administrateur',
@@ -64,7 +67,7 @@ function SelecteurRole({
             { method: 'post' },
           );
         }}
-        className="h-9 rounded-sm border border-trait-fort bg-craie px-2"
+        className="h-9 min-w-35 rounded-sm border border-trait-fort bg-craie px-3 text-sm disabled:bg-trait disabled:text-encre-55"
       >
         {ROLES_UTILISATEUR.map((role) => (
           <option key={role} value={role}>
@@ -122,9 +125,8 @@ function ActionsDeCompte({
   return (
     <>
       <Bouton
-        variante="texte"
+        variante="danger"
         taille="sm"
-        className="!px-0 !text-sm !tracking-normal !normal-case"
         disabled={fetcher.state !== 'idle'}
         onClick={() => {
           setModaleOuverte(true);
@@ -152,6 +154,28 @@ function ActionsDeCompte({
   );
 }
 
+function CelluleCompte({
+  compte,
+  estMoi,
+}: {
+  compte: Utilisateur;
+  estMoi: boolean;
+}) {
+  return (
+    <td className={CELLULE}>
+      <span className="flex items-center gap-2.5">
+        <PastilleInitiale pseudo={compte.pseudo} />
+        {compte.pseudo ?? <em className="text-encre-55">sans pseudo</em>}
+        {estMoi && (
+          <span className="rounded-pilule border border-trait-fort bg-craie px-2.5 py-0.5 text-xs tracking-section uppercase">
+            vous
+          </span>
+        )}
+      </span>
+    </td>
+  );
+}
+
 function LigneCompte({
   compte,
   estMoi,
@@ -164,16 +188,20 @@ function LigneCompte({
 
   return (
     <>
-      <tr className={`border-t border-trait ${estMoi ? 'bg-lavande' : ''}`}>
-        <td className="py-3 pr-4">{nomDe(compte)}</td>
-        <td className="py-3 pr-4 text-encre-70">{compte.email}</td>
-        <td className="py-3 pr-4">
+      <tr
+        className={`border-t border-trait first:border-t-0 ${
+          estMoi ? 'bg-lavande' : ''
+        }`}
+      >
+        <CelluleCompte compte={compte} estMoi={estMoi} />
+        <td className={CELLULE}>{compte.email}</td>
+        <td className={CELLULE}>
           <SelecteurRole compte={compte} estMoi={estMoi} fetcher={fetcher} />
         </td>
-        <td className="py-3 pr-4 text-encre-70">
+        <td className={`${CELLULE} whitespace-nowrap`}>
           {FORMAT_DATE.format(new Date(compte.dateCreation))}
         </td>
-        <td className="py-3">
+        <td className={`${CELLULE} text-right`}>
           <ActionsDeCompte compte={compte} estMoi={estMoi} fetcher={fetcher} />
         </td>
       </tr>
@@ -182,7 +210,7 @@ function LigneCompte({
           où l'on ne saurait plus de quelle ligne il parle. */}
       {retour?.message !== undefined && (
         <tr className={retour.succes ? '' : 'bg-erreur-fond'}>
-          <td colSpan={COLONNES.length} className="pb-3">
+          <td colSpan={COLONNES.length} className="px-4 pb-3">
             <span
               role="alert"
               className={`text-sm ${retour.succes ? 'text-encre-70' : 'text-erreur'}`}
@@ -193,26 +221,6 @@ function LigneCompte({
         </tr>
       )}
     </>
-  );
-}
-
-function TableauComptes({
-  comptes,
-  session,
-}: {
-  comptes: Utilisateur[];
-  session: Utilisateur;
-}) {
-  return (
-    <Tableau colonnes={COLONNES}>
-      {comptes.map((compte) => (
-        <LigneCompte
-          key={compte.id}
-          compte={compte}
-          estMoi={compte.id === session.id}
-        />
-      ))}
-    </Tableau>
   );
 }
 
@@ -241,19 +249,31 @@ export function EcranListeUtilisateurs({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-4">
-        <h1 className="font-titre text-3xl">Utilisateurs</h1>
-        <p className="text-sm text-encre-70">
-          {resultats.total} compte{resultats.total > 1 ? 's' : ''}
-        </p>
-      </div>
+      <EnTetePanneau
+        fil="Panneau · Utilisateurs"
+        titre="Utilisateurs"
+        action={
+          <p className="text-sm text-encre-55">
+            {resultats.total} compte{resultats.total > 1 ? 's' : ''}
+          </p>
+        }
+      />
 
-      <TableauComptes comptes={resultats.donnees} session={session} />
+      <Tableau colonnes={COLONNES} aDroite={['Actions']}>
+        {resultats.donnees.map((compte) => (
+          <LigneCompte
+            key={compte.id}
+            compte={compte}
+            estMoi={compte.id === session.id}
+          />
+        ))}
+      </Tableau>
 
       <Pagination
         total={resultats.total}
         page={resultats.page}
         limite={resultats.limite}
+        elements={{ singulier: 'compte', pluriel: 'comptes' }}
       />
     </div>
   );

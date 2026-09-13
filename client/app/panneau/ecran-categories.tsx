@@ -2,7 +2,9 @@ import type { Categorie } from '@recipe/types';
 import { useState } from 'react';
 import { Link, NavLink, useFetcher } from 'react-router';
 
+import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
+import { EnTetePanneau } from '../composants/en-tete-panneau';
 import { EtatVide } from '../composants/etat-vide';
 import { ModaleConfirmation } from '../composants/modale-confirmation';
 import { Tableau } from '../composants/tableau';
@@ -12,20 +14,26 @@ import { RESSOURCES, type Ressource } from './ressources-categories';
 
 const COLONNES = ['Nom', 'Actions'];
 const LONGUEUR_MIN_NOM = 2;
+const CELLULE = 'px-4 py-3.5';
 
 type Fetcher = ReturnType<typeof useFetcher<ResultatCategorie>>;
 
 function Onglets({ compteurs }: { compteurs: Record<string, number> }) {
   return (
-    <nav aria-label="Ressources de catégories">
-      <ul className="flex flex-wrap gap-2">
+    <nav
+      aria-label="Ressources de catégories"
+      className="border-b border-trait"
+    >
+      <ul className="flex flex-wrap gap-1">
         {RESSOURCES.map((ressource) => (
           <li key={ressource.cle}>
             <NavLink
               to={`/panneau/categories/${ressource.cle}`}
               className={({ isActive }) =>
-                `inline-flex min-h-11 items-center rounded-pilule px-4 text-base ${
-                  isActive ? 'bg-ardoise text-nappe' : 'border border-trait'
+                `-mb-px flex min-h-11 items-center border-b-2 px-4.5 text-sm hover:no-underline ${
+                  isActive
+                    ? 'border-ardoise font-medium text-ardoise'
+                    : 'border-transparent text-encre-55'
                 }`
               }
             >
@@ -77,10 +85,10 @@ function ChampNom({
   erreur?: string;
 }) {
   return (
-    <div className="min-w-60 flex-1">
+    <div className="min-w-48 flex-1">
       <label
         htmlFor={identifiant}
-        className="block text-xs tracking-etiquette text-encre-70 uppercase"
+        className="block text-xs font-medium tracking-bouton text-encre-70 uppercase"
       >
         Nom
       </label>
@@ -91,7 +99,7 @@ function ChampNom({
         minLength={LONGUEUR_MIN_NOM}
         defaultValue={valeur}
         aria-invalid={erreur === undefined ? undefined : true}
-        className="mt-1 h-11 w-full rounded-sm border border-trait-fort bg-craie px-3"
+        className="mt-2 h-11 w-full rounded-sm border border-trait-fort bg-craie px-3.5 text-sm"
       />
       {erreur !== undefined && (
         <p className="mt-1 text-sm text-erreur">{erreur}</p>
@@ -118,9 +126,13 @@ function FormulaireDeNom({
   surAnnulation?: () => void;
 }) {
   const identifiant = `nom-${intention}-${String(id ?? 0)}`;
+  const creation = intention === 'creation';
 
   return (
-    <fetcher.Form method="post" className="flex flex-wrap items-end gap-3">
+    <fetcher.Form
+      method="post"
+      className={creation ? 'grid gap-4' : 'flex flex-wrap items-end gap-2'}
+    >
       <input type="hidden" name="intention" value={intention} />
       <input type="hidden" name="ressource" value={ressource.cle} />
       {id !== undefined && <input type="hidden" name="id" value={id} />}
@@ -134,8 +146,9 @@ function FormulaireDeNom({
       <Bouton
         type="submit"
         variante="primaire"
-        taille="sm"
+        taille={creation ? 'md' : 'sm'}
         chargement={fetcher.state !== 'idle'}
+        className={creation ? 'w-full' : ''}
       >
         {libelleEnvoi}
       </Bouton>
@@ -157,21 +170,11 @@ function ActionsDeLigne({
   surSuppression: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <Bouton
-        variante="texte"
-        taille="sm"
-        className="!px-0 !text-sm !tracking-normal !normal-case"
-        onClick={surRenommage}
-      >
+    <div className="flex items-center justify-end gap-1.5">
+      <Bouton variante="fantome" taille="sm" onClick={surRenommage}>
         Renommer
       </Bouton>
-      <Bouton
-        variante="texte"
-        taille="sm"
-        className="!px-0 !text-sm !tracking-normal !normal-case"
-        onClick={surSuppression}
-      >
+      <Bouton variante="danger" taille="sm" onClick={surSuppression}>
         Supprimer
       </Bouton>
     </div>
@@ -220,9 +223,11 @@ function CellulesCategorie({
   surEdition: (enEdition: boolean) => void;
   surSuppression: () => void;
 }) {
+  const fond = enEdition ? 'bg-lavande' : '';
+
   return (
-    <tr className="border-t border-trait">
-      <td className="py-3 pr-4">
+    <tr className={`border-t border-trait first:border-t-0 ${fond}`}>
+      <td className={CELLULE}>
         {enEdition ? (
           <FormulaireDeNom
             ressource={ressource}
@@ -239,7 +244,7 @@ function CellulesCategorie({
           categorie.nom
         )}
       </td>
-      <td className="py-3">
+      <td className={CELLULE}>
         {!enEdition && (
           <ActionsDeLigne
             surRenommage={() => {
@@ -288,7 +293,7 @@ function LigneCategorie({
 
       {fetcher.data !== undefined && (
         <tr>
-          <td colSpan={COLONNES.length} className="pb-3">
+          <td colSpan={COLONNES.length} className="px-4 pb-3">
             <Retour retour={fetcher.data} />
           </td>
         </tr>
@@ -317,27 +322,40 @@ function Ajout({ ressource }: { ressource: Ressource }) {
   const fetcher = useFetcher<ResultatCategorie>();
 
   return (
-    <section className="rounded-md border border-trait bg-craie p-6">
-      <h2 className="font-titre text-2xl">Ajouter {ressource.unSingulier}</h2>
-      <p className="mt-2 text-base text-encre-70">
+    <section className="grid gap-3 rounded-md border border-trait bg-craie p-5.5">
+      <h2 className="text-2xl">Ajouter {ressource.unSingulier}</h2>
+      <p className="text-sm text-encre-55">
         Le nom apparaît tel quel dans les filtres du catalogue.
       </p>
 
-      <div className="mt-4">
-        <FormulaireDeNom
-          ressource={ressource}
-          valeur=""
-          fetcher={fetcher}
-          intention="creation"
-          libelleEnvoi="Ajouter"
-        />
-      </div>
+      <FormulaireDeNom
+        ressource={ressource}
+        valeur=""
+        fetcher={fetcher}
+        intention="creation"
+        libelleEnvoi="Ajouter"
+      />
 
       {fetcher.data !== undefined && fetcher.data.cible === CIBLE_CREATION && (
-        <div className="mt-2">
-          <Retour retour={fetcher.data} />
-        </div>
+        <Retour retour={fetcher.data} />
       )}
+    </section>
+  );
+}
+
+function ContratCommun() {
+  return (
+    <section className="grid gap-3 rounded-md border border-trait bg-craie p-5.5">
+      <h2 className="text-2xl">Contrat commun</h2>
+      <p className="text-sm leading-relaxed text-encre-55">
+        Les quatre ressources partagent le même contrat : un nom, les mêmes
+        verbes, les mêmes refus. Changer d’onglet ne change que la route et le
+        libellé.
+      </p>
+      <Bandeau
+        ton="info"
+        message="Une catégorie rattachée à des recettes ne peut pas être supprimée, mais peut toujours être renommée."
+      />
     </section>
   );
 }
@@ -353,35 +371,42 @@ export function EcranCategories({
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-titre text-3xl">Catégories</h1>
+      <EnTetePanneau fil="Panneau · Catégories" titre="Catégories" />
 
       <Onglets compteurs={compteurs} />
 
-      {valeurs.length === 0 ? (
-        <EtatVide
-          glyphe="✎"
-          titre={ressource.aucun}
-          explication="Ajoutez la première valeur : elle apparaîtra aussitôt dans les filtres du catalogue et dans l’éditeur de recette."
-        />
-      ) : (
-        <Tableau colonnes={COLONNES}>
-          {valeurs.map((categorie) => (
-            <LigneCategorie
-              // Le NOM fait partie de la clé : après un renommage réussi la ligne
-              // remonte, donc repasse en lecture. Sur un refus le nom n'a pas bougé,
-              // la ligne reste en édition avec son message — ce qu'on veut.
-              key={`${String(categorie.id)}-${categorie.nom}`}
-              categorie={categorie}
-              ressource={ressource}
+      <div className="grid items-start gap-6 md:grid-cols-3">
+        <div className="md:col-span-2">
+          {valeurs.length === 0 ? (
+            <EtatVide
+              glyphe="✎"
+              titre={ressource.aucun}
+              explication="Ajoutez la première valeur : elle apparaîtra aussitôt dans les filtres du catalogue et dans l’éditeur de recette."
             />
-          ))}
-        </Tableau>
-      )}
+          ) : (
+            <Tableau colonnes={COLONNES} aDroite={['Actions']}>
+              {valeurs.map((categorie) => (
+                <LigneCategorie
+                  // Le NOM fait partie de la clé : après un renommage réussi la ligne
+                  // remonte, donc repasse en lecture. Sur un refus le nom n'a pas
+                  // bougé, la ligne reste en édition avec son message — ce qu'on veut.
+                  key={`${String(categorie.id)}-${categorie.nom}`}
+                  categorie={categorie}
+                  ressource={ressource}
+                />
+              ))}
+            </Tableau>
+          )}
+        </div>
 
-      {/* Remonté quand la liste a effectivement gagné (ou perdu) une valeur : le
-          champ se vide après une création réussie, mais garde sa saisie refusée
-          quand rien n'a changé — un 409 sur un nom déjà pris, par exemple. */}
-      <Ajout key={valeurs.length} ressource={ressource} />
+        <div className="grid gap-4">
+          {/* Remonté quand la liste a effectivement gagné (ou perdu) une valeur : le
+              champ se vide après une création réussie, mais garde sa saisie refusée
+              quand rien n'a changé — un 409 sur un nom déjà pris, par exemple. */}
+          <Ajout key={valeurs.length} ressource={ressource} />
+          <ContratCommun />
+        </div>
+      </div>
     </div>
   );
 }

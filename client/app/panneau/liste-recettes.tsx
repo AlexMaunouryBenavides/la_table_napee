@@ -5,8 +5,10 @@ import { Link, useFetcher, useSearchParams } from 'react-router';
 import { avecCritere } from '../acces-api/criteres-url';
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
+import { EnTetePanneau } from '../composants/en-tete-panneau';
 import { EtatVide } from '../composants/etat-vide';
 import { Etoiles } from '../composants/etoiles';
+import { Miniature } from '../composants/miniature';
 import { ModaleConfirmation } from '../composants/modale-confirmation';
 import { Pagination } from '../composants/pagination';
 import { RechercheDebattue } from '../composants/recherche-debattue';
@@ -14,6 +16,7 @@ import { Squelette } from '../composants/squelette';
 import { Tableau } from '../composants/tableau';
 import { LIBELLES_DIFFICULTE, LIBELLES_TYPE } from '../libelles';
 
+import { LienNouvelleRecette } from './lien-nouvelle-recette';
 import { CREATION_RECETTE } from './raccourcis';
 import type { ResultatSuppression } from './suppression-recette';
 
@@ -28,22 +31,27 @@ const COLONNES = [
 ];
 const LIGNES_SQUELETTE = 6;
 const SANS_FILTRE = '';
+const CELLULE = 'px-4 py-3.5';
 
 function Filtre({
   cle,
   libelle,
+  tous,
   options,
 }: {
   cle: string;
   libelle: string;
+  /** Le libellé de l'option « aucun filtre » (« Tous les types »). */
+  tous: string;
   /** Les valeurs de l'API, avec leur traduction — jamais `entree` à l'écran. */
   options: Record<string, string>;
 }) {
   const [parametres, setParametres] = useSearchParams();
 
   return (
-    <label className="text-xs tracking-etiquette text-encre-70 uppercase">
-      {libelle}
+    <label>
+      {/* Le libellé s'entend ; l'option vide (« Toute difficulté ») le dit à l'œil. */}
+      <span className="sr-only">{libelle}</span>
       <select
         value={parametres.get(cle) ?? SANS_FILTRE}
         onChange={(evenement) => {
@@ -53,9 +61,9 @@ function Filtre({
             avecCritere(parametres, cle, evenement.target.value || null),
           );
         }}
-        className="ml-2 h-9 rounded-sm border border-trait-fort bg-craie px-2 text-base normal-case"
+        className="h-11 min-w-38 rounded-sm border border-trait-fort bg-craie px-3.5 text-sm"
       >
-        <option value={SANS_FILTRE}>Tous</option>
+        <option value={SANS_FILTRE}>{tous}</option>
         {Object.entries(options).map(([valeur, texte]) => (
           <option key={valeur} value={valeur}>
             {texte}
@@ -68,29 +76,39 @@ function Filtre({
 
 function BarreOutils({ total }: { total: number | null }) {
   return (
-    <div className="flex flex-wrap items-center gap-4">
-      <div className="min-w-60 flex-1">
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="w-full sm:w-70">
         <RechercheDebattue
           libelle="Rechercher une recette à gérer"
-          invite="Un titre…"
+          invite="Rechercher par titre…"
+          className="rounded-sm"
         />
       </div>
 
-      <Filtre cle="type" libelle="Type" options={LIBELLES_TYPE} />
+      <Filtre
+        cle="type"
+        libelle="Type"
+        tous="Tous les types"
+        options={LIBELLES_TYPE}
+      />
       <Filtre
         cle="difficulte"
         libelle="Difficulté"
+        tous="Toute difficulté"
         options={LIBELLES_DIFFICULTE}
       />
 
       {total !== null && (
-        <p className="text-sm text-encre-70">
+        <p className="ml-auto text-sm text-encre-55">
           {total} recette{total > 1 ? 's' : ''} trouvée{total > 1 ? 's' : ''}
         </p>
       )}
     </div>
   );
 }
+
+const LIEN_FANTOME_SM =
+  'inline-flex h-8 items-center rounded-pilule border border-ardoise px-4 text-xs tracking-bouton text-ardoise uppercase hover:bg-ardoise hover:text-nappe hover:no-underline';
 
 function ActionsDeLigne({
   recette,
@@ -108,22 +126,22 @@ function ActionsDeLigne({
   }
 
   return (
-    <div className="flex items-center gap-3">
+    // Libellés complets pour l'oreille : « Modifier » seul ne dit pas QUOI.
+    <div className="flex items-center justify-end gap-1.5">
       <Link
         to={`/panneau/recettes/${String(recette.id)}/modifier`}
-        className="text-sm underline"
+        aria-label={`Modifier ${recette.titre}`}
+        className={LIEN_FANTOME_SM}
       >
         Modifier
       </Link>
-      {/* Même graisse et même casse que « Modifier » : les deux actions d'une ligne
-          se lisent d'un coup d'œil, l'une n'attire pas l'autre. */}
       <Bouton
-        variante="texte"
+        variante="danger"
         taille="sm"
-        className="!px-0 !text-sm !tracking-normal !normal-case"
+        aria-label={`Supprimer ${recette.titre}`}
         onClick={surSuppression}
       >
-        Supprimer
+        Suppr.
       </Bouton>
     </div>
   );
@@ -132,18 +150,19 @@ function ActionsDeLigne({
 function CellulesRecette({ recette }: { recette: RecetteResume }) {
   return (
     <>
-      <td className="py-3 pr-4">{recette.titre}</td>
-      <td className="py-3 pr-4 text-encre-70">
-        {LIBELLES_TYPE[recette.typeRecette]}
+      <td className={CELLULE}>
+        <span className="flex items-center gap-2.5">
+          <Miniature image={recette.image} />
+          {recette.titre}
+        </span>
       </td>
-      <td className="py-3 pr-4 text-encre-70">
-        {LIBELLES_DIFFICULTE[recette.difficulte]}
-      </td>
-      <td className="py-3 pr-4 text-encre-70">
+      <td className={`${CELLULE} text-encre-70`}>{recette.typeRecette}</td>
+      <td className={`${CELLULE} text-encre-70`}>{recette.difficulte}</td>
+      <td className={`${CELLULE} whitespace-nowrap text-encre-70`}>
         {recette.tempsPreparation + recette.tempsCuisson} min
       </td>
-      <td className="py-3 pr-4 text-encre-70">{recette.portions}</td>
-      <td className="py-3 pr-4">
+      <td className={`${CELLULE} text-encre-70`}>{recette.portions}</td>
+      <td className={CELLULE}>
         <Etoiles note={recette.noteMoyenne} />
       </td>
     </>
@@ -182,10 +201,12 @@ function LigneRecette({ recette }: { recette: RecetteResume }) {
   return (
     <>
       <tr
-        className={`border-t border-trait ${enEchec ? 'bg-erreur-fond' : ''}`}
+        className={`border-t border-trait first:border-t-0 ${
+          enEchec ? 'bg-erreur-fond' : ''
+        }`}
       >
         <CellulesRecette recette={recette} />
-        <td className="py-3">
+        <td className={CELLULE}>
           <ActionsDeLigne
             recette={recette}
             fetcher={fetcher}
@@ -198,7 +219,7 @@ function LigneRecette({ recette }: { recette: RecetteResume }) {
 
       {retour?.message !== undefined && (
         <tr className={enEchec ? 'bg-erreur-fond' : ''}>
-          <td colSpan={COLONNES.length} className="pb-3">
+          <td colSpan={COLONNES.length} className="px-4 pb-3">
             <span role="alert" className="text-sm text-erreur">
               {retour.message}
             </span>
@@ -262,7 +283,7 @@ function CorpsDuTableau({
   if (chargement || resultats === null) {
     return (
       <tr>
-        <td colSpan={COLONNES.length} className="py-4">
+        <td colSpan={COLONNES.length} className="px-4 py-4">
           <Squelette lignes={LIGNES_SQUELETTE} hauteur={9} />
         </td>
       </tr>
@@ -278,7 +299,7 @@ function CorpsDuTableau({
   );
 }
 
-function TableauRecettes({
+function TableauEtPagination({
   resultats,
   chargement,
 }: {
@@ -286,9 +307,20 @@ function TableauRecettes({
   chargement: boolean;
 }) {
   return (
-    <Tableau colonnes={COLONNES}>
-      <CorpsDuTableau resultats={resultats} chargement={chargement} />
-    </Tableau>
+    <>
+      <Tableau colonnes={COLONNES} aDroite={['Actions']}>
+        <CorpsDuTableau resultats={resultats} chargement={chargement} />
+      </Tableau>
+
+      {resultats !== null && (
+        <Pagination
+          total={resultats.total}
+          page={resultats.page}
+          limite={resultats.limite}
+          elements={{ singulier: 'recette', pluriel: 'recettes' }}
+        />
+      )}
+    </>
   );
 }
 
@@ -308,15 +340,11 @@ export function EcranListeRecettes({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-titre text-3xl">Recettes</h1>
-        <Link
-          to={CREATION_RECETTE}
-          className="rounded-pilule bg-ardoise px-6 py-3 text-xs tracking-bouton text-nappe uppercase"
-        >
-          Nouvelle recette
-        </Link>
-      </div>
+      <EnTetePanneau
+        fil="Panneau · Recettes"
+        titre="Recettes"
+        action={<LienNouvelleRecette />}
+      />
 
       <BarreOutils total={resultats?.total ?? null} />
 
@@ -325,17 +353,7 @@ export function EcranListeRecettes({
       {vide ? (
         <Vide filtre={recherche} />
       ) : (
-        <>
-          <TableauRecettes resultats={resultats} chargement={chargement} />
-
-          {resultats !== null && (
-            <Pagination
-              total={resultats.total}
-              page={resultats.page}
-              limite={resultats.limite}
-            />
-          )}
-        </>
+        <TableauEtPagination resultats={resultats} chargement={chargement} />
       )}
     </div>
   );

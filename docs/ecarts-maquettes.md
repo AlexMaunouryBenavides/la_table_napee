@@ -62,18 +62,18 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
 
 ## Lot 3 — panneau et erreurs
 
-- [ ] **07 Tableau de bord** : sur-titre « Panneau » + bouton « Nouvelle recette » ;
+- [x] **07 Tableau de bord** : sur-titre « Panneau » + bouton « Nouvelle recette » ;
       tuiles sur une rangée de 4 ; « Dernières recettes » (tableau encadré avec
       vignettes) et « Raccourcis » côte à côte ; note d'info sur le rôle.
-- [ ] **08 Recettes** : fil d'Ariane ; barre d'outils (recherche, selects encadrés,
+- [x] **08 Recettes** : fil d'Ariane ; barre d'outils (recherche, selects encadrés,
       compteur) ; tableau encadré, vignettes, colonne auteur ; boutons « Modifier » et
       « Suppr. » ; pagination avec résumé.
 - [ ] **09 Éditeur** : fil d'Ariane + date de création ; colonne principale en
       `fieldset` titrés + aside collante (Image, Récapitulatif, Publication) ; unité
       « min » dans les champs de temps ; catégories en chips.
-- [ ] **10 Utilisateurs** : fil d'Ariane ; tableau encadré, pastille d'initiale, étiquette
+- [x] **10 Utilisateurs** : fil d'Ariane ; tableau encadré, pastille d'initiale, étiquette
       « vous » ; bouton « Supprimer » ; pagination avec résumé.
-- [ ] **11 Catégories** : fil d'Ariane ; onglets soulignés (pas en pilules) ; tableau
+- [x] **11 Catégories** : fil d'Ariane ; onglets soulignés (pas en pilules) ; tableau
       encadré avec boutons « Renommer » ; carte « Ajouter » et carte « Contrat commun »
       à droite.
 - [ ] **12 404** : « 404 » en ardoise ; boutons primaire + fantôme ; suggestions de
