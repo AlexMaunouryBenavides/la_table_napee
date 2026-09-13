@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
 import { Bouton } from '../composants/bouton';
@@ -9,9 +10,11 @@ import { erreurDeChamp, type EchecAuth } from './ecran-connexion';
 export function ChampEmail({
   echec,
   envoiEnCours,
+  aide,
 }: {
   echec: EchecAuth | null;
   envoiEnCours: boolean;
+  aide?: string;
 }) {
   return (
     <Champ
@@ -22,28 +25,54 @@ export function ChampEmail({
       required
       disabled={envoiEnCours}
       defaultValue={echec?.saisie?.email ?? ''}
+      aide={aide}
       erreur={erreurDeChamp(echec, 'email')}
     />
   );
 }
 
-/** Le bouton d'envoi, puis le renvoi vers l'autre écran d'authentification. */
-export function PiedDeFormulaire({
-  libelleEnvoi,
+/** Le titre, puis — tout de suite — le renvoi vers l'autre écran d'authentification. */
+export function EnTeteAuth({
+  titre,
+  emphase,
   question,
   vers,
   libelleLien,
-  envoiEnCours,
 }: {
-  libelleEnvoi: string;
+  titre: string;
+  emphase: string;
   question: string;
   vers: string;
   libelleLien: string;
+}) {
+  return (
+    <header>
+      <h1 className="text-4xl leading-tight">
+        {titre} <em className="text-ardoise">{emphase}</em>
+      </h1>
+      <p className="mt-2 text-sm text-encre-55">
+        {question}{' '}
+        <Link to={vers} className="text-encre-70">
+          {libelleLien}
+        </Link>
+      </p>
+    </header>
+  );
+}
+
+/** Le bouton d'envoi, puis une note sous un filet. */
+export function PiedDeFormulaire({
+  libelleEnvoi,
+  envoiEnCours,
+  note,
+}: {
+  libelleEnvoi: string;
   envoiEnCours: boolean;
+  note: ReactNode;
 }) {
   return (
     <>
-      <div className="mt-6">
+      <div className="mt-5">
         <Bouton
           variante="primaire"
           type="submit"
@@ -54,11 +83,8 @@ export function PiedDeFormulaire({
         </Bouton>
       </div>
 
-      <p className="mt-6 text-sm text-encre-55">
-        {question}{' '}
-        <Link to={vers} className="underline">
-          {libelleLien}
-        </Link>
+      <p className="mt-6 border-t border-trait pt-5 text-sm leading-relaxed text-encre-55">
+        {note}
       </p>
     </>
   );

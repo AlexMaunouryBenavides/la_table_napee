@@ -4,7 +4,7 @@ import { Form, Link, useSearchParams } from 'react-router';
 import { Bandeau } from '../composants/bandeau';
 import { Champ } from '../composants/champ';
 
-import { ChampEmail, PiedDeFormulaire } from './champs-communs';
+import { ChampEmail, EnTeteAuth, PiedDeFormulaire } from './champs-communs';
 
 export type EchecAuth = {
   statut: number;
@@ -73,7 +73,7 @@ function ChampsDeConnexion({
   envoiEnCours: boolean;
 }) {
   return (
-    <div className="mt-6 flex flex-col gap-4">
+    <div className="mt-6 flex flex-col gap-5">
       <ChampEmail echec={echec} envoiEnCours={envoiEnCours} />
 
       <Champ
@@ -109,7 +109,13 @@ export function EcranConnexion({
 
   return (
     <Form method="post">
-      <h1 className="font-titre text-3xl">Connexion</h1>
+      <EnTeteAuth
+        titre="Se"
+        emphase="connecter"
+        question="Pas encore de compte ?"
+        vers="/inscription"
+        libelleLien="Créer un compte"
+      />
 
       {compteCree && (
         <div className="mt-6">
@@ -130,10 +136,8 @@ export function EcranConnexion({
 
       <PiedDeFormulaire
         libelleEnvoi="Se connecter"
-        question="Pas encore de compte ?"
-        vers="/inscription"
-        libelleLien="Créer un compte"
         envoiEnCours={envoiEnCours}
+        note="Mot de passe oublié ? Contactez l’équipe — la réinitialisation en libre-service n’existe pas encore côté API."
       />
     </Form>
   );

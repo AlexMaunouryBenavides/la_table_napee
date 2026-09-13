@@ -46,14 +46,15 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
       Cormorant) ; nationalité parmi les chips ; titres « Étapes » (pas
       « Préparation »), « Avis · N » ; formulaire d'avis sur fond lavande ; avis en
       cartes avec pastille d'initiale.
-- [ ] **04 Connexion** : titre « Se _connecter_ » ; « Pas encore de compte ? Créer un
-      compte » sous le titre ; bouton « Afficher » dans le mot de passe ; filet + note
-      « Mot de passe oublié ? Contactez l'équipe… » ; colonne verte : accroche
-      « Retrouvez vos avis et _vos recettes_ » + note « Aucun jeton n'est stocké… ».
-- [ ] **05 Inscription** : titre « Créer un _compte_ » ; « Déjà inscrit ? Se connecter »
-      sous le titre ; bouton « Afficher » ; aides d'e-mail et de pseudo ; note sur les
-      conditions et le rôle ; colonne verte : « Un compte, pour _donner votre avis_ » +
-      liste à puces + note « Nous ne demandons ni nom… ».
+- [x] **04 Connexion** : titre « Se _connecter_ » ; « Pas encore de compte ? Créer un
+      compte » sous le titre ; filet + note « Mot de passe oublié ? Contactez
+      l'équipe… » ; colonne verte : accroche « Retrouvez vos avis et _vos recettes_ » +
+      note « Aucun jeton n'est stocké… ».
+- [x] **05 Inscription** : titre « Créer un _compte_ » ; « Déjà inscrit ? Se connecter »
+      sous le titre ; aides d'e-mail et de pseudo ; note sur le rôle ; colonne verte :
+      « Un compte, pour _donner votre avis_ » + liste à puces + note « Nous ne
+      demandons ni nom… ».
+  - [ ] **Reste, avec tests** (04 et 05) : bouton « Afficher » dans le mot de passe.
 - [ ] **06 Mon compte** : menu latéral (Profil, Mot de passe, Supprimer mon compte, Se
       déconnecter) ; sur-titre « Compte utilisateur » ; « Bonjour, _pseudo_ » + étiquette
       de rôle à droite ; profil en deux colonnes ; ligne Rôle · Compte créé le ·

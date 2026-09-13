@@ -21,12 +21,17 @@ function Libelle({
   return (
     <label
       htmlFor={nom}
-      className="block text-xs tracking-etiquette text-encre-70 uppercase"
+      className="block text-xs font-medium tracking-bouton text-encre-70 uppercase"
     >
       {libelle}
       {/* « (optionnel) » appartient au libellé, pas à l'aide : c'est la première
           chose qu'un lecteur d'écran doit entendre. */}
-      {optionnel && <span className="normal-case"> (optionnel)</span>}
+      {optionnel && (
+        <span className="font-light tracking-normal text-encre-55 normal-case">
+          {' '}
+          (optionnel)
+        </span>
+      )}
     </label>
   );
 }
@@ -73,14 +78,14 @@ export function Champ({
         name={nom}
         aria-invalid={enErreur ? true : undefined}
         aria-describedby={descriptions === '' ? undefined : descriptions}
-        className={`mt-1 h-11 w-full rounded-sm border bg-craie px-3 ${
+        className={`mt-2 h-12 w-full rounded-sm border bg-craie px-3.5 text-sm ${
           enErreur ? 'border-erreur bg-erreur-fond' : 'border-trait-fort'
         }`}
         {...reste}
       />
 
       {aide !== undefined && (
-        <p id={idAide} className="mt-1 text-sm text-encre-55">
+        <p id={idAide} className="mt-2 text-sm text-encre-55">
           {aide}
         </p>
       )}

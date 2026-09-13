@@ -5,7 +5,7 @@ import { Form } from 'react-router';
 import { Bandeau } from '../composants/bandeau';
 import { Champ } from '../composants/champ';
 
-import { ChampEmail, PiedDeFormulaire } from './champs-communs';
+import { ChampEmail, EnTeteAuth, PiedDeFormulaire } from './champs-communs';
 import {
   DejaConnecte,
   echecGlobal,
@@ -77,8 +77,12 @@ function ChampsDInscription({
   erreurMotDePasse: string | undefined;
 }) {
   return (
-    <div className="mt-6 flex flex-col gap-4">
-      <ChampEmail echec={echec} envoiEnCours={envoiEnCours} />
+    <div className="mt-6 flex flex-col gap-5">
+      <ChampEmail
+        echec={echec}
+        envoiEnCours={envoiEnCours}
+        aide="Sert uniquement à la connexion."
+      />
 
       <ChampMotDePasse
         motDePasse={motDePasse}
@@ -91,6 +95,7 @@ function ChampsDInscription({
         nom="pseudo"
         libelle="Pseudo"
         optionnel
+        aide="Affiché sur vos avis. Sans pseudo, ils apparaissent comme « Utilisateur anonyme »."
         autoComplete="nickname"
         disabled={envoiEnCours}
         defaultValue={echec?.saisie?.pseudo ?? ''}
@@ -132,7 +137,13 @@ export function EcranInscription({
         }
       }}
     >
-      <h1 className="font-titre text-3xl">Créer un compte</h1>
+      <EnTeteAuth
+        titre="Créer un"
+        emphase="compte"
+        question="Déjà inscrit ?"
+        vers="/connexion"
+        libelleLien="Se connecter"
+      />
 
       <EchecDInscription echec={global} />
 
@@ -151,10 +162,8 @@ export function EcranInscription({
 
       <PiedDeFormulaire
         libelleEnvoi="Créer mon compte"
-        question="Déjà un compte ?"
-        vers="/connexion"
-        libelleLien="Se connecter"
         envoiEnCours={envoiEnCours}
+        note="Votre compte est de rôle utilisateur : la publication de recettes est réservée à l’équipe."
       />
     </Form>
   );
