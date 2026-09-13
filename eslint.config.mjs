@@ -122,7 +122,12 @@ export default tseslint.config(
   // 7. Fichiers de test : on relâche les seuils qui n'ont pas de sens en test
   //    (un describe peut être long, des nombres en assertion sont explicites).
   {
-    files: ['**/*.spec.ts', '**/*.e2e-spec.ts', '**/*.test.{ts,tsx}'],
+    files: [
+      '**/*.spec.ts',
+      '**/*.e2e-spec.ts',
+      '**/*.test.{ts,tsx}',
+      '**/*.cy.ts',
+    ],
     rules: {
       'max-lines-per-function': 'off',
       '@typescript-eslint/no-magic-numbers': 'off',

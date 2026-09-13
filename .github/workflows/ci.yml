@@ -79,3 +79,56 @@ jobs:
       - run: npm run migration:run:test --workspace api
 
       - run: npm run test:e2e --workspace api
+
+  cypress:
+    # Les parcours de bout en bout : vrai front, vraie API, base de test semée.
+    needs: verify
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root
+          MYSQL_DATABASE: recipe_test
+          MYSQL_USER: recipe
+          MYSQL_PASSWORD: ci-recipe
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pci-root"
+          --health-interval=5s
+          --health-retries=20
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: recipe
+      DB_PASSWORD: ci-recipe
+      DB_DATABASE: recipe
+      DB_DATABASE_TEST: recipe_test
+      LOG_LEVEL: warn
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Générer un JWT_SECRET éphémère
+        run: echo "JWT_SECRET=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
+
+      - run: npm run cypress:prepare
+
+      - run: npm run test:cypress
+
+      # Les captures d'un parcours en échec : sans elles, on devine.
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: captures-cypress
+          path: client/cypress/screenshots

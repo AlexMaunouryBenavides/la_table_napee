@@ -8,6 +8,8 @@
     "**/.client/**/*",
     ".react-router/types/**/*"
   ],
+  // Les parcours Cypress ont leur propre tsconfig (`cypress/tsconfig.json`).
+  "exclude": ["cypress"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["node", "vite/client"],

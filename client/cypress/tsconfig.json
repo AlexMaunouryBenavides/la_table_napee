@@ -1,0 +1,16 @@
+{
+  // Les parcours Cypress ont leurs propres globales (`cy`, `Cypress`) : un tsconfig à
+  // part, pour ne pas les mêler au code de l'application ni aux tests Vitest.
+  "extends": "../../tsconfig.base.json",
+  "include": ["**/*.ts"],
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "types": ["cypress", "node"],
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true
+  }
+}

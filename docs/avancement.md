@@ -151,6 +151,7 @@ terminé.
 | Factories / fixtures (`test/fixtures.ts`)             | ✅   |
 | Tests sur toutes les features API                     | ✅   |
 | e2e dans la CI (job `e2e`, MySQL jetable)             | ✅   |
+| Cypress — 5 parcours front + API réelle, job CI       | ✅   |
 | Guide de tests (`setup-tests` 1.1 / 1.2)              | ❌   |
 
 **e2e dans la CI** (2026-09-13) : job `e2e` après `verify`, MySQL 8.4 en service,
@@ -158,6 +159,15 @@ terminé.
 (6.2) : décision de tenir la barrière **avant chaque push** (verify + tests + e2e en
 local). Au passage, `verify` lance désormais `typecheck` avant `lint` : sans les types
 générés par `react-router typegen`, le lint échouait en CI alors qu'il passait en local.
+
+**Cypress** (2026-09-13) : cinq parcours sur le vrai front et la vraie API
+(`client/cypress/e2e/`) — inscription puis connexion, avis publié puis supprimé,
+recette créée par un modérateur et retrouvée au catalogue, rôle changé par un
+administrateur, panneau refusé à un visiteur. `npm run cypress:prepare` migre et sème
+la base de TEST, `npm run test:cypress` démarre l'API (port 3100) et le front (port 5174) à part du développement, puis lance les parcours. Chaque parcours crée ses
+propres comptes et recettes et les supprime. Job `cypress` dans la CI, captures
+d'écran publiées en cas d'échec. Seule tolérance : l'erreur d'hydratation que
+provoque l'injection de scripts par Cypress, absente de tout vrai navigateur.
 
 **Reste** : le guide de tests, optionnel — l'infra s'imite par l'exemple.
 
@@ -288,7 +298,6 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Écrans non conformes aux maquettes             | voir `docs/ecarts-maquettes.md`                                                                                    |
 | Rien ne garde `@recipe/types` aligné sur l'API | un e2e affirmant la forme de `GET /recettes/:id` ; la dérive découverte le 2026-09-11 n'avait été révélée par rien |
-| Pas de tests e2e du front                      | brancher **Cypress** sur les parcours principaux (front + API réelle), puis l'ajouter à la CI                      |
 
 ### Reporté sciemment (décidé, pas oublié)
 

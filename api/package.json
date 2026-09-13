@@ -19,6 +19,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "seed": "ts-node src/seeds/seed.ts",
     "seed:exemples": "ts-node src/seeds/seed-exemples.ts",
+    "seed:exemples:test": "cross-env UTILISER_BASE_DE_TEST=1 ts-node src/seeds/seed-exemples.ts 12",
+    "start:cypress": "cross-env UTILISER_BASE_DE_TEST=1 PORT=3100 FRONT_ORIGIN=http://localhost:5174 THROTTLER_LIMIT=10000 nest start",
     "typeorm": "typeorm-ts-node-commonjs -d src/config/data-source.ts",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:generate": "npm run typeorm -- migration:generate",

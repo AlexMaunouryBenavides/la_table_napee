@@ -17,7 +17,12 @@
     "knip": "knip",
     "jscpd": "jscpd api/src api/test client/app packages/types/src",
     "verify": "npm run format:check && npm run typecheck && npm run lint && npm run knip && npm run jscpd",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cypress:prepare": "npm run migration:run:test --workspace api && npm run seed:exemples:test --workspace api",
+    "cypress:api": "npm run start:cypress --workspace api",
+    "cypress:client": "npm run dev:cypress --workspace client",
+    "cypress:run": "npm run cypress:run --workspace client",
+    "test:cypress": "start-server-and-test cypress:api http-get://localhost:3100/api/recettes cypress:client http://localhost:5174 cypress:run"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
@@ -35,6 +40,7 @@
     "knip": "^6.16.0",
     "lint-staged": "^17.0.7",
     "prettier": "^3.8.3",
+    "start-server-and-test": "^3.0.12",
     "typescript-eslint": "^8.60.1"
   },
   "lint-staged": {

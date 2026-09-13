@@ -5,3 +5,7 @@ eng-kit
 
 # Handoff de maquettes : référence de conception locale, pas du code du projet.
 design_handoff_la_table_nappee
+
+# Produits d'une exécution Cypress : captures d'échec et téléchargements.
+client/cypress/screenshots
+client/cypress/downloads
