@@ -1,40 +1,62 @@
 import type { Composition, Recette } from '@recipe/types';
-import { Link } from 'react-router';
+import { data, Link } from 'react-router';
 
-import { obtenirRecette } from '../acces-api/recettes';
+import { ErreurApi } from '../acces-api/erreur-api';
 import { Etoiles } from '../composants/etoiles';
 import { executerActionAvis, type EchecAvis } from '../recette/action-avis';
 import { Etapes, VideoDeLaRecette } from '../recette/preparation';
 import { formaterQuantite, libelleUnite } from '../recette/quantites';
+import {
+  recettesOntChange,
+  requeteRecette,
+  useRecette,
+} from '../recette/requete-recette';
 import { SectionsRecette, TitreDeSection } from '../recette/sections-recette';
 import { ZoneAvis } from '../recette/zone-avis';
+import { clientRequetes } from '../requetes/client-requetes';
 import { useSession } from '../session-courante';
 
 import type { Route } from './+types/detail-recette';
 
 const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
 
+const INTROUVABLE = 404;
+
 /**
- * Les avis arrivent DANS la réponse : `GET /recettes/:id` les porte déjà, avec leurs
- * auteurs. Un second appel à `/recettes/:id/avis` ne ferait qu'ajouter un
- * aller-retour pour la même donnée.
+ * Remplit le cache avant l'affichage. Une recette absente devient un 404 du routeur,
+ * que l'`ErrorBoundary` affiche en page introuvable — pas en panne inattendue.
  */
 export async function clientLoader({
   params,
-}: Route.ClientLoaderArgs): Promise<Recette> {
-  return obtenirRecette(Number(params.id));
+}: Route.ClientLoaderArgs): Promise<null> {
+  try {
+    await clientRequetes.ensureQueryData(requeteRecette(Number(params.id)));
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi && erreur.statut === INTROUVABLE) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- la forme que React Router attend pour un statut HTTP
+      throw data('Recette introuvable', { status: INTROUVABLE });
+    }
+    throw erreur;
+  }
+  return null;
 }
 
 /**
- * Dépôt, modification et suppression d'un avis. Après une action, React Router
- * rejoue le loader tout seul : la recette et sa note moyenne se rafraîchissent sans
- * qu'on ait à recopier l'état à la main.
+ * Dépôt, modification et suppression d'un avis. Après un succès, les recettes en
+ * cache sont relues : la note moyenne se rafraîchit sans recopier l'état à la main.
  */
 export async function clientAction({
   params,
   request,
 }: Route.ClientActionArgs): Promise<EchecAvis | null> {
-  return executerActionAvis(Number(params.id), await request.formData());
+  const echec = await executerActionAvis(
+    Number(params.id),
+    await request.formData(),
+  );
+  if (echec === null) {
+    await recettesOntChange();
+  }
+  return echec;
 }
 
 function FilDAriane({ recette }: { recette: Recette }) {
@@ -193,10 +215,10 @@ function Ingredients({ compositions }: { compositions: Composition[] }) {
 }
 
 export default function DetailRecette({
-  loaderData,
+  params,
   actionData,
 }: Route.ComponentProps) {
-  const recette = loaderData;
+  const recette = useRecette(Number(params.id));
   const { session } = useSession();
 
   return (
