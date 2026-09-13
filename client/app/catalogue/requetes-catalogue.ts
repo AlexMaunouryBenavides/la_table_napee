@@ -6,14 +6,9 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 
-import {
-  listerCriteresSante,
-  listerNationalites,
-  listerRegimes,
-  listerTypesAliment,
-} from '../acces-api/categories';
 import { ErreurApi } from '../acces-api/erreur-api';
 import { listerRecettes } from '../acces-api/recettes';
+import { requeteCategorie } from '../requetes/categories';
 import { clientRequetes } from '../requetes/client-requetes';
 
 import type { Referentiels } from './filtres-actifs';
@@ -38,19 +33,10 @@ function requeteRecettes(criteres: URLSearchParams) {
  * désactive son filtre, il ne fait pas tomber les trois autres.
  */
 const REQUETES_REFERENTIELS = [
-  queryOptions({ queryKey: ['categories', 'regimes'], queryFn: listerRegimes }),
-  queryOptions({
-    queryKey: ['categories', 'criteres-sante'],
-    queryFn: listerCriteresSante,
-  }),
-  queryOptions({
-    queryKey: ['categories', 'types-aliment'],
-    queryFn: listerTypesAliment,
-  }),
-  queryOptions({
-    queryKey: ['categories', 'nationalites'],
-    queryFn: listerNationalites,
-  }),
+  requeteCategorie('regimes'),
+  requeteCategorie('criteres-sante'),
+  requeteCategorie('types-aliment'),
+  requeteCategorie('nationalites'),
 ] as const;
 
 /** La liste et les référentiels partent ENSEMBLE : aucun n'attend l'autre. */

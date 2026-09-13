@@ -1,10 +1,13 @@
 import type { Categorie } from '@recipe/types';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
-import type { ResultatCategorie } from './actions-categories';
+import { json, simulerApi } from '../../test/api-simulee';
+import { AvecRequetes } from '../../test/requetes';
+import { supprimerEtConfirmer } from '../../test/suppression-confirmee';
+
 import { EcranCategories } from './ecran-categories';
 import { ressourceDepuis } from './ressources-categories';
 
@@ -23,11 +26,9 @@ const COMPTEURS = {
 function rendre({
   valeurs = REGIMES,
   compteurs = COMPTEURS,
-  action,
 }: {
   valeurs?: Categorie[];
   compteurs?: Record<string, number>;
-  action?: () => Promise<ResultatCategorie> | ResultatCategorie;
 } = {}) {
   const ressource = ressourceDepuis('regimes');
 
@@ -35,24 +36,17 @@ function rendre({
     throw new Error('la ressource de test doit exister');
   }
 
-  const routeur = createMemoryRouter(
-    [
-      {
-        path: '/panneau/categories/:ressource',
-        element: (
-          <EcranCategories
-            ressource={ressource}
-            valeurs={valeurs}
-            compteurs={compteurs}
-          />
-        ),
-        action: action ?? (() => null),
-      },
-    ],
-    { initialEntries: ['/panneau/categories/regimes'] },
+  render(
+    <MemoryRouter initialEntries={['/panneau/categories/regimes']}>
+      <AvecRequetes>
+        <EcranCategories
+          ressource={ressource}
+          valeurs={valeurs}
+          compteurs={compteurs}
+        />
+      </AvecRequetes>
+    </MemoryRouter>,
   );
-
-  render(<RouterProvider router={routeur} />);
 }
 
 const ligneDe = (nom: string): HTMLElement =>
@@ -109,27 +103,40 @@ describe('EcranCategories — la ressource vide', () => {
 
 describe('EcranCategories — les refus', () => {
   it('affiche le refus sur sa ligne, avec le chemin de sortie', async () => {
-    rendre({
-      action: () => ({
-        cible: '3',
-        succes: false,
-        message: 'Cette catégorie est encore utilisée',
-        versRecettes: '/recettes?regime=3',
-      }),
+    simulerApi({
+      '/regimes/3': () =>
+        json(409, {
+          statusCode: 409,
+          message: 'Cette catégorie est encore utilisée',
+        }),
     });
+    rendre();
 
-    await userEvent.click(
-      within(ligneDe('Végan')).getByRole('button', { name: /supprimer/i }),
-    );
-    await userEvent.click(
-      within(screen.getByRole('dialog')).getByRole('button', {
-        name: /supprimer le régime/i,
-      }),
-    );
+    await supprimerEtConfirmer('Végan', /supprimer le régime/i);
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/utilisée/i);
     expect(
       screen.getByRole('link', { name: /voir les recettes/i }),
     ).toHaveAttribute('href', '/recettes?regime=3');
+  });
+
+  it('dit un nom déjà pris SOUS le champ, et garde la saisie', async () => {
+    simulerApi({
+      '/regimes': () =>
+        json(409, { statusCode: 409, message: 'Ce nom est déjà utilisé' }),
+    });
+    rendre();
+
+    await userEvent.type(screen.getByLabelText(/nom/i), 'Végan');
+    await userEvent.click(screen.getByRole('button', { name: /ajouter/i }));
+
+    expect(
+      await screen.findByText('Ce nom est déjà utilisé'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/nom/i)).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+    expect(screen.getByLabelText(/nom/i)).toHaveValue('Végan');
   });
 });

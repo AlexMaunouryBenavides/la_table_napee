@@ -1,6 +1,6 @@
 import type { Categorie } from '@recipe/types';
-import { useState } from 'react';
-import { Link, NavLink, useFetcher } from 'react-router';
+import { useState, type FormEvent } from 'react';
+import { Link, NavLink } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
@@ -9,14 +9,42 @@ import { EtatVide } from '../composants/etat-vide';
 import { ModaleConfirmation } from '../composants/modale-confirmation';
 import { Tableau } from '../composants/tableau';
 
-import { CIBLE_CREATION, type ResultatCategorie } from './actions-categories';
+import {
+  type EcritureCategorie,
+  executerCreation,
+  executerRenommage,
+  executerSuppressionCategorie,
+  type ResultatCategorie,
+  useEcritureCategorie,
+} from './mutations-categories';
 import { RESSOURCES, type Ressource } from './ressources-categories';
 
 const COLONNES = ['Nom', 'Actions'];
 const LONGUEUR_MIN_NOM = 2;
 const CELLULE = 'px-4 py-3.5';
 
-type Fetcher = ReturnType<typeof useFetcher<ResultatCategorie>>;
+function nomSaisi(formulaire: HTMLFormElement): string {
+  const nom = new FormData(formulaire).get('nom');
+
+  return typeof nom === 'string' ? nom : '';
+}
+
+/** Sans `id`, l'envoi crée ; avec, il renomme cette catégorie. */
+function envoiDuNom(
+  ressource: Ressource,
+  ecriture: EcritureCategorie,
+  id: number | undefined,
+) {
+  return (evenement: FormEvent<HTMLFormElement>) => {
+    evenement.preventDefault();
+    const nom = nomSaisi(evenement.currentTarget);
+    ecriture.mutate(() =>
+      id === undefined
+        ? executerCreation(ressource.cle, nom)
+        : executerRenommage(ressource.cle, id, nom),
+    );
+  };
+}
 
 function Onglets({ compteurs }: { compteurs: Record<string, number> }) {
   return (
@@ -71,7 +99,7 @@ function Retour({ retour }: { retour: ResultatCategorie }) {
 }
 
 /**
- * Le champ s'appelle TOUJOURS `nom` dans la requête — c'est ce que l'action lit —
+ * Le champ s'appelle TOUJOURS `nom` dans le formulaire — c'est ce que l'envoi lit —
  * mais son `id` doit rester unique sur la page, une ligne par catégorie. Les deux ne
  * peuvent donc pas être la même valeur, ce que `Champ` suppose.
  */
@@ -108,46 +136,41 @@ function ChampNom({
   );
 }
 
+/** Sans `id`, le formulaire crée ; avec, il renomme cette catégorie. */
 function FormulaireDeNom({
   ressource,
   valeur,
-  fetcher,
-  intention,
+  ecriture,
   id,
   libelleEnvoi,
   surAnnulation,
 }: {
   ressource: Ressource;
   valeur: string;
-  fetcher: Fetcher;
-  intention: 'creation' | 'renommage';
+  ecriture: EcritureCategorie;
   id?: number;
   libelleEnvoi: string;
   surAnnulation?: () => void;
 }) {
-  const identifiant = `nom-${intention}-${String(id ?? 0)}`;
-  const creation = intention === 'creation';
+  const creation = id === undefined;
+  const identifiant = creation ? 'nom-creation' : `nom-renommage-${String(id)}`;
 
   return (
-    <fetcher.Form
-      method="post"
+    <form
+      onSubmit={envoiDuNom(ressource, ecriture, id)}
       className={creation ? 'grid gap-4' : 'flex flex-wrap items-end gap-2'}
     >
-      <input type="hidden" name="intention" value={intention} />
-      <input type="hidden" name="ressource" value={ressource.cle} />
-      {id !== undefined && <input type="hidden" name="id" value={id} />}
-
       <ChampNom
         identifiant={identifiant}
-        valeur={fetcher.data?.saisie ?? valeur}
-        erreur={fetcher.data?.champNom}
+        valeur={valeur}
+        erreur={ecriture.data?.champNom}
       />
 
       <Bouton
         type="submit"
         variante="primaire"
         taille={creation ? 'md' : 'sm'}
-        chargement={fetcher.state !== 'idle'}
+        chargement={ecriture.isPending}
         className={creation ? 'w-full' : ''}
       >
         {libelleEnvoi}
@@ -158,7 +181,7 @@ function FormulaireDeNom({
           Annuler
         </Bouton>
       )}
-    </fetcher.Form>
+    </form>
   );
 }
 
@@ -211,14 +234,14 @@ function ModaleSuppression({
 function CellulesCategorie({
   categorie,
   ressource,
-  fetcher,
+  ecriture,
   enEdition,
   surEdition,
   surSuppression,
 }: {
   categorie: Categorie;
   ressource: Ressource;
-  fetcher: Fetcher;
+  ecriture: EcritureCategorie;
   enEdition: boolean;
   surEdition: (enEdition: boolean) => void;
   surSuppression: () => void;
@@ -232,8 +255,7 @@ function CellulesCategorie({
           <FormulaireDeNom
             ressource={ressource}
             valeur={categorie.nom}
-            fetcher={fetcher}
-            intention="renommage"
+            ecriture={ecriture}
             id={categorie.id}
             libelleEnvoi="Enregistrer"
             surAnnulation={() => {
@@ -258,15 +280,6 @@ function CellulesCategorie({
   );
 }
 
-const suppressionDe = (
-  categorie: Categorie,
-  ressource: Ressource,
-): Record<string, string> => ({
-  intention: 'suppression',
-  ressource: ressource.cle,
-  id: String(categorie.id),
-});
-
 function LigneCategorie({
   categorie,
   ressource,
@@ -274,7 +287,7 @@ function LigneCategorie({
   categorie: Categorie;
   ressource: Ressource;
 }) {
-  const fetcher = useFetcher<ResultatCategorie>();
+  const ecriture = useEcritureCategorie();
   const [enEdition, setEnEdition] = useState(false);
   const [modaleOuverte, setModaleOuverte] = useState(false);
 
@@ -283,7 +296,7 @@ function LigneCategorie({
       <CellulesCategorie
         categorie={categorie}
         ressource={ressource}
-        fetcher={fetcher}
+        ecriture={ecriture}
         enEdition={enEdition}
         surEdition={setEnEdition}
         surSuppression={() => {
@@ -291,10 +304,10 @@ function LigneCategorie({
         }}
       />
 
-      {fetcher.data !== undefined && (
+      {ecriture.data !== undefined && (
         <tr>
           <td colSpan={COLONNES.length} className="px-4 pb-3">
-            <Retour retour={fetcher.data} />
+            <Retour retour={ecriture.data} />
           </td>
         </tr>
       )}
@@ -308,9 +321,9 @@ function LigneCategorie({
           }}
           surConfirmation={() => {
             setModaleOuverte(false);
-            void fetcher.submit(suppressionDe(categorie, ressource), {
-              method: 'post',
-            });
+            ecriture.mutate(() =>
+              executerSuppressionCategorie(ressource.cle, categorie.id),
+            );
           }}
         />
       )}
@@ -319,7 +332,7 @@ function LigneCategorie({
 }
 
 function Ajout({ ressource }: { ressource: Ressource }) {
-  const fetcher = useFetcher<ResultatCategorie>();
+  const ecriture = useEcritureCategorie();
 
   return (
     <section className="grid gap-3 rounded-md border border-trait bg-craie p-5.5">
@@ -331,14 +344,11 @@ function Ajout({ ressource }: { ressource: Ressource }) {
       <FormulaireDeNom
         ressource={ressource}
         valeur=""
-        fetcher={fetcher}
-        intention="creation"
+        ecriture={ecriture}
         libelleEnvoi="Ajouter"
       />
 
-      {fetcher.data !== undefined && fetcher.data.cible === CIBLE_CREATION && (
-        <Retour retour={fetcher.data} />
-      )}
+      {ecriture.data !== undefined && <Retour retour={ecriture.data} />}
     </section>
   );
 }
