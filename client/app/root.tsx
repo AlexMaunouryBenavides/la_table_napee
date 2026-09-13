@@ -1,3 +1,4 @@
+import { QueryClientProvider } from '@tanstack/react-query';
 import {
   isRouteErrorResponse,
   Links,
@@ -8,11 +9,11 @@ import {
 } from 'react-router';
 
 import type { Route } from './+types/root';
-import { chargerSession } from './acces-api/session';
 import { ErreurInattendue } from './composants/erreur-inattendue';
 import { Squelette } from './composants/squelette';
 import { PageIntrouvable } from './introuvable/page-introuvable';
-import type { EtatSession } from './session-courante';
+import { clientRequetes } from './requetes/client-requetes';
+import { requeteSession } from './requetes/session';
 
 import './app.css';
 
@@ -35,18 +36,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Un seul appel à `GET /utilisateurs/moi` pour toute l'application.
+ * La session est chargée avant le premier rendu, dans le cache partagé.
  *
- * Une panne de cet appel ne fait PAS tomber le site : le catalogue se lit sans être
- * connecté, et la vitrine doit survivre à une session indisponible. On distingue donc
- * « visiteur » (l'API a répondu 401) de « on ne sait pas » (l'API n'a pas répondu).
+ * Une panne de cet appel ne fait PAS tomber le site : `prefetchQuery` ne lève jamais.
+ * Le catalogue se lit sans être connecté, et `useSession` distingue « visiteur » (l'API
+ * a répondu 401) de « on ne sait pas » (l'API n'a pas répondu).
  */
-export async function clientLoader(): Promise<EtatSession> {
-  try {
-    return { session: await chargerSession(), sessionIndisponible: false };
-  } catch {
-    return { session: null, sessionIndisponible: true };
-  }
+export async function clientLoader(): Promise<null> {
+  await clientRequetes.prefetchQuery(requeteSession);
+  return null;
 }
 
 /**
@@ -62,7 +60,11 @@ export function HydrateFallback() {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <QueryClientProvider client={clientRequetes}>
+      <Outlet />
+    </QueryClientProvider>
+  );
 }
 
 const INTROUVABLE = 404;

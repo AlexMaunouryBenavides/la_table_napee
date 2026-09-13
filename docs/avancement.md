@@ -240,8 +240,8 @@ par « trouver ou créer »), et le téléversement d'image (l'API attend une UR
 - **SPA (`ssr: false`)** : l'auth passe par cookie `httpOnly` sur une autre origine.
   Dans le navigateur, `credentials: 'include'` suffit ; en SSR il aurait fallu relayer
   chaque `Set-Cookie`, rotation comprise. Le SEO se rattrapera par `prerender`.
-- **Pas de react-query** : les `clientLoader` tiennent l'état serveur. Si un état
-  transverse apparaît un jour, ce sera **Zustand**.
+- **Passage à TanStack Query + Zustand décidé (2026-09-13)** : jusqu'ici les
+  `clientLoader` tenaient l'état serveur ; migration à faire (voir « Reste à faire »).
 - Le refresh vit dans `appeler-api.ts`, avec une **promesse partagée** : deux appels
   parallèles ne déclenchent qu'un seul rafraîchissement, sinon la rotation invalide la
   famille de jetons et déconnecte l'utilisateur.
@@ -284,6 +284,8 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Écrans non conformes aux maquettes             | voir `docs/ecarts-maquettes.md`                                                                                    |
 | Rien ne garde `@recipe/types` aligné sur l'API | un e2e affirmant la forme de `GET /recettes/:id` ; la dérive découverte le 2026-09-11 n'avait été révélée par rien |
+| État serveur du front sans TanStack Query      | migrer les `clientLoader`/`clientAction` vers TanStack Query ; Zustand pour l'état client (décidé le 2026-09-13)   |
+| Pas de tests e2e du front                      | brancher **Cypress** sur les parcours principaux (front + API réelle), puis l'ajouter à la CI                      |
 
 ### Reporté sciemment (décidé, pas oublié)
 

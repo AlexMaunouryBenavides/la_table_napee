@@ -1,11 +1,9 @@
-import { useNavigate, useRevalidator, useRouteLoaderData } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
 
 import { seDeconnecter } from './acces-api/authentification';
 import type { Session } from './acces-api/session';
-
-// L'identifiant que React Router donne à la route racine : c'est par lui que les
-// enfants retrouvent les données de son loader.
-const ID_ROUTE_RACINE = 'root';
+import { requeteSession, sessionAChange } from './requetes/session';
 
 export type EtatSession = {
   /** `null` = visiteur. Le rôle vient du serveur, jamais d'une valeur écrite ici. */
@@ -19,30 +17,25 @@ export type EtatSession = {
 };
 
 /**
- * La session est chargée une seule fois, par la racine. Tout écran la lit ici plutôt
- * que de refaire l'appel — et comme la racine a fini de charger avant que ses enfants
- * ne soient rendus, elle est toujours connue à ce stade.
+ * La session est préchargée par la racine, puis lue ici dans le cache : tous les
+ * composants qui la demandent partagent le même appel.
  */
 export function useSession(): EtatSession {
-  return (
-    useRouteLoaderData<EtatSession>(ID_ROUTE_RACINE) ?? {
-      session: null,
-      sessionIndisponible: true,
-    }
-  );
+  const { data } = useQuery(requeteSession);
+
+  // Pas de donnée = panne, ou chargement pas encore fini : dans les deux cas on ne
+  // sait pas qui est là, et ce n'est pas un visiteur.
+  return data === undefined
+    ? { session: null, sessionIndisponible: true }
+    : { session: data, sessionIndisponible: false };
 }
 
 /**
- * Déconnecte, puis REVALIDE.
- *
- * Le loader racine ne se rejoue pas de lui-même sur une navigation impérative : sans
- * la revalidation, l'en-tête continuerait d'afficher le pseudo d'une session déjà
- * close. On revalide même si l'appel a échoué — la revalidation dit alors la vérité,
- * à savoir que la session tient toujours.
+ * Déconnecte, puis relit la session — même si l'appel a échoué : la relecture dit
+ * alors la vérité, à savoir que la session tient toujours.
  */
 export function useDeconnexion(): () => void {
   const naviguer = useNavigate();
-  const { revalidate } = useRevalidator();
 
   return () => {
     void (async () => {
@@ -50,7 +43,7 @@ export function useDeconnexion(): () => void {
         await seDeconnecter();
         await naviguer('/');
       } finally {
-        await revalidate();
+        await sessionAChange();
       }
     })();
   };
