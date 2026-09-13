@@ -1,7 +1,7 @@
 import type { Page, RecetteResume } from '@recipe/types';
 import { render, screen, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { TableauDeBord } from './chargement-tableau-de-bord';
 import { EcranTableauDeBord } from './tableau-de-bord';
@@ -45,7 +45,13 @@ function rendre(
     [
       {
         path: '/panneau',
-        element: <EcranTableauDeBord donnees={donnees} role={role} />,
+        element: (
+          <EcranTableauDeBord
+            donnees={donnees}
+            role={role}
+            surReessai={vi.fn()}
+          />
+        ),
       },
     ],
     { initialEntries: ['/panneau'] },

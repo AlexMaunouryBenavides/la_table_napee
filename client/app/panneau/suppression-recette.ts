@@ -1,5 +1,8 @@
+import { useMutation } from '@tanstack/react-query';
+
 import { ErreurApi } from '../acces-api/erreur-api';
 import { supprimerRecette } from '../acces-api/recettes';
+import { recettesOntChange } from '../recette/requete-recette';
 
 export type ResultatSuppression = {
   id: number;
@@ -22,10 +25,8 @@ const SANS_DROIT =
  * une suppression réussie.
  */
 export async function executerSuppression(
-  donnees: FormData,
+  id: number,
 ): Promise<ResultatSuppression> {
-  const id = Number(donnees.get('id'));
-
   try {
     await supprimerRecette(id);
 
@@ -45,4 +46,20 @@ export async function executerSuppression(
       message: leve.statut === REFUSE ? SANS_DROIT : leve.message,
     };
   }
+}
+
+/**
+ * Une mutation PAR ligne : l'échec de l'une ne touche qu'elle. Une recette supprimée
+ * fait relire TOUTES les recettes en cache — cette liste, le tableau de bord, mais
+ * aussi le catalogue public et l'accueil, qui la montreraient encore.
+ */
+export function useSupprimerRecette(id: number) {
+  return useMutation({
+    mutationFn: () => executerSuppression(id),
+    onSuccess: async (resultat) => {
+      if (resultat.supprime) {
+        await recettesOntChange();
+      }
+    },
+  });
 }

@@ -1,44 +1,48 @@
 import type { RoleUtilisateur } from '@recipe/types';
+import { useQuery } from '@tanstack/react-query';
 
-import { chargerSession } from '../../acces-api/session';
-import {
-  chargerTableauDeBord,
-  type TableauDeBord,
-} from '../../panneau/chargement-tableau-de-bord';
+import { requeteTableauDeBord } from '../../panneau/requetes-panneau';
 import { EcranTableauDeBord } from '../../panneau/tableau-de-bord';
-
-import type { Route } from './+types/accueil';
-
-type DonneesPanneau = { donnees: TableauDeBord; role: RoleUtilisateur };
+import { clientRequetes } from '../../requetes/client-requetes';
+import { requeteSession } from '../../requetes/session';
+import { useSession } from '../../session-courante';
 
 /**
- * Le rôle décide des statistiques qu'on a le DROIT de demander, il vient donc du
- * serveur. Les `clientLoader` de cette version de React Router ne reçoivent pas les
- * données du loader racine : on relit la session plutôt que de la supposer — un appel
- * de plus, aucune devinette sur les droits.
- *
- * Sans session il n'y a rien à charger : la coquille affiche le refus à la place du
- * contenu, et ce composant n'est alors jamais rendu.
+ * Le rôle décide des statistiques qu'on a le DROIT de demander : il vient de la
+ * session du serveur, lue dans le cache que la racine a rempli.
  */
-export async function clientLoader(): Promise<DonneesPanneau | null> {
-  const session = await chargerSession();
+export async function clientLoader(): Promise<null> {
+  const session = await clientRequetes.ensureQueryData(requeteSession);
 
-  if (session === null) {
-    return null;
+  if (session !== null) {
+    await clientRequetes.prefetchQuery(requeteTableauDeBord(session.role));
   }
-
-  return {
-    donnees: await chargerTableauDeBord(session.role),
-    role: session.role,
-  };
+  return null;
 }
 
-export default function PanneauAccueil({ loaderData }: Route.ComponentProps) {
-  if (loaderData === null) {
+function TableauDeBordDu({ role }: { role: RoleUtilisateur }) {
+  const tableau = useQuery(requeteTableauDeBord(role));
+
+  if (tableau.data === undefined) {
     return null;
   }
 
   return (
-    <EcranTableauDeBord donnees={loaderData.donnees} role={loaderData.role} />
+    <EcranTableauDeBord
+      donnees={tableau.data}
+      role={role}
+      surReessai={() => {
+        // `refetch` passe outre la fraîcheur : un échec vient d'être affiché, on
+        // redemande vraiment.
+        void tableau.refetch();
+      }}
+    />
   );
+}
+
+/** Sans session, la coquille affiche le refus à la place : rien à rendre ici. */
+export default function PanneauAccueil() {
+  const { session } = useSession();
+
+  return session === null ? null : <TableauDeBordDu role={session.role} />;
 }

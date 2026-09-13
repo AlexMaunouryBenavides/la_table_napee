@@ -1,6 +1,6 @@
 import type { Page, RecetteResume } from '@recipe/types';
 import { useState } from 'react';
-import { Link, useFetcher, useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 
 import { avecCritere } from '../acces-api/criteres-url';
 import { Bandeau } from '../composants/bandeau';
@@ -18,7 +18,7 @@ import { LIBELLES_DIFFICULTE, LIBELLES_TYPE } from '../libelles';
 
 import { LienNouvelleRecette } from './lien-nouvelle-recette';
 import { CREATION_RECETTE } from './raccourcis';
-import type { ResultatSuppression } from './suppression-recette';
+import { useSupprimerRecette } from './suppression-recette';
 
 const COLONNES = [
   'Recette',
@@ -112,14 +112,14 @@ const LIEN_FANTOME_SM =
 
 function ActionsDeLigne({
   recette,
-  fetcher,
+  enCours,
   surSuppression,
 }: {
   recette: RecetteResume;
-  fetcher: ReturnType<typeof useFetcher<ResultatSuppression>>;
+  enCours: boolean;
   surSuppression: () => void;
 }) {
-  if (fetcher.state !== 'idle') {
+  if (enCours) {
     // La ligne ne disparaît PAS avant la réponse : une ligne qui s'en va puis revient
     // est pire qu'une ligne qui attend.
     return <span className="text-sm text-encre-70">Suppression…</span>;
@@ -193,9 +193,9 @@ function ModaleSuppression({
 }
 
 function LigneRecette({ recette }: { recette: RecetteResume }) {
-  const fetcher = useFetcher<ResultatSuppression>();
+  const suppression = useSupprimerRecette(recette.id);
   const [modaleOuverte, setModaleOuverte] = useState(false);
-  const retour = fetcher.data;
+  const retour = suppression.data;
   const enEchec = retour !== undefined && !retour.supprime;
 
   return (
@@ -209,7 +209,7 @@ function LigneRecette({ recette }: { recette: RecetteResume }) {
         <td className={CELLULE}>
           <ActionsDeLigne
             recette={recette}
-            fetcher={fetcher}
+            enCours={suppression.isPending}
             surSuppression={() => {
               setModaleOuverte(true);
             }}
@@ -235,7 +235,7 @@ function LigneRecette({ recette }: { recette: RecetteResume }) {
           }}
           surConfirmation={() => {
             setModaleOuverte(false);
-            void fetcher.submit({ id: String(recette.id) }, { method: 'post' });
+            suppression.mutate();
           }}
         />
       )}

@@ -1,6 +1,6 @@
 import type { Page, RecetteResume, RoleUtilisateur } from '@recipe/types';
 import type { ReactNode } from 'react';
-import { Link, useRevalidator } from 'react-router';
+import { Link } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
@@ -17,18 +17,9 @@ import { CREATION_RECETTE, raccourcisPour } from './raccourcis';
 const CATEGORIES = '/panneau/categories/regimes';
 const FORMAT_NOMBRE = new Intl.NumberFormat('fr-FR');
 
-function Reessayer() {
-  const { revalidate } = useRevalidator();
-
+function Reessayer({ surReessai }: { surReessai: () => void }) {
   return (
-    <Bouton
-      variante="texte"
-      taille="sm"
-      className="!px-0"
-      onClick={() => {
-        void revalidate();
-      }}
-    >
+    <Bouton variante="texte" taille="sm" className="!px-0" onClick={surReessai}>
       Réessayer
     </Bouton>
   );
@@ -38,9 +29,11 @@ function Reessayer() {
 function TuileStat({
   libelle,
   valeur,
+  surReessai,
 }: {
   libelle: string;
   valeur: number | 'echec';
+  surReessai: () => void;
 }) {
   const enEchec = valeur === 'echec';
 
@@ -58,14 +51,20 @@ function TuileStat({
       </p>
       {enEchec && (
         <div>
-          <Reessayer />
+          <Reessayer surReessai={surReessai} />
         </div>
       )}
     </div>
   );
 }
 
-function Compteurs({ donnees }: { donnees: TableauDeBord }) {
+function Compteurs({
+  donnees,
+  surReessai,
+}: {
+  donnees: TableauDeBord;
+  surReessai: () => void;
+}) {
   const recettes = donnees.recettes;
 
   return (
@@ -73,11 +72,16 @@ function Compteurs({ donnees }: { donnees: TableauDeBord }) {
       <TuileStat
         libelle="Recettes publiées"
         valeur={recettes === 'echec' ? 'echec' : recettes.total}
+        surReessai={surReessai}
       />
       {/* Pas de tuile du tout pour un modérateur : afficher un échec laisserait
           croire à une panne, alors que c'est un droit qui manque. */}
       {donnees.comptes !== 'non-demande' && (
-        <TuileStat libelle="Comptes" valeur={donnees.comptes} />
+        <TuileStat
+          libelle="Comptes"
+          valeur={donnees.comptes}
+          surReessai={surReessai}
+        />
       )}
     </div>
   );
@@ -212,9 +216,11 @@ function DernieresRecettes({ page }: { page: Page<RecetteResume> }) {
 export function EcranTableauDeBord({
   donnees,
   role,
+  surReessai,
 }: {
   donnees: TableauDeBord;
   role: RoleUtilisateur;
+  surReessai: () => void;
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -224,14 +230,14 @@ export function EcranTableauDeBord({
         action={<LienNouvelleRecette />}
       />
 
-      <Compteurs donnees={donnees} />
+      <Compteurs donnees={donnees} surReessai={surReessai} />
 
       <div className="grid items-start gap-6 md:grid-cols-5">
         <div className="md:col-span-3">
           {donnees.recettes === 'echec' ? (
             <p className="text-base text-encre-70">
               Les dernières recettes n’ont pas pu être chargées. La navigation
-              reste utilisable. <Reessayer />
+              reste utilisable. <Reessayer surReessai={surReessai} />
             </p>
           ) : (
             <DernieresRecettes page={donnees.recettes} />

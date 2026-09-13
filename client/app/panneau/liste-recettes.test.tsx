@@ -1,70 +1,51 @@
 import type { Page, RecetteResume } from '@recipe/types';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
+import { json, simulerApi } from '../../test/api-simulee';
+import { pageDe, resumeDe } from '../../test/recette-exemple';
+import { AvecRequetes } from '../../test/requetes';
+
 import { EcranListeRecettes } from './liste-recettes';
-import type { ResultatSuppression } from './suppression-recette';
 
-function recette(id: number, titre: string): RecetteResume {
-  return {
-    id,
-    titre,
-    image: `${String(id)}.jpg`,
-    difficulte: 'moyen',
-    typeRecette: 'plat',
-    tempsPreparation: 30,
-    tempsCuisson: 40,
-    portions: 4,
-    nationalite: 'Française',
-    noteMoyenne: 4.8,
-  };
-}
-
-const TARTE = recette(12, 'Tarte fine aux tomates confites');
-
-function page(donnees: RecetteResume[]): Page<RecetteResume> {
-  return { donnees, total: donnees.length, page: 1, limite: 12 };
-}
+const TARTE = resumeDe(12, 'Tarte fine aux tomates confites');
+const GLACE = resumeDe(13, 'Glace au basilic');
 
 type Options = {
   resultats?: Page<RecetteResume> | null;
   chargement?: boolean;
   url?: string;
-  action?: () => Promise<ResultatSuppression> | ResultatSuppression;
 };
 
 function rendre({
-  resultats = page([TARTE]),
+  resultats = pageDe([TARTE]),
   chargement = false,
   url = '/panneau/recettes',
-  action,
 }: Options = {}) {
-  const routeur = createMemoryRouter(
-    [
-      {
-        path: '/panneau/recettes',
-        element: (
-          <EcranListeRecettes
-            resultats={resultats}
-            echec={null}
-            chargement={chargement}
-          />
-        ),
-        action: action ?? (() => null),
-      },
-    ],
-    { initialEntries: [url] },
+  render(
+    <MemoryRouter initialEntries={[url]}>
+      <AvecRequetes>
+        <EcranListeRecettes
+          resultats={resultats}
+          echec={null}
+          chargement={chargement}
+        />
+      </AvecRequetes>
+    </MemoryRouter>,
   );
-
-  render(<RouterProvider router={routeur} />);
 }
 
-async function demanderLaSuppression() {
-  await userEvent.click(screen.getByRole('button', { name: /supprimer/i }));
-
-  return screen.getByRole('dialog');
+async function confirmerLaSuppression(recette: RecetteResume) {
+  await userEvent.click(
+    screen.getByRole('button', { name: `Supprimer ${recette.titre}` }),
+  );
+  await userEvent.click(
+    within(screen.getByRole('dialog')).getByRole('button', {
+      name: /supprimer la recette/i,
+    }),
+  );
 }
 
 describe('EcranListeRecettes — la confirmation', () => {
@@ -73,7 +54,8 @@ describe('EcranListeRecettes — la confirmation', () => {
     // attention. Et la disparition des avis est la conséquence non évidente.
     rendre();
 
-    const modale = await demanderLaSuppression();
+    await userEvent.click(screen.getByRole('button', { name: /supprimer/i }));
+    const modale = screen.getByRole('dialog');
 
     expect(modale).toHaveTextContent(/tarte fine aux tomates confites/i);
     expect(modale).toHaveTextContent(/avis/i);
@@ -82,12 +64,12 @@ describe('EcranListeRecettes — la confirmation', () => {
   it('ne retire pas la ligne avant la réponse', async () => {
     // Pas de suppression optimiste : une ligne qui disparaît puis revient est pire
     // qu'une ligne qui attend.
-    rendre({ action: () => new Promise(() => undefined) });
+    simulerApi({
+      '/recettes/12': () => new Promise<Response>(() => undefined),
+    });
+    rendre();
 
-    const modale = await demanderLaSuppression();
-    await userEvent.click(
-      within(modale).getByRole('button', { name: /supprimer la recette/i }),
-    );
+    await confirmerLaSuppression(TARTE);
 
     expect(await screen.findByText(/suppression…/i)).toBeInTheDocument();
     expect(
@@ -95,30 +77,28 @@ describe('EcranListeRecettes — la confirmation', () => {
     ).toBeInTheDocument();
   });
 
-  it('laisse la ligne en place, signalée, quand la suppression échoue', async () => {
-    rendre({
-      action: () => ({
-        id: 12,
-        supprime: false,
-        message: 'Le service est indisponible.',
-      }),
+  it('signale l’échec sur sa ligne et laisse les autres agissables', async () => {
+    simulerApi({
+      '/recettes/12': () =>
+        json(500, { statusCode: 500, message: 'Le service est indisponible.' }),
     });
+    rendre({ resultats: pageDe([TARTE, GLACE]) });
 
-    const modale = await demanderLaSuppression();
-    await userEvent.click(
-      within(modale).getByRole('button', { name: /supprimer la recette/i }),
-    );
+    await confirmerLaSuppression(TARTE);
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/indisponible/i);
     expect(
       screen.getByText(/tarte fine aux tomates confites/i),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: `Supprimer ${GLACE.titre}` }),
+    ).toBeEnabled();
   });
 });
 
 describe('EcranListeRecettes — les états vides', () => {
   it('distingue un catalogue neuf d’une recherche sans résultat', () => {
-    rendre({ resultats: page([]) });
+    rendre({ resultats: pageDe([]) });
 
     expect(
       screen.getByText(/aucune recette pour l’instant/i),
@@ -127,7 +107,7 @@ describe('EcranListeRecettes — les états vides', () => {
 
   it('propose d’effacer les critères quand c’est la recherche qui ne rend rien', () => {
     rendre({
-      resultats: page([]),
+      resultats: pageDe([]),
       url: '/panneau/recettes?recherche=tartiflette',
     });
 
