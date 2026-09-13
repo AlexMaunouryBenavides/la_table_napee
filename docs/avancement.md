@@ -280,11 +280,10 @@ cookies impose HTTPS, et `FRONT_ORIGIN` doit pointer le domaine réel, jamais `*
 
 ## Dette et écarts repérés
 
-| Point                                          | Quoi en faire                                                                                                                                                                                                                 |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Écrans non conformes aux maquettes             | voir `docs/ecarts-maquettes.md`                                                                                                                                                                                               |
-| Rien ne garde `@recipe/types` aligné sur l'API | un e2e affirmant la forme de `GET /recettes/:id` ; la dérive découverte le 2026-09-11 n'avait été révélée par rien                                                                                                            |
-| Changement de mot de passe : doc ≠ code        | `routes-api.md` § 3.4 annonce que les sessions en cours sont invalidées ; `utilisateurs.service.ts` ne révoque rien. L'écran 6 dit « votre session reste active » (le code fait foi). Trancher : révoquer, ou corriger la doc |
+| Point                                          | Quoi en faire                                                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Écrans non conformes aux maquettes             | voir `docs/ecarts-maquettes.md`                                                                                    |
+| Rien ne garde `@recipe/types` aligné sur l'API | un e2e affirmant la forme de `GET /recettes/:id` ; la dérive découverte le 2026-09-11 n'avait été révélée par rien |
 
 ### Reporté sciemment (décidé, pas oublié)
 

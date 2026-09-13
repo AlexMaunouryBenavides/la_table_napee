@@ -107,11 +107,14 @@ describe('EcranCompte — retours d’action', () => {
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(3);
   });
 
-  it('annonce que la session reste ouverte après un changement de mot de passe', () => {
-    // L'API ne révoque pas les jetons : le dire évite une reconnexion inutile.
+  it('dit que les autres appareils sont déconnectés, et qu’on reste connecté ici', () => {
+    // L'API révoque toutes les sessions puis en rouvre une ici : le dire évite de
+    // croire à une panne quand l'autre appareil demande de se reconnecter.
     rendre({ resultat: { zone: 'mot-de-passe', succes: true } });
 
-    expect(screen.getByRole('status')).toHaveTextContent(/session/i);
+    const statut = screen.getByRole('status');
+    expect(statut).toHaveTextContent(/autres appareils sont déconnectés/i);
+    expect(statut).toHaveTextContent(/restez connecté ici/i);
   });
 });
 

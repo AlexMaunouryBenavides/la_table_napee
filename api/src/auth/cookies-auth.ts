@@ -1,3 +1,4 @@
+import { type ConfigService } from '@nestjs/config';
 import { type CookieOptions, type Response } from 'express';
 
 import { type CoupleDeJetons } from './jetons.service';
@@ -7,6 +8,7 @@ export const COOKIE_RAFRAICHISSEMENT = 'jeton_rafraichissement';
 
 const MS_PAR_MINUTE = 60_000;
 const MS_PAR_JOUR = 86_400_000;
+const ENV_PRODUCTION = 'production';
 
 export interface OptionsCookiesAuth {
   accesMinutes: number;
@@ -15,6 +17,18 @@ export interface OptionsCookiesAuth {
   // où l'on est en http. Déduit de l'environnement, jamais d'une variable à part :
   // une variable serait un jour mise à `false` en production.
   secure: boolean;
+}
+
+/** Une seule lecture de la configuration pour tous les contrôleurs qui posent des
+ *  cookies d'auth : deux copies finiraient par diverger sur `secure`. */
+export function optionsCookiesDepuis(
+  config: ConfigService,
+): OptionsCookiesAuth {
+  return {
+    accesMinutes: config.getOrThrow<number>('ACCES_MINUTES'),
+    rafraichissementJours: config.getOrThrow<number>('RAFRAICHISSEMENT_JOURS'),
+    secure: config.getOrThrow<string>('NODE_ENV') === ENV_PRODUCTION,
+  };
 }
 
 // `cookie-parser` remplit `request.cookies`, mais Express le type en `any`. On le

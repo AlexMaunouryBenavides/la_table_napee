@@ -11,7 +11,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { type Response } from 'express';
 
-import { effacerCookiesAuth } from '../auth/cookies-auth';
+import {
+  effacerCookiesAuth,
+  type OptionsCookiesAuth,
+  optionsCookiesDepuis,
+  poserCookiesAuth,
+} from '../auth/cookies-auth';
 import { type IdentiteRequete } from '../auth/identite-requete';
 import { UtilisateurCourant } from '../auth/utilisateur-courant.decorator';
 
@@ -20,20 +25,17 @@ import { ModifierProfilDto } from './dto/modifier-profil.dto';
 import { Utilisateur } from './entities/utilisateur.entity';
 import { UtilisateursService } from './utilisateurs.service';
 
-const ENV_PRODUCTION = 'production';
-
 // `/moi` plutôt que `/utilisateurs/:id` : sans identifiant dans l'URL, il n'y a rien à
 // falsifier. C'est une décision de sécurité, pas de style (`design/routes-api.md` § 3.4).
 @Controller('utilisateurs/moi')
 export class UtilisateursController {
-  private readonly cookiesSecurises: boolean;
+  private readonly optionsCookies: OptionsCookiesAuth;
 
   constructor(
     private readonly utilisateurs: UtilisateursService,
     config: ConfigService,
   ) {
-    this.cookiesSecurises =
-      config.getOrThrow<string>('NODE_ENV') === ENV_PRODUCTION;
+    this.optionsCookies = optionsCookiesDepuis(config);
   }
 
   @Get()
@@ -50,14 +52,17 @@ export class UtilisateursController {
   }
 
   // Route séparée parce que c'est une opération différente : elle exige l'ancien mot
-  // de passe et invalide les sessions en cours.
+  // de passe et invalide les sessions en cours — puis en rouvre une ICI, dont les
+  // cookies partent avec la réponse.
   @HttpCode(HttpStatus.NO_CONTENT)
   @Patch('mot-de-passe')
-  changerMotDePasse(
+  async changerMotDePasse(
     @UtilisateurCourant() moi: IdentiteRequete,
     @Body() dto: ChangerMotDePasseDto,
+    @Res({ passthrough: true }) reponse: Response,
   ): Promise<void> {
-    return this.utilisateurs.changerMotDePasse(moi.id, dto);
+    const jetons = await this.utilisateurs.changerMotDePasse(moi.id, dto);
+    poserCookiesAuth(reponse, jetons, this.optionsCookies);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -69,6 +74,6 @@ export class UtilisateursController {
     await this.utilisateurs.supprimer(moi.id);
     // Les jetons de rafraîchissement partent en cascade avec la ligne ; le navigateur,
     // lui, garderait ses cookies sans cet effacement.
-    effacerCookiesAuth(reponse, this.cookiesSecurises);
+    effacerCookiesAuth(reponse, this.optionsCookies.secure);
   }
 }

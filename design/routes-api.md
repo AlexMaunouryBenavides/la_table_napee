@@ -122,7 +122,9 @@ Sans identifiant dans l'URL, il n'y a **rien à falsifier** — toute une classe
 vérification. L'identité vient du cookie, qui est signé.
 
 Le changement de mot de passe est une route **séparée** parce que c'est une opération
-différente : elle exige l'ancien mot de passe et invalide les sessions en cours.
+différente : elle exige l'ancien mot de passe et invalide les sessions en cours. Toutes
+tombent, puis une session neuve est rouverte sur l'appareil qui a fait la demande : la
+réponse `204` pose de nouveaux cookies. Les autres appareils devront se reconnecter.
 `400` si l'ancien mot de passe est faux — pas `401`, on est bien authentifié.
 
 ### 3.5 Administration des utilisateurs — `/api/utilisateurs`

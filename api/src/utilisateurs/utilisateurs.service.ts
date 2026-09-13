@@ -10,6 +10,7 @@ import { Not, Repository } from 'typeorm';
 
 import { DepotJetons } from '../auth/depot-jetons';
 import { HachageMotDePasse } from '../auth/hachage-mot-de-passe.service';
+import { type CoupleDeJetons, JetonsService } from '../auth/jetons.service';
 import { PaginationQueryDto } from '../common/dto/pagination.query.dto';
 
 import { ChangerMotDePasseDto } from './dto/changer-mot-de-passe.dto';
@@ -32,6 +33,7 @@ export class UtilisateursService {
     private readonly utilisateurs: Repository<Utilisateur>,
     private readonly hachage: HachageMotDePasse,
     private readonly jetons: DepotJetons,
+    private readonly sessions: JetonsService,
   ) {}
 
   // L'identité vient du cookie signé, jamais de l'URL : il n'y a donc aucun
@@ -59,10 +61,11 @@ export class UtilisateursService {
   }
 
   // 400 et non 401 : l'appelant est bien authentifié, c'est sa saisie qui est fausse.
+  // Renvoie la session rouverte pour l'appareil courant : au contrôleur de la poser.
   async changerMotDePasse(
     id: string,
     dto: ChangerMotDePasseDto,
-  ): Promise<void> {
+  ): Promise<CoupleDeJetons> {
     const utilisateur = await this.trouver(id);
 
     const correspond = await this.hachage.verifier(
@@ -81,6 +84,11 @@ export class UtilisateursService {
     // Changer son mot de passe, c'est souvent réagir à une compromission : les
     // sessions ouvertes ailleurs doivent tomber, pas seulement celle d'ici.
     await this.jetons.revoquerToutesLesFamilles(id);
+
+    // Puis l'appareil qui vient de prouver l'ancien mot de passe reçoit une session
+    // NEUVE. Sans elle, il serait déconnecté sans prévenir au prochain
+    // rafraîchissement, alors que l'écran lui dit que tout s'est bien passé.
+    return this.sessions.emettreNouvelleSession(utilisateur);
   }
 
   // Supprimer le compte ne supprime pas ce qu'il a écrit : la base passe l'auteur des

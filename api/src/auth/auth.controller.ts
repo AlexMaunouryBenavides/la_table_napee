@@ -19,13 +19,13 @@ import {
   effacerCookiesAuth,
   lireCookie,
   type OptionsCookiesAuth,
+  optionsCookiesDepuis,
   poserCookiesAuth,
 } from './cookies-auth';
 import { ConnexionDto } from './dto/connexion.dto';
 import { InscriptionDto } from './dto/inscription.dto';
 import { Public } from './public.decorator';
 
-const ENV_PRODUCTION = 'production';
 const FENETRE_ANTI_BRUTEFORCE_MS = 60_000;
 const TENTATIVES_PAR_FENETRE = 10;
 
@@ -42,13 +42,7 @@ export class AuthController {
     private readonly auth: AuthService,
     config: ConfigService,
   ) {
-    this.optionsCookies = {
-      accesMinutes: config.getOrThrow<number>('ACCES_MINUTES'),
-      rafraichissementJours: config.getOrThrow<number>(
-        'RAFRAICHISSEMENT_JOURS',
-      ),
-      secure: config.getOrThrow<string>('NODE_ENV') === ENV_PRODUCTION,
-    };
+    this.optionsCookies = optionsCookiesDepuis(config);
   }
 
   // 201 par défaut chez Nest : une ressource a bien été créée.

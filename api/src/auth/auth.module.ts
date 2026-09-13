@@ -40,6 +40,7 @@ import { JwtStrategy } from './jwt.strategy';
     // Les services dépendent de l'abstraction ; seul ce câblage connaît MySQL.
     { provide: DepotJetons, useClass: DepotJetonsMysql },
   ],
-  exports: [TypeOrmModule, HachageMotDePasse, DepotJetons],
+  // `JetonsService` sort du module : changer son mot de passe rouvre une session.
+  exports: [TypeOrmModule, HachageMotDePasse, DepotJetons, JetonsService],
 })
 export class AuthModule {}

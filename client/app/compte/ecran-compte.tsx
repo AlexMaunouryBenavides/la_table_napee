@@ -258,7 +258,7 @@ function ZoneMotDePasse({ resultat, envoiEnCours }: RetourDeZone) {
     >
       <Retour
         resultat={resultat}
-        succes="Votre mot de passe est changé. Votre session reste active."
+        succes="Mot de passe changé. Vos autres appareils sont déconnectés ; vous restez connecté ici."
       />
 
       <Form method="post" className="grid gap-4.5">

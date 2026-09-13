@@ -141,6 +141,77 @@ describe('Profil et mot de passe', () => {
     rafraichir(app, compte.refresh).expect(HttpStatus.UNAUTHORIZED));
 });
 
+// Changer son mot de passe, c'est souvent réagir à une compromission : les AUTRES
+// appareils tombent, mais celui qui vient de prouver l'ancien mot de passe reste
+// connecté — sinon on le déconnecte sans prévenir au prochain rafraîchissement.
+describe('Sessions après un changement de mot de passe', () => {
+  let app: INestApplication<App>;
+  let compte: Compte;
+  let autreAppareil: string;
+  let nouveauRefresh: string | undefined;
+
+  beforeAll(async () => {
+    app = await creerAppDeTest();
+    compte = await ouvrirCompte(app);
+    autreAppareil = refreshDe(
+      await connecter(app, compte.email).expect(HttpStatus.OK),
+    );
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('ne révoque rien et ne pose aucun cookie si l’ancien mot de passe est faux', async () => {
+    const reponse = await enTantQue(
+      app,
+      'patch',
+      MOI_MOT_DE_PASSE,
+      compte.acces,
+    )
+      .send({
+        ancienMotDePasse: 'ce-n-est-pas-le-bon-mot-de-passe',
+        nouveauMotDePasse: NOUVEAU_MOT_DE_PASSE,
+      })
+      .expect(HttpStatus.BAD_REQUEST);
+
+    expect(reponse.get('Set-Cookie')).toBeUndefined();
+    const encoreValide = await rafraichir(app, autreAppareil).expect(
+      HttpStatus.OK,
+    );
+    autreAppareil = refreshDe(encoreValide);
+  });
+
+  it('rouvre une session sur l’appareil courant : nouveaux cookies posés', async () => {
+    const reponse = await enTantQue(
+      app,
+      'patch',
+      MOI_MOT_DE_PASSE,
+      compte.acces,
+    )
+      .send({
+        ancienMotDePasse: MOT_DE_PASSE,
+        nouveauMotDePasse: NOUVEAU_MOT_DE_PASSE,
+      })
+      .expect(HttpStatus.NO_CONTENT);
+
+    // Le jeton d'ACCÈS ne prouve rien : même identifiant, même rôle, même seconde, il
+    // peut sortir identique. Le jeton de rafraîchissement, lui, est tiré au hasard.
+    expect(accesDe(reponse)).toBeTruthy();
+    nouveauRefresh = refreshDe(reponse);
+    expect(nouveauRefresh).not.toBe(compte.refresh);
+  });
+
+  it('refuse l’ancien jeton de rafraîchissement de l’appareil courant', () =>
+    rafraichir(app, compte.refresh).expect(HttpStatus.UNAUTHORIZED));
+
+  it('déconnecte l’autre appareil', () =>
+    rafraichir(app, autreAppareil).expect(HttpStatus.UNAUTHORIZED));
+
+  it('laisse le nouveau jeton de rafraîchissement fonctionner', () =>
+    rafraichir(app, nouveauRefresh ?? '').expect(HttpStatus.OK));
+});
+
 describe('Suppression du compte', () => {
   let app: INestApplication<App>;
   let compte: Compte;
