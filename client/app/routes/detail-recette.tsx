@@ -1,5 +1,4 @@
 import type { Composition, Recette } from '@recipe/types';
-import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
 import { obtenirRecette } from '../acces-api/recettes';
@@ -7,6 +6,7 @@ import { Etoiles } from '../composants/etoiles';
 import { executerActionAvis, type EchecAvis } from '../recette/action-avis';
 import { Etapes, VideoDeLaRecette } from '../recette/preparation';
 import { formaterQuantite, libelleUnite } from '../recette/quantites';
+import { SectionsRecette, TitreDeSection } from '../recette/sections-recette';
 import { ZoneAvis } from '../recette/zone-avis';
 import { useSession } from '../session-courante';
 
@@ -35,12 +35,6 @@ export async function clientAction({
   request,
 }: Route.ClientActionArgs): Promise<EchecAvis | null> {
   return executerActionAvis(Number(params.id), await request.formData());
-}
-
-function TitreDeSection({ children }: { children: ReactNode }) {
-  return (
-    <h2 className="mb-4 border-b border-trait pb-3 text-3xl">{children}</h2>
-  );
 }
 
 function FilDAriane({ recette }: { recette: Recette }) {
@@ -210,32 +204,29 @@ export default function DetailRecette({
       <FilDAriane recette={recette} />
       <EnTeteRecette recette={recette} />
 
-      <div className="mt-12 md:flex md:items-start md:gap-10">
-        {/* 330 px = w-82.5 sur l'échelle de 4 px : la colonne du handoff. */}
-        <aside className="md:w-82.5 md:shrink-0">
-          <TitreDeSection>Ingrédients</TitreDeSection>
-          <Ingredients compositions={recette.compositions} />
-
-          {recette.video !== null && (
-            <div className="mt-10">
-              <TitreDeSection>Vidéo</TitreDeSection>
-              <VideoDeLaRecette video={recette.video} />
-            </div>
-          )}
-        </aside>
-
-        <div className="mt-10 md:mt-0 md:flex-1">
-          <TitreDeSection>Étapes</TitreDeSection>
-          <Etapes etapes={recette.etapes} />
-
+      <SectionsRecette
+        nombreAvis={recette.avis.length}
+        ingredients={
+          <>
+            <Ingredients compositions={recette.compositions} />
+            {recette.video !== null && (
+              <div className="mt-10">
+                <TitreDeSection>Vidéo</TitreDeSection>
+                <VideoDeLaRecette video={recette.video} />
+              </div>
+            )}
+          </>
+        }
+        etapes={<Etapes etapes={recette.etapes} />}
+        avis={
           <ZoneAvis
             recetteId={recette.id}
             avis={recette.avis}
             session={session}
             echec={actionData ?? null}
           />
-        </div>
-      </div>
+        }
+      />
     </article>
   );
 }

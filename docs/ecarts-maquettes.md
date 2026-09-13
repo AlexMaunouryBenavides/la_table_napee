@@ -111,6 +111,8 @@ Chaque écran réel émulé à 390 px, comparé à la planche mobile de sa maque
 - [x] **Panneau — en-tête ardoise et tiroir de navigation** (9 tests) (burger, fermeture, Échap,
       focus) + **barre d'onglets basse** Bord · Recettes · Comptes selon le rôle.
 - [x] **Site public — barre d'onglets basse** (4 tests) Accueil · Catalogue · Compte.
-- [ ] **Détail d'une recette — onglets ancrés** Ingrédients · Étapes · Avis.
+- [x] **Détail d'une recette — onglets** (5 tests) Ingrédients · Étapes · Avis · N.
+- [ ] **Détail d'une recette — en-tête mobile** (visuel) : lien retour « ‹ type ·
+      nationalité » et avatar, à la place du logo et des liens.
 - [ ] **Mon compte — onglets** Profil · Mot de passe · Suppression.
 - [ ] **Éditeur — sections en accordéon** et réordonnancement des étapes dédié.
