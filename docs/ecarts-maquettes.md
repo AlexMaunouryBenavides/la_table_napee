@@ -86,3 +86,31 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
   - [x] Suggestions de recettes issues des mots de l'URL (404, 9 tests) : le mot le plus
         long hors mots de navigation, trois recettes au plus, rien si aucun mot ou si
         l'API échoue.
+
+## Mobile (390 px) — audit du 2026-09-13
+
+Chaque écran réel émulé à 390 px, comparé à la planche mobile de sa maquette.
+
+- [x] **Panneau : la page entière débordait en largeur** (857 px pour 390) — un enfant
+      flex sans `min-w-0` s'élargissait au tableau. Corrigé : seul le cadre du tableau
+      défile.
+
+### Visuel (sans nouveaux tests)
+
+- [ ] **Tableaux du panneau en cartes** (recettes, utilisateurs, catégories, dernières
+      recettes) : une carte par ligne, paires libellé/valeur, actions pleine largeur.
+- [ ] **Accueil** : image en rectangle arrondi après l'accroche ; cartes empilées.
+- [ ] **Éditeur** : pied collant « Annuler / Enregistrer » ; colonne latérale sous le
+      formulaire.
+
+### Comportements (avec tests, liste à valider)
+
+- [ ] **Catalogue — tiroir de filtres** : bouton « Filtres · N », tiroir plein écran,
+      choix accumulés sans requête, « Voir les N recettes » ; aujourd'hui les filtres
+      occupent ~1 700 px avant la première recette.
+- [ ] **Panneau — en-tête ardoise et tiroir de navigation** (burger, fermeture, Échap,
+      focus) + **barre d'onglets basse** Bord · Recettes · Comptes/Réglages selon le rôle.
+- [ ] **Site public — barre d'onglets basse** Accueil · Catalogue · Compte.
+- [ ] **Détail d'une recette — onglets ancrés** Ingrédients · Étapes · Avis.
+- [ ] **Mon compte — onglets** Profil · Mot de passe · Suppression.
+- [ ] **Éditeur — sections en accordéon** et réordonnancement des étapes dédié.

@@ -155,7 +155,10 @@ export default function CoquilleBackOffice() {
         <NavigationLaterale sections={sections} session={session} />
       </div>
 
-      <div className="flex-1">
+      {/* `min-w-0` : un enfant flex ne rétrécit pas sous sa largeur de contenu. Sans
+          lui, un tableau large élargit la colonne, et c'est la PAGE qui défile en
+          largeur au lieu du seul cadre du tableau. */}
+      <div className="min-w-0 flex-1">
         <div className="border-b border-trait px-5 py-3 md:hidden">
           <Bouton
             variante="fantome"
