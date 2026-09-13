@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 
+import { LienBouton } from './lien-bouton';
 import { PageImpasse } from './page-impasse';
 
 const BASE_36 = 36;
@@ -34,9 +34,9 @@ export function ErreurInattendue() {
       titre="Quelque chose s’est mal passé"
       explication="L’incident est de notre côté. Réessayez dans un instant ; si cela persiste, donnez-nous cette référence."
       actions={
-        <Link to="/" className="underline">
+        <LienBouton vers="/" variante="primaire">
           Retour à l’accueil
-        </Link>
+        </LienBouton>
       }
       detail={reference}
     />

@@ -1,6 +1,6 @@
 import { aAuMoins, type RoleUtilisateur } from '@recipe/types';
-import { Link } from 'react-router';
 
+import { LienBouton } from './lien-bouton';
 import { PageImpasse } from './page-impasse';
 
 const LIBELLES: Record<RoleUtilisateur, string> = {
@@ -29,9 +29,9 @@ export function AccesRefuse({
         titre="Cette page demande d’être connecté"
         explication="Connectez-vous, vous reviendrez ici ensuite."
         actions={
-          <Link to="/connexion" className="underline">
+          <LienBouton vers="/connexion" variante="primaire">
             Se connecter
-          </Link>
+          </LienBouton>
         }
       />
     );
@@ -48,13 +48,13 @@ export function AccesRefuse({
         // Renvoyer vers le tableau de bord quelqu'un qui n'a rien à faire dans le
         // panneau, c'est le renvoyer sur un second refus. On le ramène au site.
         aAuMoins(roleCourant, 'moderateur') ? (
-          <Link to="/panneau" className="underline">
+          <LienBouton vers="/panneau" variante="primaire">
             Retour au tableau de bord
-          </Link>
+          </LienBouton>
         ) : (
-          <Link to="/" className="underline">
+          <LienBouton vers="/" variante="primaire">
             Retour au site
-          </Link>
+          </LienBouton>
         )
       }
     />

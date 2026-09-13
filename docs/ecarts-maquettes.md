@@ -76,6 +76,6 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
 - [x] **11 Catégories** : fil d'Ariane ; onglets soulignés (pas en pilules) ; tableau
       encadré avec boutons « Renommer » ; carte « Ajouter » et carte « Contrat commun »
       à droite.
-- [ ] **12 404** : « 404 » en ardoise ; boutons primaire + fantôme ; suggestions de
-      recettes issues des mots de l'URL. **13 403 / 14 Erreur** : à comparer à la même
-      planche.
+- [x] **12 404 · 13 403 · 14 Erreur** (visuel) : code en ardoise ; actions en liens
+      habillés en boutons (`LienBouton`) ; texte recentré.
+  - [ ] **Reste, avec tests** : suggestions de recettes issues des mots de l'URL (404).

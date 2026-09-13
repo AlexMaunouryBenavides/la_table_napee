@@ -1,23 +1,22 @@
-import { Link } from 'react-router';
-
+import { LienBouton } from '../composants/lien-bouton';
 import { PageImpasse } from '../composants/page-impasse';
 
-// Écran 12. Les suggestions dérivées des mots de l'URL arrivent avec l'écran de
-// catalogue : sans lui, il n'y a nulle part où envoyer le visiteur.
+// Écran 12. Les suggestions dérivées des mots de l'URL restent à écrire : c'est un
+// comportement (un appel à l'API), il viendra avec ses tests.
 export default function Introuvable() {
   return (
     <PageImpasse
       code={404}
-      titre="Cette page n’existe pas"
-      explication="Le lien est peut-être ancien, ou la recette a été retirée."
+      titre="Cette page n’existe pas — ou plus"
+      explication="L’adresse est peut-être mal recopiée, ou la recette a été retirée du catalogue. Les autres sont toujours là."
       actions={
         <>
-          <Link to="/recettes" className="underline">
+          <LienBouton vers="/recettes" variante="primaire">
             Parcourir le catalogue
-          </Link>
-          <Link to="/" className="underline">
+          </LienBouton>
+          <LienBouton vers="/" variante="fantome">
             Retour à l’accueil
-          </Link>
+          </LienBouton>
         </>
       }
     />
