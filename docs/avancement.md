@@ -10,10 +10,10 @@
 > écrans), `docs/etapes-general.md` (le plan global).
 >
 > **Dernière vérification : 2026-09-13** — branche `setup-authentification` poussée,
-> PR #3 ouverte, CI verte (`verify` + e2e). Les 14 écrans **fonctionnent** mais l'audit
-> contre les maquettes a montré qu'aucun n'était conforme : **la reprise visuelle des 14
-> écrans est faite** le même jour. Restent cinq comportements de maquette, à écrire avec
-> leurs tests — liste dans `docs/ecarts-maquettes.md`.
+> PR #3 ouverte, CI verte (`verify` + e2e). L'audit contre les maquettes a montré
+> qu'aucun écran n'était conforme : **les 14 ont été repris le même jour**, puis les
+> cinq comportements dessinés ont été écrits en TDD. **Le front est conforme aux
+> maquettes** — suivi dans `docs/ecarts-maquettes.md`.
 >
 > Les RÈGLES d'ingénierie vivent maintenant dans `eng-kit/` (dépôt séparé, ignoré ici) :
 > `docs/conventions/` et `docs/guides/` ont été supprimés.
@@ -23,7 +23,7 @@
 ## Vue d'ensemble
 
 ```
-GLOBAL   ███████████████████░   94 %
+GLOBAL   ███████████████████░   95 %
 ```
 
 | Lot                                        | Poids | Avancement | Barre                  |
@@ -32,14 +32,14 @@ GLOBAL   ███████████████████░   94 %
 | 2. Mise en place (socle)                   |  30 % |      100 % | `████████████████████` |
 | 3. Features API (les 37 routes du contrat) |  25 % |      100 % | `████████████████████` |
 | 4. Tests                                   |  10 % |       95 % | `███████████████████░` |
-| 5. Front                                   |  20 % |       95 % | `███████████████████░` |
+| 5. Front                                   |  20 % |      100 % | `████████████████████` |
 | 6. Déploiement                             |   5 % |        0 % | `░░░░░░░░░░░░░░░░░░░░` |
 
 Les poids sont un jugement, pas une science : ils disent seulement que le front pèse
 autant qu'un quart du back. Le global en découle (somme pondérée).
 
 **En une phrase** : le back est terminé et testé en CI ; le front est conforme aux
-maquettes à cinq comportements près ; le déploiement n'a pas commencé.
+maquettes et testé ; le déploiement n'a pas commencé.
 
 ---
 
@@ -163,15 +163,15 @@ générés par `react-router typegen`, le lint échouait en CI alors qu'il passa
 
 ---
 
-## 5. Front — 95 %
+## 5. Front — 100 %
 
-`███████████████████░`
+`████████████████████`
 
 > **Conformité aux maquettes (2026-09-13).** L'audit a comparé chaque écran à sa planche :
 > tous étaient simplifiés. Les 14 ont été repris le jour même et revérifiés côte à côte
 > dans un navigateur — composants partagés (en-tête, carte, tableau, pagination,
 > en-tête de panneau, liens-boutons), puis écran par écran. Suivi :
-> **`docs/ecarts-maquettes.md`**. Les 5 % restants sont des comportements, pas du style.
+> **`docs/ecarts-maquettes.md`**. Les cinq comportements dessinés ont suivi, en TDD.
 
 Le change **`setup-front`** (57/57) est archivé : il a posé le socle. Depuis, **onze
 écrans réels** ont été écrits par-dessus. 214 tests côté client, `npm run verify` vert,
@@ -250,14 +250,16 @@ par « trouver ou créer »), et le téléversement d'image (l'API attend une UR
 
 ### Reste à faire
 
-Cinq comportements dessinés par les maquettes, chacun à écrire en TDD (liste de tests à
-valider d'abord) :
+Rien sur le front. Les cinq comportements dessinés par les maquettes sont écrits, chacun
+en TDD — liste de tests validée d'abord, vus échouer, puis verts :
 
-- catalogue : sélecteur de tri, curseur de temps 10–180 min, titre composé des filtres ;
-- connexion et inscription : bouton « Afficher » le mot de passe ;
-- 404 : suggestions de recettes tirées des mots de l'URL.
+- catalogue : sélecteur de tri (5 tests), curseur de temps 10–180 min (6), titre composé
+  des filtres (7) ;
+- connexion et inscription : bouton « Afficher » le mot de passe (7) ;
+- 404 : suggestions de recettes tirées des mots de l'URL (9).
 
-La reprise visuelle, elle, est faite : pas de nouveau test, les 214 existants verts.
+248 tests côté client. Non vérifié : le rendu mobile, contrôlé jusqu'ici en desktop
+seulement. Ce qui reste au projet est ailleurs : le déploiement (lot 6).
 
 Chaque écran apporte son module d'accès API et ses composants propres : la règle tenue
 tout au long est qu'un fichier naît **avec son premier consommateur**, jamais avant —

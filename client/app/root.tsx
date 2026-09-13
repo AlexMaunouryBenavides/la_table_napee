@@ -11,7 +11,7 @@ import type { Route } from './+types/root';
 import { chargerSession } from './acces-api/session';
 import { ErreurInattendue } from './composants/erreur-inattendue';
 import { Squelette } from './composants/squelette';
-import Introuvable from './routes/introuvable';
+import { PageIntrouvable } from './introuvable/page-introuvable';
 import type { EtatSession } from './session-courante';
 
 import './app.css';
@@ -73,7 +73,8 @@ const INTROUVABLE = 404;
  */
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   if (isRouteErrorResponse(error) && error.status === INTROUVABLE) {
-    return <Introuvable />;
+    // Pas de suggestions ici : ce filet n'a pas de chargement pour les calculer.
+    return <PageIntrouvable suggestions={[]} />;
   }
 
   return <ErreurInattendue />;

@@ -83,4 +83,6 @@ comptes, colonne « Avis » des comptes, liens « Mentions légales · Contact �
       à droite.
 - [x] **12 404 · 13 403 · 14 Erreur** (visuel) : code en ardoise ; actions en liens
       habillés en boutons (`LienBouton`) ; texte recentré.
-  - [ ] **Reste, avec tests** : suggestions de recettes issues des mots de l'URL (404).
+  - [x] Suggestions de recettes issues des mots de l'URL (404, 9 tests) : le mot le plus
+        long hors mots de navigation, trois recettes au plus, rien si aucun mot ou si
+        l'API échoue.
