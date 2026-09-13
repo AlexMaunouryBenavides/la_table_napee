@@ -1,60 +1,28 @@
-import type { Utilisateur } from '@recipe/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { donneesDeFormulaire } from '../../test/formulaire';
+import { THOMAS } from '../../test/comptes-exemple';
 import { ErreurApi } from '../acces-api/erreur-api';
 import { changerRole, supprimerUtilisateur } from '../acces-api/utilisateurs';
 
-import { executerActionUtilisateur } from './administration-utilisateurs';
+import {
+  executerChangementDeRole,
+  executerSuppressionCompte,
+} from './administration-utilisateurs';
 
 vi.mock('../acces-api/utilisateurs');
-
-const THOMAS: Utilisateur = {
-  id: 'u-thomas',
-  pseudo: 'thomas',
-  email: 'thomas@test.fr',
-  role: 'moderateur',
-  dateCreation: '2026-02-19T12:00:00.000Z',
-};
-
-const CHANGEMENT = {
-  intention: 'role',
-  id: 'u-thomas',
-  role: 'admin',
-  roleActuel: 'moderateur',
-};
 
 beforeEach(() => {
   vi.mocked(changerRole).mockReset().mockResolvedValue(THOMAS);
   vi.mocked(supprimerUtilisateur).mockReset().mockResolvedValue(undefined);
 });
 
-describe('executerActionUtilisateur — aiguillage', () => {
-  it('change un rôle sans rien supprimer', async () => {
-    await executerActionUtilisateur(donneesDeFormulaire(CHANGEMENT));
-
-    expect(changerRole).toHaveBeenCalledWith('u-thomas', 'admin');
-    expect(supprimerUtilisateur).not.toHaveBeenCalled();
-  });
-
-  it('supprime sans toucher au rôle', async () => {
-    await executerActionUtilisateur(
-      donneesDeFormulaire({ intention: 'suppression', id: 'u-thomas' }),
-    );
-
-    expect(supprimerUtilisateur).toHaveBeenCalledWith('u-thomas');
-    expect(changerRole).not.toHaveBeenCalled();
-  });
-});
-
-describe('executerActionUtilisateur — changement de rôle', () => {
+describe('executerChangementDeRole', () => {
   it('rend le compte à jour, pour que la ligne se corrige seule', async () => {
     vi.mocked(changerRole).mockResolvedValue({ ...THOMAS, role: 'admin' });
 
-    const resultat = await executerActionUtilisateur(
-      donneesDeFormulaire(CHANGEMENT),
-    );
+    const resultat = await executerChangementDeRole(THOMAS, 'admin');
 
+    expect(changerRole).toHaveBeenCalledWith('u-thomas', 'admin');
     expect(resultat.succes).toBe(true);
     expect(resultat.utilisateur?.role).toBe('admin');
   });
@@ -65,9 +33,7 @@ describe('executerActionUtilisateur — changement de rôle', () => {
       new ErreurApi(409, 'Vous ne pouvez pas modifier votre propre rôle'),
     );
 
-    const resultat = await executerActionUtilisateur(
-      donneesDeFormulaire(CHANGEMENT),
-    );
+    const resultat = await executerChangementDeRole(THOMAS, 'admin');
 
     expect(resultat.succes).toBe(false);
     expect(resultat.roleRetabli).toBe('moderateur');
@@ -75,15 +41,13 @@ describe('executerActionUtilisateur — changement de rôle', () => {
   });
 });
 
-describe('executerActionUtilisateur — suppression', () => {
+describe('executerSuppressionCompte', () => {
   it('explique le refus du dernier administrateur', async () => {
     vi.mocked(supprimerUtilisateur).mockRejectedValue(
       new ErreurApi(409, 'C’est le dernier administrateur'),
     );
 
-    const resultat = await executerActionUtilisateur(
-      donneesDeFormulaire({ intention: 'suppression', id: 'u-thomas' }),
-    );
+    const resultat = await executerSuppressionCompte(THOMAS.id);
 
     expect(resultat.succes).toBe(false);
     expect(resultat.message).toMatch(/dernier administrateur/i);
@@ -95,9 +59,7 @@ describe('executerActionUtilisateur — suppression', () => {
       new ErreurApi(404, 'Utilisateur introuvable'),
     );
 
-    const resultat = await executerActionUtilisateur(
-      donneesDeFormulaire({ intention: 'suppression', id: 'u-thomas' }),
-    );
+    const resultat = await executerSuppressionCompte(THOMAS.id);
 
     expect(resultat.succes).toBe(true);
     expect(resultat.message).toMatch(/n’existe plus|supprimé/i);

@@ -1,14 +1,12 @@
 import type { Utilisateur } from '@recipe/types';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { json, simulerApi } from '../../test/api-simulee';
 import { pageDe, resumeDe } from '../../test/recette-exemple';
-import { AvecRequetes } from '../../test/requetes';
+import { rendreRoutes } from '../../test/rendu-route';
 import { clientRequetes } from '../requetes/client-requetes';
-import { requeteSession } from '../requetes/session';
 import PanneauAccueil from '../routes/panneau/accueil';
 import PanneauRecettes from '../routes/panneau/recettes';
 
@@ -23,19 +21,11 @@ const ADMIN: Utilisateur = {
 const TARTE = resumeDe(12, 'Tarte fine aux tomates');
 const PANNE = () => json(500, { statusCode: 500, message: 'Panne' });
 
-async function rendre(url: string) {
-  await clientRequetes.prefetchQuery(requeteSession);
-  render(
-    <MemoryRouter initialEntries={[url]}>
-      <AvecRequetes>
-        <Routes>
-          <Route path="/panneau" element={<PanneauAccueil />} />
-          <Route path="/panneau/recettes" element={<PanneauRecettes />} />
-        </Routes>
-      </AvecRequetes>
-    </MemoryRouter>,
-  );
-}
+const rendre = (url: string) =>
+  rendreRoutes(url, {
+    '/panneau': <PanneauAccueil />,
+    '/panneau/recettes': <PanneauRecettes />,
+  });
 
 describe('panneau — tableau de bord', () => {
   it('relance la lecture des dernières recettes avec « Réessayer », sans recharger', async () => {

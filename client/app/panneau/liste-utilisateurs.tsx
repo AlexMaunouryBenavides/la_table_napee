@@ -5,7 +5,6 @@ import {
   type Utilisateur,
 } from '@recipe/types';
 import { useState } from 'react';
-import { useFetcher } from 'react-router';
 
 import { Bandeau } from '../composants/bandeau';
 import { Bouton } from '../composants/bouton';
@@ -16,7 +15,11 @@ import { Pagination } from '../composants/pagination';
 import { PastilleInitiale } from '../composants/pastille-initiale';
 import { Tableau } from '../composants/tableau';
 
-import type { ResultatAdministration } from './administration-utilisateurs';
+import {
+  type AdministrationCompte,
+  type ResultatAdministration,
+  useAdministrationCompte,
+} from './administration-utilisateurs';
 
 const COLONNES = ['Compte', 'E-mail', 'Rôle', 'Inscription', 'Actions'];
 const FORMAT_DATE = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' });
@@ -33,20 +36,18 @@ const LIBELLES_ROLE: Record<RoleUtilisateur, string> = {
  *  a déjà sa colonne. */
 const nomDe = (compte: Utilisateur): string => compte.pseudo ?? 'Sans pseudo';
 
-type Fetcher = ReturnType<typeof useFetcher<ResultatAdministration>>;
-
 function SelecteurRole({
   compte,
   estMoi,
-  fetcher,
+  administration,
 }: {
   compte: Utilisateur;
   estMoi: boolean;
-  fetcher: Fetcher;
+  administration: AdministrationCompte;
 }) {
-  const enCours = fetcher.state !== 'idle';
-  const refus =
-    fetcher.data?.succes === false ? fetcher.data.roleRetabli : undefined;
+  const enCours = administration.isPending;
+  const retour = administration.data;
+  const refus = retour?.succes === false ? retour.roleRetabli : undefined;
 
   return (
     <label>
@@ -55,17 +56,12 @@ function SelecteurRole({
         // Prévention plutôt que réaction : l'API refuse l'auto-rétrogradation, ne
         // pas l'offrir évite une fausse manœuvre quotidienne.
         disabled={estMoi || enCours}
-        value={refus ?? fetcher.data?.utilisateur?.role ?? compte.role}
+        value={refus ?? retour?.utilisateur?.role ?? compte.role}
         onChange={(evenement) => {
-          void fetcher.submit(
-            {
-              intention: 'role',
-              id: compte.id,
-              role: evenement.target.value,
-              roleActuel: compte.role,
-            },
-            { method: 'post' },
-          );
+          administration.mutate({
+            action: 'role',
+            role: evenement.target.value as RoleUtilisateur,
+          });
         }}
         className="h-9 min-w-35 rounded-sm border border-trait-fort bg-craie px-3 text-sm disabled:bg-trait disabled:text-encre-55"
       >
@@ -106,11 +102,11 @@ function ModaleSuppressionCompte({
 function ActionsDeCompte({
   compte,
   estMoi,
-  fetcher,
+  administration,
 }: {
   compte: Utilisateur;
   estMoi: boolean;
-  fetcher: Fetcher;
+  administration: AdministrationCompte;
 }) {
   const [modaleOuverte, setModaleOuverte] = useState(false);
 
@@ -127,7 +123,7 @@ function ActionsDeCompte({
       <Bouton
         variante="danger"
         taille="sm"
-        disabled={fetcher.state !== 'idle'}
+        disabled={administration.isPending}
         onClick={() => {
           setModaleOuverte(true);
         }}
@@ -143,10 +139,7 @@ function ActionsDeCompte({
           }}
           surConfirmation={() => {
             setModaleOuverte(false);
-            void fetcher.submit(
-              { intention: 'suppression', id: compte.id },
-              { method: 'post' },
-            );
+            administration.mutate({ action: 'suppression' });
           }}
         />
       )}
@@ -183,8 +176,8 @@ function LigneCompte({
   compte: Utilisateur;
   estMoi: boolean;
 }) {
-  const fetcher = useFetcher<ResultatAdministration>();
-  const retour = fetcher.data;
+  const administration = useAdministrationCompte(compte);
+  const retour = administration.data;
 
   return (
     <>
@@ -196,31 +189,47 @@ function LigneCompte({
         <CelluleCompte compte={compte} estMoi={estMoi} />
         <td className={CELLULE}>{compte.email}</td>
         <td className={CELLULE}>
-          <SelecteurRole compte={compte} estMoi={estMoi} fetcher={fetcher} />
+          <SelecteurRole
+            compte={compte}
+            estMoi={estMoi}
+            administration={administration}
+          />
         </td>
         <td className={`${CELLULE} whitespace-nowrap`}>
           {FORMAT_DATE.format(new Date(compte.dateCreation))}
         </td>
         <td className={`${CELLULE} text-right`}>
-          <ActionsDeCompte compte={compte} estMoi={estMoi} fetcher={fetcher} />
+          <ActionsDeCompte
+            compte={compte}
+            estMoi={estMoi}
+            administration={administration}
+          />
         </td>
       </tr>
 
-      {/* Le refus s'affiche à l'endroit de l'action, jamais dans une alerte lointaine
-          où l'on ne saurait plus de quelle ligne il parle. */}
-      {retour?.message !== undefined && (
-        <tr className={retour.succes ? '' : 'bg-erreur-fond'}>
-          <td colSpan={COLONNES.length} className="px-4 pb-3">
-            <span
-              role="alert"
-              className={`text-sm ${retour.succes ? 'text-encre-70' : 'text-erreur'}`}
-            >
-              {retour.message}
-            </span>
-          </td>
-        </tr>
-      )}
+      {retour !== undefined && <RetourDeLigne retour={retour} />}
     </>
+  );
+}
+
+/** Le refus s'affiche à l'endroit de l'action, jamais dans une alerte lointaine où
+ *  l'on ne saurait plus de quelle ligne il parle. */
+function RetourDeLigne({ retour }: { retour: ResultatAdministration }) {
+  if (retour.message === undefined) {
+    return null;
+  }
+
+  return (
+    <tr className={retour.succes ? '' : 'bg-erreur-fond'}>
+      <td colSpan={COLONNES.length} className="px-4 pb-3">
+        <span
+          role="alert"
+          className={`text-sm ${retour.succes ? 'text-encre-70' : 'text-erreur'}`}
+        >
+          {retour.message}
+        </span>
+      </td>
+    </tr>
   );
 }
 

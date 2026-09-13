@@ -1,11 +1,15 @@
 import type { RoleUtilisateur, Utilisateur } from '@recipe/types';
+import { queryOptions, useMutation } from '@tanstack/react-query';
 
 import { ErreurApi } from '../acces-api/erreur-api';
-import { changerRole, supprimerUtilisateur } from '../acces-api/utilisateurs';
+import {
+  changerRole,
+  listerUtilisateurs,
+  supprimerUtilisateur,
+} from '../acces-api/utilisateurs';
+import { clientRequetes } from '../requetes/client-requetes';
 
 export type ResultatAdministration = {
-  /** Quelle LIGNE a agi : c'est là que le retour s'affiche, pas ailleurs. */
-  id: string;
   succes: boolean;
   message?: string;
   /** Le compte à jour, pour que la ligne se corrige sans attendre la liste. */
@@ -14,15 +18,14 @@ export type ResultatAdministration = {
   roleRetabli?: RoleUtilisateur;
 };
 
+/** Ce qu'une ligne demande : les deux actions partagent son unique retour. */
+type DemandeAdministration =
+  | { action: 'role'; role: RoleUtilisateur }
+  | { action: 'suppression' };
+
 const INTROUVABLE = 404;
 const DEJA_SUPPRIME =
   'Ce compte n’existe plus : il a été supprimé entre-temps.';
-
-function texte(donnees: FormData, champ: string): string {
-  const valeur = donnees.get(champ);
-
-  return typeof valeur === 'string' ? valeur : '';
-}
 
 function erreurApi(erreur: unknown): ErreurApi {
   if (!(erreur instanceof ErreurApi)) {
@@ -32,56 +35,69 @@ function erreurApi(erreur: unknown): ErreurApi {
   return erreur;
 }
 
-async function executerChangementDeRole(
-  donnees: FormData,
-  id: string,
+export function requeteUtilisateurs(criteres: URLSearchParams) {
+  return queryOptions({
+    queryKey: ['utilisateurs', criteres.toString()],
+    queryFn: () => listerUtilisateurs(criteres),
+  });
+}
+
+export async function executerChangementDeRole(
+  compte: Utilisateur,
+  role: RoleUtilisateur,
 ): Promise<ResultatAdministration> {
-  const roleActuel = texte(donnees, 'roleActuel') as RoleUtilisateur;
-
   try {
-    const utilisateur = await changerRole(
-      id,
-      texte(donnees, 'role') as RoleUtilisateur,
-    );
-
-    return { id, succes: true, utilisateur };
+    return { succes: true, utilisateur: await changerRole(compte.id, role) };
   } catch (leve) {
     // Le sélecteur revient à l'ancienne valeur : garder à l'écran un rôle que l'API
     // a refusé mentirait sur l'état réel du compte.
     return {
-      id,
       succes: false,
       message: erreurApi(leve).message,
-      roleRetabli: roleActuel,
+      roleRetabli: compte.role,
     };
   }
 }
 
-async function executerSuppression(
+export async function executerSuppressionCompte(
   id: string,
 ): Promise<ResultatAdministration> {
   try {
     await supprimerUtilisateur(id);
 
-    return { id, succes: true };
+    return { succes: true };
   } catch (leve) {
     const erreur = erreurApi(leve);
 
     // Un 404 n'est pas un échec : quelqu'un d'autre a retiré le compte, le résultat
     // voulu est atteint.
     return erreur.statut === INTROUVABLE
-      ? { id, succes: true, message: DEJA_SUPPRIME }
-      : { id, succes: false, message: erreur.message };
+      ? { succes: true, message: DEJA_SUPPRIME }
+      : { succes: false, message: erreur.message };
   }
 }
 
-/** Deux actions sur la même ligne : c'est `intention` qui dit laquelle. */
-export function executerActionUtilisateur(
-  donnees: FormData,
-): Promise<ResultatAdministration> {
-  const id = texte(donnees, 'id');
-
-  return texte(donnees, 'intention') === 'role'
-    ? executerChangementDeRole(donnees, id)
-    : executerSuppression(id);
+/**
+ * Une mutation PAR ligne : un refus ou une attente ne touche que ce compte. Un succès
+ * relit la liste des comptes et le tableau de bord, qui en affiche le nombre.
+ */
+export function useAdministrationCompte(compte: Utilisateur) {
+  return useMutation({
+    mutationFn: (demande: DemandeAdministration) =>
+      demande.action === 'role'
+        ? executerChangementDeRole(compte, demande.role)
+        : executerSuppressionCompte(compte.id),
+    onSuccess: async (resultat) => {
+      if (resultat.succes) {
+        await Promise.all([
+          clientRequetes.invalidateQueries({ queryKey: ['utilisateurs'] }),
+          clientRequetes.invalidateQueries({
+            queryKey: ['recettes', 'tableau-de-bord'],
+          }),
+        ]);
+      }
+    },
+  });
 }
+
+export type AdministrationCompte = ReturnType<typeof useAdministrationCompte>;
